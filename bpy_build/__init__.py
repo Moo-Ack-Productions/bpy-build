@@ -3,7 +3,7 @@ import os
 import shutil
 import time
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 from rich.console import Console
 from rich.progress import track
 
@@ -13,7 +13,6 @@ WORKING_DIR: Path = Path(os.getcwd())
 BLENDER_ADDON_DIR: List[str] = ["~/.config/blender/{0}/scripts/addons"]
 console = Console()
 
-
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         usage="%(prog)s [OPTION] [FILE]...",
@@ -21,6 +20,12 @@ def init_argparse() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "-v", "--version", action="version", version=f"{parser.prog} version 0.1.0"
+    )
+    parser.add_argument(
+        "--during-build",
+        action="store",
+        dest="db",
+        help="Defines an action to do in addition to default",
     )
     parser.add_argument("files", nargs="*")
     return parser
@@ -30,6 +35,13 @@ def parse_file(file: Path) -> yaml_conf.BpyBuildYaml:
     with open(file, "r") as f:
         yaml_config: yaml_conf.BpyBuildYaml = yaml_conf.BpyBuildYaml(f, file)
         return yaml_config
+
+
+def execute_action(action: Dict[str, str], inter_dir: Path):
+    if "create_file" in action:
+        file_path = inter_dir / Path(action["create_file"])
+        with open(file_path, "w") as f:
+            f.write("")
 
 
 def main():
@@ -70,16 +82,34 @@ def main():
     if built_zip.exists():
         os.remove(built_zip)
 
-    # Create archive and move it to the build directory since shutil makes
-    # the archive in the current working directory
-    with console.status("[bold green]Building...") as status:
-        time.sleep(2)
-        shutil.make_archive(
-            str(build_dir / yaml_conf.build_name), "zip", yaml_conf.addon_folder
-        )
+    if len(yaml_conf.during_build):
+        with console.status("[bold green]Copying...") as _:
+            inter_dir: Path = build_dir / Path("inter")
+            if inter_dir.exists():
+                shutil.rmtree(inter_dir)
+            shutil.copytree(yaml_conf.addon_folder, inter_dir)
+
+        with console.status("[bold green]Executing Build Actions...") as _:
+            if "default" in yaml_conf.during_build:
+                for action in yaml_conf.during_build["default"]:
+                    execute_action(action, inter_dir)
+            else:
+                if args.db in yaml_conf.during_build:
+                    for action in yaml_conf.during_build[args.db]:
+                        execute_action(action, inter_dir)
+
+        with console.status("[bold green]Building...") as _:
+            time.sleep(2)
+            shutil.make_archive(str(build_dir / yaml_conf.build_name), "zip", inter_dir)
+    else:
+        with console.status("[bold green]Building...") as _:
+            time.sleep(2)
+            shutil.make_archive(
+                str(build_dir / yaml_conf.build_name), "zip", yaml_conf.addon_folder
+            )
 
     # Install addon
-    with console.status("[bold green] Installing...") as status:
+    with console.status("[bold green] Installing...") as _:
         for path in map(Path, yaml_conf.install_versions):
             path = path.expanduser()
             if not path.exists():
@@ -97,7 +127,7 @@ def main():
                     )
                     continue
 
-            edited_path: Path = (path / Path(yaml_conf.build_name))
+            edited_path: Path = path / Path(yaml_conf.build_name)
             if not edited_path.exists():
                 edited_path.mkdir()
             else:
