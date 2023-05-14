@@ -9,7 +9,14 @@ from rich.console import Console
 from . import yaml_conf
 
 WORKING_DIR: Path = Path(os.getcwd())
-BLENDER_ADDON_DIR: List[str] = ["~/.config/blender/{0}/scripts/addons"]
+
+# All file paths on Windows, MacOS, and Linux based on the Blender Docs
+# We use ~ for user directories, and we expand these later on in the code
+BLENDER_ADDON_DIR: List[str] = [
+    "~/AppData/Roaming/Blender Foundation/Blender/{0}/scripts/addons",
+    "~/Library/Application Support/Blender/{0}/scripts/addons",
+    "~/.config/blender/{0}/scripts/addons",
+]
 console = Console()
 
 
