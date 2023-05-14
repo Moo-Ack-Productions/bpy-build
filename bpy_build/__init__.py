@@ -16,7 +16,7 @@ console = Console()
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         usage="%(prog)s [OPTION] [FILE]...",
-        description="Print or check SHA1 (160-bit) checksums.",
+        description="Build Blender addons 10 times faster",
     )
     parser.add_argument(
         "-v", "--version", action="version", version=f"{parser.prog} version 0.1.0"
