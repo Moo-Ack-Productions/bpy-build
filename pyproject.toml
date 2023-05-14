@@ -10,6 +10,7 @@ homepage = "https://github.com/StandingPadAnimations/bpy-build"
 python = "^3.8.1"
 pyyaml = "^6.0"
 rich = "^13.3.5"
+docopt = "^0.6.2"
 
 [tool.poetry.dev-dependencies]
 black = "^23.3.0"

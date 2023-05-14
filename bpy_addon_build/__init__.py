@@ -1,13 +1,14 @@
-import argparse
 import os
 import shutil
 import time
 from pathlib import Path
 from typing import Dict, List
 from rich.console import Console
+from docopt import docopt
 
 from . import yaml_conf
 
+# Current working directory
 WORKING_DIR: Path = Path(os.getcwd())
 
 # All file paths on Windows, MacOS, and Linux based on the Blender Docs
@@ -17,26 +18,21 @@ BLENDER_ADDON_DIR: List[str] = [
     "~/Library/Application Support/Blender/{0}/scripts/addons",
     "~/.config/blender/{0}/scripts/addons",
 ]
+
+# Rich console
 console = Console()
 
 
-def init_argparse() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        usage="%(prog)s [OPTION] [FILE]...",
-        description="Build Blender addons 10 times faster",
-    )
-    parser.add_argument(
-        "-v", "--version", action="version", version=f"{parser.prog} version 0.1.0"
-    )
-    parser.add_argument(
-        "--during-build",
-        action="store",
-        dest="db",
-        help="Defines an action to do in addition to default",
-    )
-    parser.add_argument("files", nargs="*")
-    return parser
+USAGE = '''
+Usage:
+    bpy-addon-build (-h | --help)
+    bpy-addon-build (-b | --during-build) <action> [<file>]
+    bpy-addon-build [<file>]
 
+Options:
+  -h --help     Show this screen.
+  -b --during-build      Execute a set of actions in addition to the default action
+'''
 
 def parse_file(file: Path) -> yaml_conf.BpyBuildYaml:
     with open(file, "r") as f:
@@ -52,11 +48,10 @@ def execute_action(action: Dict[str, str], inter_dir: Path):
 
 
 def main():
-    parser = init_argparse()
-    args = parser.parse_args()
+    args = docopt(USAGE)
+    console.print(args)
     bpy_build_yaml: Path = WORKING_DIR / Path("bpy-build.yaml")
-
-    if not args.files:
+    if "<file>" not in args:
         if bpy_build_yaml.exists():
             pass
         else:
@@ -65,9 +60,7 @@ def main():
             )
             return
     else:
-        for file in args.files:
-            bpy_build_yaml = Path(file).resolve()
-            break
+        bpy_build_yaml = Path(args["<file>"]).resolve()
 
     yaml_conf = parse_file(bpy_build_yaml)
     build_dir = bpy_build_yaml.parents[0] / Path("build")
@@ -100,10 +93,9 @@ def main():
             if "default" in yaml_conf.during_build:
                 for action in yaml_conf.during_build["default"]:
                     execute_action(action, inter_dir)
-            else:
-                if args.db in yaml_conf.during_build:
-                    for action in yaml_conf.during_build[args.db]:
-                        execute_action(action, inter_dir)
+            if args["--during-build"] in yaml_conf.during_build:
+                for action in yaml_conf.during_build[args["--during-build"]]:
+                    execute_action(action, inter_dir)
 
         with console.status("[bold green]Building...") as _:
             time.sleep(2)
