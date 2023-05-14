@@ -35,19 +35,14 @@ Options:
 """
 
 
+# Parse a file from a Path
 def parse_file(file: Path) -> yaml_conf.BpyBuildYaml:
     with open(file, "r") as f:
         yaml_config: yaml_conf.BpyBuildYaml = yaml_conf.BpyBuildYaml(f, file)
         return yaml_config
 
 
-def execute_action(action: Dict[str, str], inter_dir: Path):
-    if "create_file" in action:
-        file_path = inter_dir / Path(action["create_file"])
-        with open(file_path, "w") as f:
-            f.write("")
-
-
+# Main function
 def main():
     args = docopt(USAGE)
     bpy_build_yaml: Path = WORKING_DIR / Path("bpy-build.yaml")
