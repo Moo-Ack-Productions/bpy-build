@@ -7,7 +7,6 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8.1"
-flake8 = "^6.0.0"
 pyyaml = "^6.0"
 rich = "^13.3.5"
 
