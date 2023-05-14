@@ -5,13 +5,13 @@ import time
 from pathlib import Path
 from typing import Dict, List
 from rich.console import Console
-from rich.progress import track
 
 from . import yaml_conf
 
 WORKING_DIR: Path = Path(os.getcwd())
 BLENDER_ADDON_DIR: List[str] = ["~/.config/blender/{0}/scripts/addons"]
 console = Console()
+
 
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
