@@ -2,7 +2,7 @@ import os
 import shutil
 import time
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 from rich.console import Console
 from docopt import docopt
 
@@ -23,7 +23,7 @@ BLENDER_ADDON_DIR: List[str] = [
 console = Console()
 
 
-USAGE = '''
+USAGE = """
 Usage:
     bpy-addon-build (-h | --help)
     bpy-addon-build (-b | --during-build) <action> [<file>]
@@ -32,7 +32,8 @@ Usage:
 Options:
   -h --help     Show this screen.
   -b --during-build      Execute a set of actions in addition to the default action
-'''
+"""
+
 
 def parse_file(file: Path) -> yaml_conf.BpyBuildYaml:
     with open(file, "r") as f:
@@ -49,9 +50,8 @@ def execute_action(action: Dict[str, str], inter_dir: Path):
 
 def main():
     args = docopt(USAGE)
-    console.print(args)
     bpy_build_yaml: Path = WORKING_DIR / Path("bpy-build.yaml")
-    if "<file>" not in args:
+    if not args["<file>"]:
         if bpy_build_yaml.exists():
             pass
         else:
@@ -82,25 +82,31 @@ def main():
     if built_zip.exists():
         os.remove(built_zip)
 
+    # If there are build actions
     if len(yaml_conf.during_build):
+        # Copy the folder
         with console.status("[bold green]Copying...") as _:
             inter_dir: Path = build_dir / Path("inter")
             if inter_dir.exists():
                 shutil.rmtree(inter_dir)
             shutil.copytree(yaml_conf.addon_folder, inter_dir)
 
+        # Perform actions
         with console.status("[bold green]Executing Build Actions...") as _:
+            # Peform default action
             if "default" in yaml_conf.during_build:
                 for action in yaml_conf.during_build["default"]:
                     execute_action(action, inter_dir)
+            # Perform extra action
             if args["--during-build"] in yaml_conf.during_build:
                 for action in yaml_conf.during_build[args["--during-build"]]:
                     execute_action(action, inter_dir)
-
+        # Rebuild
         with console.status("[bold green]Building...") as _:
             time.sleep(2)
             shutil.make_archive(str(build_dir / yaml_conf.build_name), "zip", inter_dir)
     else:
+        # Build addon
         with console.status("[bold green]Building...") as _:
             time.sleep(2)
             shutil.make_archive(
@@ -110,27 +116,28 @@ def main():
     # Install addon
     with console.status("[bold green] Installing...") as _:
         for path in map(Path, yaml_conf.install_versions):
+            # Expand the ~ in the path
             path = path.expanduser()
             if not path.exists():
-                path_exists = False
-                for test_path in BLENDER_ADDON_DIR:
-                    new_path = Path(test_path.format(str(path))).expanduser()
-                    if new_path.exists():
-                        path = new_path
-                        path_exists = True
-                        break
-                if not path_exists:
+                found: Optional[Path] = next(
+                    (
+                        Path(test_path.format(str(path))).expanduser()
+                        for test_path in BLENDER_ADDON_DIR
+                        if Path(test_path.format(str(path))).expanduser().exists()
+                    ),
+                    None,
+                )
+                if found:
+                    path = found
+                else:
                     console.print(
                         f"Path {str(path)} doesn't exist, skipping...",
                         style="bold yellow",
                     )
                     continue
-
             edited_path: Path = path / Path(yaml_conf.build_name)
-            if not edited_path.exists():
-                edited_path.mkdir()
-            else:
-                shutil.rmtree(edited_path)
+            shutil.rmtree(edited_path, ignore_errors=True)
+            edited_path.mkdir(exist_ok=True)
             shutil.unpack_archive(built_zip, edited_path)
             time.sleep(2)
 
