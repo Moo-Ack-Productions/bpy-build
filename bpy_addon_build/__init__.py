@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from rich.console import Console
 from docopt import docopt
+from . import actions
 
 from . import yaml_conf
 
@@ -91,11 +92,11 @@ def main():
             # Peform default action
             if "default" in yaml_conf.during_build:
                 for action in yaml_conf.during_build["default"]:
-                    execute_action(action, inter_dir)
+                    actions.execute_action(action, inter_dir)
             # Perform extra action
             if args["--during-build"] in yaml_conf.during_build:
                 for action in yaml_conf.during_build[args["--during-build"]]:
-                    execute_action(action, inter_dir)
+                    actions.execute_action(action, inter_dir)
         # Rebuild
         with console.status("[bold green]Building...") as _:
             time.sleep(2)
