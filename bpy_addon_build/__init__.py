@@ -135,7 +135,7 @@ def main():
             shutil.rmtree(edited_path, ignore_errors=True)
             edited_path.mkdir(exist_ok=True)
             shutil.unpack_archive(built_zip, edited_path)
-            time.sleep(2)
+            time.sleep(1)
 
 
 if __name__ == "__main__":
