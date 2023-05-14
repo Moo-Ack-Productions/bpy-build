@@ -39,7 +39,7 @@ def main():
 
     if not args.files:
         if bpy_build_yaml.exists():
-            print("FOUND c:")
+            pass
         else:
             console.print(
                 "Can't find bpy-build.yaml, maybe pass it directly?", style="bold red"
@@ -72,38 +72,38 @@ def main():
 
     # Create archive and move it to the build directory since shutil makes
     # the archive in the current working directory
-    for _ in track(range(2), description="Building..."):
-        time.sleep(1)
-
-    shutil.make_archive(
-        str(build_dir / yaml_conf.build_name), "zip", yaml_conf.addon_folder
-    )
+    with console.status("[bold green]Building...") as status:
+        time.sleep(2)
+        shutil.make_archive(
+            str(build_dir / yaml_conf.build_name), "zip", yaml_conf.addon_folder
+        )
 
     # Install addon
-    for path in track(map(Path, yaml_conf.install_versions), description="Installing..."):
-        path = path.expanduser()
-        if not path.exists():
-            path_exists = False
-            for test_path in BLENDER_ADDON_DIR:
-                new_path = Path(test_path.format(str(path))).expanduser()
-                if new_path.exists():
-                    path = new_path
-                    path_exists = True
-                    break
-            if not path_exists:
-                console.print(
-                    f"Path {str(path)} doesn't exist, skipping...",
-                    style="bold yellow",
-                )
-                continue
+    with console.status("[bold green] Installing...") as status:
+        for path in map(Path, yaml_conf.install_versions):
+            path = path.expanduser()
+            if not path.exists():
+                path_exists = False
+                for test_path in BLENDER_ADDON_DIR:
+                    new_path = Path(test_path.format(str(path))).expanduser()
+                    if new_path.exists():
+                        path = new_path
+                        path_exists = True
+                        break
+                if not path_exists:
+                    console.print(
+                        f"Path {str(path)} doesn't exist, skipping...",
+                        style="bold yellow",
+                    )
+                    continue
 
-        edited_path: Path = (path / Path(yaml_conf.build_name))
-        if not edited_path.exists():
-            edited_path.mkdir()
-        else:
-            shutil.rmtree(edited_path)
-        shutil.unpack_archive(built_zip, edited_path)
-        time.sleep(2)
+            edited_path: Path = (path / Path(yaml_conf.build_name))
+            if not edited_path.exists():
+                edited_path.mkdir()
+            else:
+                shutil.rmtree(edited_path)
+            shutil.unpack_archive(built_zip, edited_path)
+            time.sleep(2)
 
 
 if __name__ == "__main__":
