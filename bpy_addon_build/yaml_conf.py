@@ -4,6 +4,7 @@ from pathlib import Path
 import yaml
 import rich
 
+
 @dataclass
 class BpyBuildYaml:
     addon_folder: Path
@@ -19,7 +20,7 @@ class BpyBuildYaml:
         if "build_name" not in file_data:
             print("[bold red]You need to specify the build name![/bold red]")
             quit()
-            
+
         self.addon_folder = file_path.parents[0] / Path(file_data["addon_folder"])
         self.build_name = file_data["build_name"]
 

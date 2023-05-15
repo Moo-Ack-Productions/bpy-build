@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import re
 
+
 # Execute an action
 def execute_action(action: str, inter_dir: Path):
     extracted_str = re.search("\((.+?)\)", action)
