@@ -29,8 +29,5 @@ def execute_action(action: str, inter_dir: Path, console: Console):
 
     if "execute_sh" in action:
         command = shlex.split(extracted_str.group(1))
-        output = subprocess.run(command, shell=True, cwd=inter_dir, capture_output=True)
-        if output.stdout != b'':
-            console.print(str(output.stdout))
-        if output.stderr != b'':
-            console.print(str(output.stderr))
+        output = subprocess.run(command, shell=True, cwd=inter_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        console.print(output.stdout.decode("UTF-8"))
