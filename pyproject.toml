@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "bpy-addon-build"
-version = "0.1.1"
+version = "0.1.2"
 description = "A build system to make building and testing Blender addons 10 times easier"
 authors = ["StandingPad"]
 license = "MIT"
 homepage = "https://github.com/StandingPadAnimations/bpy-build"
 
 [tool.poetry.dependencies]
-python = "^3.8.1"
+python = "^3.7"
 pyyaml = "^6.0"
 rich = "^13.3.5"
 docopt = "^0.6.2"
