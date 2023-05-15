@@ -93,11 +93,11 @@ def main():
             # Peform default action
             if "default" in yaml_conf.during_build:
                 for action in yaml_conf.during_build["default"]:
-                    actions.execute_action(action, inter_dir)
+                    actions.execute_action(action, inter_dir, console)
             # Perform extra action
             if args["--during-build"] and args["<action>"] in yaml_conf.during_build:
                 for action in yaml_conf.during_build[args["<action>"]]:
-                    actions.execute_action(action, inter_dir)
+                    actions.execute_action(action, inter_dir, console)
         # Rebuild
         with console.status("[bold green]Building...") as _:
             time.sleep(2)

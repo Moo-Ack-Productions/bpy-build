@@ -4,14 +4,15 @@ from typing import List
 from pathlib import Path
 import shutil
 import re
-
+from rich.console import Console
 
 # Execute an action
-def execute_action(action: str, inter_dir: Path):
+def execute_action(action: str, inter_dir: Path, console: Console):
     extracted_str = re.search("\((.+?)\)", action)
     if not extracted_str:
-        print(
-            f"[bold red]Invalid action: {action}, perhaps you forgot parenthesis?[/bold red]"
+        console.print(
+            f"Invalid action: {action}, perhaps you forgot parenthesis?",
+            style="[bold red]"
         )
         quit()
 
@@ -28,4 +29,8 @@ def execute_action(action: str, inter_dir: Path):
 
     if "execute_sh" in action:
         command = shlex.split(extracted_str.group(1))
-        subprocess.call(command, shell=True, cwd=inter_dir)
+        output = subprocess.run(command, shell=True, cwd=inter_dir, capture_output=True)
+        if output.stdout != b'':
+            console.print(output.stdout)
+        if output.stderr != b'':
+            console.print(output.stderr)
