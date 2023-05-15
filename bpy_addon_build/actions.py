@@ -28,5 +28,4 @@ def execute_action(action: str, inter_dir: Path):
 
     if "execute_sh" in action:
         command = shlex.split(extracted_str.group(1))
-        print(command)
         subprocess.call(command, shell=True, cwd=inter_dir)
