@@ -2,6 +2,9 @@
 A tool to make building addons faster
 
 # How to use
+Install from Pypi:
+`pip install bpy-addon-build`
+
 First create a file called `bpy-build.yaml` and add the following contents:
 ```yaml
 addon_folder: . # or the folder with the addon source code
