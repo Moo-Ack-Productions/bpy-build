@@ -1,15 +1,15 @@
 from dataclasses import dataclass
-from typing import Dict, List, TextIO
+from typing import Dict, List, Optional, TextIO
 from pathlib import Path
 import yaml
 
 
 @dataclass
-class BpyBuildYaml(object):
+class BpyBuildYaml:
     addon_folder: Path
     build_name: str
     install_versions: List[str]
-    during_build: Dict[str, List[Dict[str, str]]]
+    during_build: Optional[Dict[str, List[Dict[str, str]]]]
 
     def __init__(self, file: TextIO, file_path: Path):
         file_data = yaml.safe_load(file)

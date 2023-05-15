@@ -2,11 +2,11 @@ import os
 import shutil
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 from rich.console import Console
 from docopt import docopt
-from . import actions
 
+from . import actions
 from . import yaml_conf
 
 # Current working directory
@@ -47,6 +47,7 @@ def parse_file(file: Path) -> yaml_conf.BpyBuildYaml:
 def main():
     args = docopt(USAGE)
     bpy_build_yaml: Path = WORKING_DIR / Path("bpy-build.yaml")
+
     if not args["<file>"]:
         if bpy_build_yaml.exists():
             pass
