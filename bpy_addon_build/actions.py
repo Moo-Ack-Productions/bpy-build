@@ -31,6 +31,6 @@ def execute_action(action: str, inter_dir: Path, console: Console):
         command = shlex.split(extracted_str.group(1))
         output = subprocess.run(command, shell=True, cwd=inter_dir, capture_output=True)
         if output.stdout != b'':
-            console.print(output.stdout)
+            console.print(str(output.stdout))
         if output.stderr != b'':
-            console.print(output.stderr)
+            console.print(str(output.stderr))
