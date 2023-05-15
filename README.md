@@ -19,5 +19,26 @@ install_versions:
   - '3.5'
 ```
 
+We can also do stuff during the build process:
+```yaml
+during_build:
+  # This will always be executed
+  default:
+    - create_file("mcprep_dev.txt") 
+```
+
+When we build, the default case will always run. We can also define cases we want to only run if we specify them:
+```yaml
+during_build:
+  # This will always be executed
+  default:
+    - create_file("mcprep_dev.txt") 
+  dev:
+    - copy_file("some_file -> destination in the addon folder")
+    - execute_sh("some shell command")
+```
+
+To run the `dev` case, we pass the `-b` argument, like `bpy-addon-build -b dev`. Note that when making an action, the action is ran at the root of your addon folder.
+
 Our addon will now automatically be installed in Blender 3.5! If it doesn't exist, `bpy-build` will just ignore it.
 
