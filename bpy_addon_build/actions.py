@@ -10,7 +10,19 @@ from rich.console import Console
 # Execute an action
 def execute_action(action: str, inter_dir: Path, console: Console):
     print(action)
-    if "create_file" in action:
+    if isinstance(action, list):
+        for cmd in action:
+            command = shlex.split(cmd)
+            output = subprocess.run(
+                command,
+                shell=True,
+                cwd=inter_dir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            )
+            console.print(output.stdout.decode("UTF-8"))
+
+    elif "create_file" in action:
         extracted_str = re.search("\((.+?)\)", action)
         if not extracted_str:
             console.print(
@@ -35,17 +47,6 @@ def execute_action(action: str, inter_dir: Path, console: Console):
         src: Path = Path(files[0].replace('"', "")).expanduser()
         dst: Path = inter_dir / Path(files[1].replace('"', ""))
         shutil.copy2(src, dst)
-
-    elif isinstance(action, list):
-        command = shlex.split(action[-1])
-        output = subprocess.run(
-            command,
-            shell=True,
-            cwd=inter_dir,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-        )
-        console.print(output.stdout.decode("UTF-8"))
 
     else:
         console.print(f"Unknown action {action}!", style="bold red")

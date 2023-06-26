@@ -38,7 +38,7 @@ during_build:
     - create_file("mcprep_dev.txt") 
   dev:
     - copy_file("some_file -> destination in the addon folder")
-    - [some_command with-args | and-pipes]
+    - [some_command with-args | and-pipes, another_command]
 ```
 
 To run the `dev` case, we pass the `-b` argument, like `bpy-addon-build -b dev`. Note that when making an action, the action is ran at the root of your addon folder.
