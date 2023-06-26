@@ -2,7 +2,7 @@
 A tool to make building addons faster
 
 # How to use
-Install from Pypi:
+Install from PyPi:
 `pip install bpy-addon-build`
 
 First create a file called `bpy-build.yaml` and add the following contents:
@@ -38,7 +38,7 @@ during_build:
     - create_file("mcprep_dev.txt") 
   dev:
     - copy_file("some_file -> destination in the addon folder")
-    - execute_sh("some shell command")
+    - [some_command with-args | and-pipes]
 ```
 
 To run the `dev` case, we pass the `-b` argument, like `bpy-addon-build -b dev`. Note that when making an action, the action is ran at the root of your addon folder.
