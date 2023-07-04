@@ -100,12 +100,10 @@ def main():
                     actions.execute_action(action, inter_dir, console)
         # Rebuild
         with console.status("[bold green]Building...") as _:
-            time.sleep(2)
             shutil.make_archive(str(build_dir / yaml_conf.build_name), "zip", inter_dir)
     else:
         # Build addon
         with console.status("[bold green]Building...") as _:
-            time.sleep(2)
             shutil.make_archive(
                 str(build_dir / yaml_conf.build_name), "zip", yaml_conf.addon_folder
             )
@@ -136,7 +134,6 @@ def main():
             shutil.rmtree(edited_path, ignore_errors=True)
             edited_path.mkdir(exist_ok=True)
             shutil.unpack_archive(built_zip, edited_path)
-            time.sleep(1)
 
 
 if __name__ == "__main__":
