@@ -27,12 +27,14 @@ console = Console()
 USAGE = """
 Usage:
     bpy-addon-build (-h | --help)
-    bpy-addon-build (-b | --during-build) <action> [<file>]
+    bpy-addon-build ((-b | --during-build) <action>) [<file>]
+    bpy-addon-build [<file>] [((-b | --during-build) <action>)] ((-v | --versions) <versions>...)
     bpy-addon-build [<file>]
 
 Options:
   -h --help     Show this screen.
   -b --during-build      Execute a set of actions in addition to the default action
+  -v 
 """
 
 
@@ -41,7 +43,6 @@ def parse_file(file: Path) -> yaml_conf.BpyBuildYaml:
     with open(file, "r") as f:
         yaml_config: yaml_conf.BpyBuildYaml = yaml_conf.BpyBuildYaml(f, file)
         return yaml_config
-
 
 # Main function
 def main():
@@ -112,7 +113,10 @@ def main():
 
     # Install addon
     with console.status("[bold green] Installing...") as _:
-        for path in map(Path, yaml_conf.install_versions):
+        versions_list = yaml_conf.install_versions
+        if len(args["<versions>"]):
+            versions_list = args["<versions>"]
+        for path in map(Path, versions_list):
             # Expand the ~ in the path
             path = path.expanduser()
             if not path.exists():
@@ -133,6 +137,7 @@ def main():
                     )
                     continue
             edited_path: Path = path / Path(yaml_conf.build_name)
+            console.print(f"Installing in {str(path)}", style="bold green")
             shutil.rmtree(edited_path, ignore_errors=True)
             edited_path.mkdir(exist_ok=True)
             shutil.unpack_archive(built_zip, edited_path)
