@@ -1,6 +1,5 @@
 import os
 import shutil
-import time
 from pathlib import Path
 from typing import List, Optional
 from rich.console import Console
@@ -52,9 +51,8 @@ def main():
         if bpy_build_yaml.exists():
             pass
         else:
-            console.print(
-                "Can't find bpy-build.yaml, maybe pass it directly?", style="bold red"
-            )
+            console.print("Can't find bpy-build.yaml, maybe pass it directly?",
+                          style="bold red")
             return
     else:
         bpy_build_yaml = Path(args["<file>"]).resolve()
@@ -134,6 +132,7 @@ def main():
             shutil.rmtree(edited_path, ignore_errors=True)
             edited_path.mkdir(exist_ok=True)
             shutil.unpack_archive(built_zip, edited_path)
+            console.print(f"Installed to {edited_path}")
 
 
 if __name__ == "__main__":
