@@ -23,7 +23,7 @@ def execute_action(action: str, inter_dir: Path, console: Console):
             console.print(output.stdout.decode("UTF-8"))
 
     elif "create_file" in action:
-        extracted_str = re.search("\((.+?)\)", action)
+        extracted_str = re.search(r"\((.+?)\)", action)
         if not extracted_str:
             console.print(
                 f"Invalid action: {action}, perhaps you forgot parenthesis?",
@@ -36,7 +36,7 @@ def execute_action(action: str, inter_dir: Path, console: Console):
             f.write("")
 
     elif "copy_file" in action:
-        extracted_str = re.search("\((.+?)\)", action)
+        extracted_str = re.search(r"\((.+?)\)", action)
         if not extracted_str:
             console.print(
                 f"Invalid action: {action}, perhaps you forgot parenthesis?",
