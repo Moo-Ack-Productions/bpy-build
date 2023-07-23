@@ -20,9 +20,9 @@ struct BpyBuildConf {
     build_name: String,
     /// The versions/paths to install the 
     /// built addon to
-    install_versions: Vec<String>,
+    install_versions: Option<Vec<String>>,
     /// Actions to perform during the build
-    during_build: HashMap<String, Vec<String>>,
+    during_build: Option<HashMap<String, Vec<String>>>,
 }
 
 fn main() -> Result<(), serde_yaml::Error> {
