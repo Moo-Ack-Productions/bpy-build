@@ -60,6 +60,7 @@ def main():
 
     yaml_conf = parse_file(bpy_build_yaml)
     build_dir = bpy_build_yaml.parents[0] / Path("build")
+    copy_dir = build_dir / Path(yaml_conf.build_name + "subfolder")
     built_zip = build_dir / Path(yaml_conf.build_name + ".zip")
 
     # Check if the addon folder exists
@@ -98,13 +99,22 @@ def main():
                 for action in yaml_conf.during_build[args["<action>"]]:
                     actions.execute_action(action, inter_dir, console)
         # Rebuild
+        if copy_dir.exists():
+            shutil.rmtree(copy_dir)
+        copy_dir.mkdir()
+        shutil.copytree(inter_dir, copy_dir / Path(yaml_conf.build_name))
         with console.status("[bold green]Building...") as _:
-            shutil.make_archive(str(build_dir / yaml_conf.build_name), "zip", inter_dir)
+            time.sleep(2)
+            shutil.make_archive(str(build_dir / yaml_conf.build_name), "zip", copy_dir )
     else:
         # Build addon
+        if copy_dir.exists():
+            shutil.rmtree(copy_dir)
+        copy_dir.mkdir()
+        shutil.copytree(yaml_conf.addon_folder, copy_dir / Path(yaml_conf.build_name))
         with console.status("[bold green]Building...") as _:
             shutil.make_archive(
-                str(build_dir / yaml_conf.build_name), "zip", yaml_conf.addon_folder
+                str(build_dir / yaml_conf.build_name), "zip", copy_dir
             )
 
     # Install addon
