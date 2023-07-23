@@ -1,5 +1,6 @@
 use std::{collections::HashMap, path::PathBuf};
-use clap::Parser;
+use clap::{Parser, ValueHint, Command, CommandFactory};
+use clap_complete::{Shell, Generator, generate};
 use serde::{Serialize, Deserialize};
 
 /// Arguments for bpy-build
@@ -7,8 +8,18 @@ use serde::{Serialize, Deserialize};
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// Path to file
-    #[arg(short, long)]
+    #[arg(short, long, value_hint = ValueHint::FilePath)]
     path: Option<PathBuf>,
+    
+    /// Creates shell completion script
+    #[arg(long = "generate", value_enum)]
+    generator: Option<Shell>,
+}
+
+
+/// Create completion script
+fn print_completions<G: Generator>(gen: G, cmd: &mut Command) {
+    generate(gen, cmd, cmd.get_name().to_string(), &mut std::io::stdout());
 }
 
 /// Configuration found in bpy-build.yaml
@@ -27,19 +38,22 @@ struct BpyBuildConf {
 
 fn main() -> Result<(), serde_yaml::Error> {
     let args = Args::parse();
-
-    let config: BpyBuildConf = match args.path {
-        Some(path) => {
-            let file = std::fs::read_to_string(path).expect("File not found !");
-            println!("{}", file);
-            serde_yaml::from_str(&file).unwrap()
-        }
-        None => {
-            let file = std::fs::read_to_string("./bpy-build.yaml").expect("File not found !");
-            println!("{}", file);
-            serde_yaml::from_str(&file).unwrap()
-        }
-    };
-    println!("{:?}", config);
+    if let Some(shell) = args.generator {
+        print_completions(shell, &mut Args::command())
+    } else {
+        let config: BpyBuildConf = match args.path {
+            Some(path) => {
+                let file = std::fs::read_to_string(path).expect("File not found !");
+                println!("{}", file);
+                serde_yaml::from_str(&file).unwrap()
+            }
+            None => {
+                let file = std::fs::read_to_string("./bpy-build.yaml").expect("File not found !");
+                println!("{}", file);
+                serde_yaml::from_str(&file).unwrap()
+            }
+        };
+        println!("{:?}", config);
+    }
     Ok(())
 }
