@@ -26,7 +26,7 @@ fn print_completions<G: Generator>(gen: G, cmd: &mut Command) {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 struct BpyBuildConf {
     /// The path to the addon folder
-    addon_folder: String,
+    addon_folder: PathBuf,
     /// The name of the built zip
     build_name: String,
     /// The versions/paths to install the 
@@ -41,19 +41,35 @@ fn main() -> Result<(), serde_yaml::Error> {
     if let Some(shell) = args.generator {
         print_completions(shell, &mut Args::command())
     } else {
-        let config: BpyBuildConf = match args.path {
-            Some(path) => {
-                let file = std::fs::read_to_string(path).expect("File not found !");
-                println!("{}", file);
-                serde_yaml::from_str(&file).unwrap()
+        // Parse the contents of bpy-build.yaml
+        let config: BpyBuildConf = serde_yaml::from_str(
+            &match args.path {
+                Some(path) => {
+                    std::fs::read_to_string(path)
+                        .expect("File not found !")
+                }
+                None => {
+                    std::fs::read_to_string("./bpy-build.yaml")
+                        .expect("File not found !")
+                }
             }
-            None => {
-                let file = std::fs::read_to_string("./bpy-build.yaml").expect("File not found !");
-                println!("{}", file);
-                serde_yaml::from_str(&file).unwrap()
-            }
-        };
-        println!("{:?}", config);
+        ).unwrap();
+
+        // Make sure the addon folder actually exists
+        if !config.addon_folder.exists() {
+            println!("Addon folder {} does not exist!", config.addon_folder.to_str().unwrap());
+        }
+        
+        // Get and make a build directory, with 
+        // an addon_build folder (to maintain a
+        // proper structure in the zip file)
+        let build_dir = std::env::current_dir().unwrap()
+            .join(PathBuf::from("build"));
+        let addon_build = build_dir
+            .join(PathBuf::from("addon_build"));
+        if !addon_build.exists() {
+            std::fs::create_dir_all(addon_build).unwrap();
+        }
     }
     Ok(())
 }

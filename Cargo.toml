@@ -10,3 +10,5 @@ clap = { version = "4.3.19", features = ["derive"] }
 clap_complete = "4.3.2"
 serde = { version = "1.0.174", features = ["derive"] }
 serde_yaml = "0.9.25"
+zip = "0.6.6"
+zip-extensions = "0.6.1"
