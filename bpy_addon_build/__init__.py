@@ -104,7 +104,6 @@ def main():
         copy_dir.mkdir()
         shutil.copytree(inter_dir, copy_dir / Path(yaml_conf.build_name))
         with console.status("[bold green]Building...") as _:
-            time.sleep(2)
             shutil.make_archive(str(build_dir / yaml_conf.build_name), "zip", copy_dir )
     else:
         # Build addon
@@ -142,12 +141,11 @@ def main():
                         style="bold yellow",
                     )
                     continue
-            edited_path: Path = path / Path(yaml_conf.build_name)
+            addon_path: Path = path / Path(yaml_conf.build_name)
             console.print(f"Installing in {str(path)}", style="bold green")
-            shutil.rmtree(edited_path, ignore_errors=True)
-            edited_path.mkdir(exist_ok=True)
-            shutil.unpack_archive(built_zip, edited_path)
-            console.print(f"Installed to {edited_path}")
+            shutil.rmtree(addon_path, ignore_errors=True)
+            shutil.unpack_archive(built_zip, path)
+            console.print(f"Installed to {addon_path}")
 
 
 if __name__ == "__main__":
