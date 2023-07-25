@@ -43,6 +43,7 @@ def parse_file(file: Path) -> yaml_conf.BpyBuildYaml:
         yaml_config: yaml_conf.BpyBuildYaml = yaml_conf.BpyBuildYaml(f, file)
         return yaml_config
 
+
 # Main function
 def main():
     args = docopt(USAGE)
@@ -52,8 +53,9 @@ def main():
         if bpy_build_yaml.exists():
             pass
         else:
-            console.print("Can't find bpy-build.yaml, maybe pass it directly?",
-                          style="bold red")
+            console.print(
+                "Can't find bpy-build.yaml, maybe pass it directly?", style="bold red"
+            )
             return
     else:
         bpy_build_yaml = Path(args["<file>"]).resolve()
@@ -104,7 +106,7 @@ def main():
         copy_dir.mkdir()
         shutil.copytree(inter_dir, copy_dir / Path(yaml_conf.build_name))
         with console.status("[bold green]Building...") as _:
-            shutil.make_archive(str(build_dir / yaml_conf.build_name), "zip", copy_dir )
+            shutil.make_archive(str(build_dir / yaml_conf.build_name), "zip", copy_dir)
     else:
         # Build addon
         if copy_dir.exists():
@@ -112,9 +114,7 @@ def main():
         copy_dir.mkdir()
         shutil.copytree(yaml_conf.addon_folder, copy_dir / Path(yaml_conf.build_name))
         with console.status("[bold green]Building...") as _:
-            shutil.make_archive(
-                str(build_dir / yaml_conf.build_name), "zip", copy_dir
-            )
+            shutil.make_archive(str(build_dir / yaml_conf.build_name), "zip", copy_dir)
 
     # Install addon
     with console.status("[bold green] Installing...") as _:
