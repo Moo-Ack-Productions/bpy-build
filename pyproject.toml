@@ -7,13 +7,7 @@ license = "MIT"
 homepage = "https://github.com/StandingPadAnimations/bpy-build"
 
 [tool.poetry.dependencies]
-python = "^3.7"
-pyyaml = "^6.0"
-rich = "^13.3.5"
-docopt = "^0.6.2"
-
-[tool.poetry.dev-dependencies]
-black = "^23.3.0"
+python = "^3.9"
 
 [tool.poetry.scripts]
 bpy-addon-build = "bpy_addon_build:main"
