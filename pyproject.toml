@@ -9,6 +9,10 @@ homepage = "https://github.com/StandingPadAnimations/bpy-build"
 [tool.poetry.dependencies]
 python = "^3.9"
 
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+mypy = "^1.4.1"
+
 [tool.poetry.scripts]
 bpy-addon-build = "bpy_addon_build:main"
 
