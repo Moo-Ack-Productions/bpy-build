@@ -1,0 +1,9 @@
+repos:
+- repo: local
+  hooks:
+    - id: mypy
+      name: mypy
+      entry: poetry run mypy
+      require_serial: true
+      language: system
+      types: [ python ]
