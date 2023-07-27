@@ -8,6 +8,7 @@ homepage = "https://github.com/StandingPadAnimations/bpy-build"
 
 [tool.poetry.dependencies]
 python = "^3.9"
+attrs = "^23.1.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
