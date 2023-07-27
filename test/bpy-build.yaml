@@ -2,10 +2,10 @@ addon_folder: MCprep_addon
 build_name: MCprep_addon
 
 install_versions:
-  - '3.5'
-  - '3.4'
+  - 3.5
+  - 3.4
 
 during_build:
   dev:
-    - create_file("mcprep_dev.txt")
-    - [touch hello | echo "HELLO PEOPLE" >> hello, echo "Hello World"]
+    - "!create_file mcprep_dev.txt"
+    - "!sh touch hello | echo \"HELLO PEOPLE\" >> hello, echo \"Hello World\""
