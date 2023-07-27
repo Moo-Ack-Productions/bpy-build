@@ -18,7 +18,23 @@ The Bpy-Build project does not allow dynamic typing at all, period. The reasons 
 
 All functions must be type annotated. It is possible to add `@typing.no_type_check` above functions that need to call untyped code (which is considered dynamic by Mypy, the type checker used here) to prevent Mypy from throwing errors with untyped functions. However, instances of `@typing.no_type_check` in contributions will cause said contributions to be rejected. Thus, for contributions, we creating wrappers for untyped functions and performing casts.
 
-We require every commit pass Mypy checks, which we utilize pre-commit hooks for (see the Pre-Commit Hooks section for more).
+We require every commit pass Mypy checks, which we utilize pre-commit hooks for (see the Pre-Commit Hooks section for more). Alternatively, you can use the following:
+```sh
+just mypy
+
+# Or if you don't have just installed
+poetry run mypy --pretty bpy_addon_build
+```
+# Formatting
+All commits must be formatted with https://github.com/psf/black. We have a pre-commit hook for this (see the Pre-Commit Hooks section).
+
+In addition, Black is a developer dependency defined in `pyproject.toml`, in case you want to run it at any moment in time, which can be done with the following:
+```sh
+just format
+
+# Or if you don't have just installed
+poetry run black bpy_addon_build
+```
 
 # Commits
 All commits must use the following format:
@@ -54,5 +70,7 @@ git config --local commit.verbose true
 This will make all commits use that template and perform verbose commits (where commits are opened as their own file, with saving and closing creating the commit itself).
 
 # Pre-Commit Hooks
+To make things easier for developers, we define pre-commit hooks that allow developers to commit changes and automatically have Mypy and Black run on said commit. This is not required
 Set up [pre-commit](https://pre-commit.com/). This must be installed seperately and is not included in the Poetry dependencies. Then run `pre-commit install`. This will set up pre-commit hooks for the following:
 - Mypy static checking
+- Black code formatter
