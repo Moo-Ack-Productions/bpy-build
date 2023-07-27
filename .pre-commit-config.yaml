@@ -3,7 +3,7 @@ repos:
   hooks:
     - id: mypy
       name: mypy
-      entry: poetry run mypy
+      entry: poetry run mypy --pretty bpy_addon_build
       require_serial: true
       language: system
       types: [ python ]
