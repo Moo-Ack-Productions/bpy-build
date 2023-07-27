@@ -1,6 +1,8 @@
 # Bpy-build
 A tool to make building addons faster
 
+**Warning: in active rewrite mode, this README only applies to the PyPI version and not the Git version**
+
 # How to use
 Install from PyPi:
 `pip install bpy-addon-build`
