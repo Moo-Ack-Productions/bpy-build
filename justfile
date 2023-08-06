@@ -11,4 +11,4 @@ format:
   just mypy
 
 test: mypy
-  poetry run bpy-addon-build -b dev test/bpy-build.yaml  
+  poetry run bpy-addon-build -b dev -c test/bpy-build.yaml  
