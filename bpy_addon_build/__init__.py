@@ -24,14 +24,26 @@ def main() -> None:
         versions: Optional[List[float]] = None
         actions: Optional[Dict[str, str]] = None
 
-        if isinstance(data["addon_folder"], str):
+        if "addon_folder" in data and isinstance(data["addon_folder"], str):
             addon_folder = data["addon_folder"]
-        if isinstance(data["build_name"], str):
+        else:
+            print("addon_folder must be a string!")
+            return
+        if "build_name" in data and isinstance(data["build_name"], str):
             build_name = data["build_name"]
-        if isinstance(data["install_versions"], List):
+        else:
+            print("build_name must be a string!")
+            return
+        if "install_versions" in data and isinstance(data["install_versions"], List):
             versions = data["install_versions"]
-        if isinstance(data["build_actions"], Dict):
+        else:
+            print("install_versions must be list of floats!")
+            return
+        if "build_actions" in data and isinstance(data["build_actions"], Dict):
             actions = data["build_actions"]
+        else:
+            print("build_actions must be a dictionary of string to string!")
+            return
 
         if (
             addon_folder is not None
@@ -40,7 +52,9 @@ def main() -> None:
             and actions is not None
         ):
             context = BuildContext(Path(addon_folder), build_name, versions, actions)
-
+        else:
+            print("One of the config options is of an invalid type!")
+            return
     print(context)
 
 
