@@ -17,11 +17,6 @@ Options:
 
 VERSION_MESSAGE: str = "Bpy-Build 0.3.0"
 
-""" 
-All arguments defined, converted into their intended 
-types to make developer's lives less of a headache.
-"""
-
 
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
@@ -29,32 +24,38 @@ types to make developer's lives less of a headache.
 @define  # type: ignore
 class Args:
     """
-    Path to build configuration; by default set to bpy-build.yaml in
-    the current directory.
+    All arguments defined, converted into their intended
+    types to make developer's lives less of a headache.
 
-    -c/--config can replace this path, should the user decide to do so
+    Attributes
+    ----------
+    path: Path
+        Path to build configuration; by default set to bpy-build.yaml in
+        the current directory.
+
+        -c/--config can replace this path, should the user decide to do so.
     """
 
     path: Path = Path("bpy-build.yaml")
 
-    """
-    Parses arguments passed in the CLI.
-
-    This is an explicit function to make it clearer what it does.
-
-    Will raise an error on the following conditions:
-        - File paths
-        -- File does not exist
-        -- File is a directory
-        -- File is not in the YAML format
-        -- -c or --config were passed without a
-           path to accompany it
-
-    Returns:
-        None
-    """
-
     def parse_args(self: Self) -> None:
+        """
+        Parses arguments passed in the CLI.
+
+        This is an explicit function to make it clearer what it does.
+
+        Will raise an error on the following conditions:
+            - File paths
+            -- File does not exist
+            -- File is a directory
+            -- File is not in the YAML format
+            -- -c or --config were passed without a
+               path to accompany it
+
+        Returns:
+            None
+        """
+
         import sys
 
         for i, arg in enumerate(sys.argv):
