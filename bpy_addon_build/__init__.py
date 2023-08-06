@@ -51,7 +51,13 @@ def main() -> None:
             and versions is not None
             and actions is not None
         ):
-            context = BuildContext(Path(addon_folder), build_name, versions, actions)
+            try:
+                context = BuildContext(
+                    Path(addon_folder), build_name, versions, actions
+                )
+            except ValueError as e:
+                print(e)
+                return
         else:
             print("One of the config options is of an invalid type!")
             return
