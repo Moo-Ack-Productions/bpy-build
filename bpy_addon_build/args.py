@@ -4,10 +4,10 @@ from attrs import define
 
 HELP_MESSAGE: str = """
 Usage:
-    bpy-addon-build (-h | --help)
-    bpy-addon-build ((-b | --during-build) <action>) [<file>]
-    bpy-addon-build [<file>] [((-b | --during-build) <action>)] ((-v | --versions) <versions>...)
-    bpy-addon-build [<file>]
+    bab (-h | --help)
+    bab ((-b | --during-build) <action>) [<file>]
+    bab [<file>] [((-b | --during-build) <action>)] ((-v | --versions) <versions>...)
+    bab [<file>]
 
 Options:
   -h --help     Show this screen.

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bpy-addon-build"
-version = "0.2.0"
+version = "0.3.0"
 description = "A build system to make building and testing Blender addons 10 times easier"
 authors = ["StandingPad"]
 license = "MIT"
@@ -16,7 +16,7 @@ black = "^23.7.0"
 mypy = "^1.4.1"
 
 [tool.poetry.scripts]
-bpy-addon-build = "bpy_addon_build:main"
+bab = "bpy_addon_build:main"
 
 [build-system]
 requires = ["poetry-core"]
