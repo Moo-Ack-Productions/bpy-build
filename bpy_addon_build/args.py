@@ -62,7 +62,7 @@ class Args:
                 print(HELP_MESSAGE)
             elif arg == "-v" or arg == "--version":
                 print(VERSION_MESSAGE)
-            elif arg == "-c" or arg == "--config":
+            if arg == "-c" or arg == "--config":
                 next_arg = sys.argv[i + 1] if i < len(sys.argv) else None
                 if isinstance(next_arg, str):
                     # People make mistakes and typos, and some
