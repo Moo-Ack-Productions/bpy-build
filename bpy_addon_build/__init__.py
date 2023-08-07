@@ -6,8 +6,7 @@ from .build_context import BuildContext
 
 
 def main() -> None:
-    cli: args.Args = args.Args()
-    cli.parse_args()
+    cli = args.parse_args()
     print(cli)
 
     if not cli.path.exists():

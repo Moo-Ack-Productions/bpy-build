@@ -1,20 +1,6 @@
 from pathlib import Path
-from attrs import define
-
-HELP_MESSAGE: str = """
-Usage:
-    bab (-h | --help)
-    bab ((-b | --during-build) <action>) [<file>]
-    bab [<file>] [((-b | --during-build) <action>)] ((-v | --versions) <versions>...)
-    bab [<file>]
-
-Options:
-  -h --help     Show this screen.
-  -b --during-build      Execute a set of actions in addition to the default action
-  -v 
-"""
-
-VERSION_MESSAGE: str = "Bpy-Build 0.3.0"
+from typing import List, cast
+from attrs import define, field, Attribute
 
 
 # Must be ignored to pass Mypy as this has
@@ -35,46 +21,58 @@ class Args:
         -c/--config can replace this path, should the user decide to do so.
     """
 
-    path: Path = Path("bpy-build.yaml")
+    path: Path = field(default=Path("bpy-build.yaml"))
+    versions: List[float] = field(default=[])
 
-    def parse_args(self) -> None:
-        """
-        Parses arguments passed in the CLI.
+    @path.validator
+    def path_validate(self, _: Attribute, value: Path) -> None:
+        if not value.exists():
+            raise FileNotFoundError("File does not exist!")
+        if value.is_dir():
+            raise IsADirectoryError("Expected a file, got a direcory!")
 
-        This is an explicit function to make it clearer what it does.
+    @versions.validator
+    def version_validate(self, _: Attribute, value: List[float]) -> None:
+        for ver in value:
+            if not isinstance(ver, float):
+                raise ValueError("Expected List of floating point values!")
 
-        Will raise an error on the following conditions:
-            - File paths
-            -- File does not exist
-            -- File is a directory
-            -- File is not in the YAML format
-            -- -c or --config were passed without a
-               path to accompany it
 
-        Returns:
-            None
-        """
+def parse_args() -> Args:
+    """
+    Parses arguments passed in the CLI.
 
-        import sys
+    This uses argparse and creates an Args object
+    based on the arguments passed
 
-        for i, arg in enumerate(sys.argv):
-            if arg == "-h" or arg == "--help":
-                print(HELP_MESSAGE)
-            elif arg == "-v" or arg == "--version":
-                print(VERSION_MESSAGE)
-            if arg == "-c" or arg == "--config":
-                next_arg = sys.argv[i + 1] if i < len(sys.argv) else None
-                if isinstance(next_arg, str):
-                    # People make mistakes and typos, and some
-                    # people just want to watch the world burn
-                    # by passing invalid files
-                    path = Path(next_arg)
-                    if not path.exists():
-                        raise Exception(f"{str(path)} does not exist!")
-                    elif path.is_dir():
-                        raise Exception(f"{str(path)} is a directory!")
-                    elif path.suffix != ".yaml":
-                        raise Exception(f"{str(path)} is not a proper config file!")
-                    self.path = path
-                else:
-                    raise Exception(f"Must pass a path for {arg}!")
+    This can throw an exception in the following cases:
+        - File related
+            - The passed config does not exist
+            - The passed config is a directory
+
+        - Version related
+            - -v/--versions wasn't passed with a list
+            - The list passed doesn't contain all floating
+              point values
+
+    Returns:
+        Args
+    """
+
+    from argparse import ArgumentParser, Namespace
+
+    parser = ArgumentParser()
+    parser.add_argument("-c", "--config", help="Defines the config file to use")
+    parser.add_argument(
+        "-v",
+        "--versions",
+        help="Limits which versions to install to",
+        nargs="+",
+        type=float,
+    )
+
+    args: Namespace = parser.parse_args()
+
+    # We use cast here to prevent Mypy from complaining, the
+    # validators should handle the types anyway, if argparse doesn't
+    return Args(Path(cast(str, args.config)), cast(List[float], args.versions))
