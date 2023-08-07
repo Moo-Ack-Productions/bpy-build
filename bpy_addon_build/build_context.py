@@ -82,7 +82,7 @@ class BuildContext:
 
         # Create some constants
         BUILD_DIR = Path("build")
-        SUB_DIR = BUILD_DIR.joinpath(Path("subdir"))
+        SUB_DIR = BUILD_DIR.joinpath(Path("stage-1"))
 
         ADDON_FOLDER = self.config_path.parent.joinpath(self.addon_path)
 
@@ -90,5 +90,9 @@ class BuildContext:
             BUILD_DIR.mkdir()
         if not SUB_DIR.exists():
             SUB_DIR.mkdir()
+        if SUB_DIR.exists():
+            shutil.rmtree(SUB_DIR)
+            SUB_DIR.mkdir()
 
         shutil.copytree(ADDON_FOLDER, SUB_DIR.joinpath(Path(self.build_name)))
+        shutil.make_archive(str(BUILD_DIR.joinpath(self.build_name)), "zip", SUB_DIR)
