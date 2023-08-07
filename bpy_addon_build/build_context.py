@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 from typing import Dict, List
 from attrs import define, field, Attribute
@@ -31,6 +32,7 @@ class BuildContext:
         associated with.
     """
 
+    config_path: Path
     addon_path: Path = field(default=Path("."))
     build_name: str = field(default="")
     install_versions: List[float] = field(default=[])
@@ -69,3 +71,24 @@ class BuildContext:
                 raise ValueError(
                     f"Expected a dictionary of strings to strings, found {value[key]} as a value!"
                 )
+
+    def build(self) -> None:
+        """
+        Function that does the actual building.
+
+        Returns:
+            None
+        """
+
+        # Create some constants
+        BUILD_DIR = Path("build")
+        SUB_DIR = BUILD_DIR.joinpath(Path("subdir"))
+
+        ADDON_FOLDER = self.config_path.parent.joinpath(self.addon_path)
+
+        if not BUILD_DIR.exists():
+            BUILD_DIR.mkdir()
+        if not SUB_DIR.exists():
+            SUB_DIR.mkdir()
+
+        shutil.copytree(ADDON_FOLDER, SUB_DIR.joinpath(Path(self.build_name)))

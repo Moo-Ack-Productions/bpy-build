@@ -35,6 +35,8 @@ def main() -> None:
             return
         if "install_versions" in data and isinstance(data["install_versions"], List):
             versions = data["install_versions"]
+            if len(cli.versions):
+                versions = cli.versions
         else:
             print("install_versions must be list of floats!")
             return
@@ -52,7 +54,7 @@ def main() -> None:
         ):
             try:
                 context = BuildContext(
-                    Path(addon_folder), build_name, versions, actions
+                    cli.path, Path(addon_folder), build_name, versions, actions
                 )
             except ValueError as e:
                 print(e)
@@ -64,6 +66,7 @@ def main() -> None:
             print("One of the config options is of an invalid type!")
             return
     print(context)
+    context.build()
 
 
 if __name__ == "__main__":
