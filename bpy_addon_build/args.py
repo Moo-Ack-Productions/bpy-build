@@ -23,6 +23,7 @@ class Args:
 
     path: Path = field(default=Path("bpy-build.yaml"))
     versions: List[float] = field(default=[])
+    actions: List[str] = field(default=[])
 
     @path.validator
     def path_validate(self, _: Attribute, value: Path) -> None:
@@ -36,6 +37,12 @@ class Args:
         for ver in value:
             if not isinstance(ver, float):
                 raise ValueError("Expected List of floating point values!")
+
+    @actions.validator
+    def actions_validate(self, _: Attribute, value: List[str]) -> None:
+        for act in value:
+            if not isinstance(act, str):
+                raise ValueError("Expect List of strings!")
 
 
 def parse_args() -> Args:
@@ -70,9 +77,20 @@ def parse_args() -> Args:
         nargs="+",
         type=float,
     )
+    parser.add_argument(
+        "-b",
+        "--build-actions",
+        help="Defines what actions to execute",
+        nargs="+",
+        type=str,
+    )
 
     args: Namespace = parser.parse_args()
 
     # We use cast here to prevent Mypy from complaining, the
     # validators should handle the types anyway, if argparse doesn't
-    return Args(Path(cast(str, args.config)), cast(List[float], args.versions))
+    return Args(
+        Path(cast(str, args.config)),
+        cast(List[float], args.versions),
+        cast(List[str], args.build_actions),
+    )

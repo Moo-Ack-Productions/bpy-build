@@ -37,6 +37,7 @@ class BuildContext:
     build_name: str = field(default="")
     install_versions: List[float] = field(default=[])
     actions: Dict[str, str] = field(default={})
+    defined_actions: List[str] = field(default=[])
 
     @install_versions.validator
     def install_versions_check(self, _: Attribute, value: List[float]) -> None:
@@ -72,6 +73,22 @@ class BuildContext:
                     f"Expected a dictionary of strings to strings, found {value[key]} as a value!"
                 )
 
+    @defined_actions.validator
+    def defined_actions_check(self, _: Attribute, value: List[float]) -> None:
+        """
+        Validator for defined_actions since isinstance doesn't
+        support generics. This iterates through all actions defined
+        and checks to see if they're a string and are defined in actions
+        """
+
+        for act in value:
+            if not isinstance(act, str):
+                raise ValueError(
+                    f"Expected a list of string for defined_actions!, found {act}"
+                )
+            if act not in self.actions:
+                raise Exception(f"{act} is not defined in actions!")
+
     def build(self) -> None:
         """
         Function that does the actual building.
@@ -96,3 +113,7 @@ class BuildContext:
 
         shutil.copytree(ADDON_FOLDER, SUB_DIR.joinpath(Path(self.build_name)))
         shutil.make_archive(str(BUILD_DIR.joinpath(self.build_name)), "zip", SUB_DIR)
+
+        if len(self.defined_actions):
+            for act in self.defined_actions:
+                print(act)

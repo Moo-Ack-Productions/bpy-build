@@ -54,7 +54,12 @@ def main() -> None:
         ):
             try:
                 context = BuildContext(
-                    cli.path, Path(addon_folder), build_name, versions, actions
+                    cli.path,
+                    Path(addon_folder),
+                    build_name,
+                    versions,
+                    actions,
+                    cli.actions,
                 )
             except ValueError as e:
                 print(e)
