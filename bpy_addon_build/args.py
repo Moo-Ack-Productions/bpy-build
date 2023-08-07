@@ -1,4 +1,3 @@
-from typing import Self
 from pathlib import Path
 from attrs import define
 
@@ -38,7 +37,7 @@ class Args:
 
     path: Path = Path("bpy-build.yaml")
 
-    def parse_args(self: Self) -> None:
+    def parse_args(self) -> None:
         """
         Parses arguments passed in the CLI.
 

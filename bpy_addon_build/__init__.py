@@ -59,6 +59,9 @@ def main() -> None:
                 print(e)
                 return
         else:
+            # If somehow we get to this point, something has gone
+            # very, very wrong, and there's no way to know what has
+            # gone wrong
             print("One of the config options is of an invalid type!")
             return
     print(context)
