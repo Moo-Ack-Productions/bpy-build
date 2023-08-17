@@ -156,6 +156,11 @@ class BuildContext:
         if action in self.actions:
             import subprocess
 
+            # We call wait here to make sure
+            # that the action has finished in
+            # its entirity. Otherwise, the
+            # addon will be built with a weird
+            # result.
             subprocess.Popen(
                 [
                     "python",
@@ -164,4 +169,4 @@ class BuildContext:
                     ),
                 ],
                 cwd=folder,
-            )
+            ).wait()
