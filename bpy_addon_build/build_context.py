@@ -99,21 +99,69 @@ class BuildContext:
 
         # Create some constants
         BUILD_DIR = Path("build")
-        SUB_DIR = BUILD_DIR.joinpath(Path("stage-1"))
+        STAGE_ONE = BUILD_DIR.joinpath(Path("stage-1"))
 
         ADDON_FOLDER = self.config_path.parent.joinpath(self.addon_path)
 
         if not BUILD_DIR.exists():
             BUILD_DIR.mkdir()
-        if not SUB_DIR.exists():
-            SUB_DIR.mkdir()
-        if SUB_DIR.exists():
-            shutil.rmtree(SUB_DIR)
-            SUB_DIR.mkdir()
+        if not STAGE_ONE.exists():
+            STAGE_ONE.mkdir()
+        if STAGE_ONE.exists():
+            shutil.rmtree(STAGE_ONE)
+            STAGE_ONE.mkdir()
 
-        shutil.copytree(ADDON_FOLDER, SUB_DIR.joinpath(Path(self.build_name)))
-        shutil.make_archive(str(BUILD_DIR.joinpath(self.build_name)), "zip", SUB_DIR)
+        def combine_with_build(path: Path) -> Path:
+            """
+            Local function to get the path with build name.
 
+            We don't need to have a variable for every single
+            path, let's just make a function to handle that.
+
+            path: Path you want to add on to
+
+            Returns:
+                New path pointing to path/self.build_name
+            """
+            return path.joinpath(Path(self.build_name))
+
+        shutil.copytree(ADDON_FOLDER, combine_with_build(STAGE_ONE))
         if len(self.defined_actions):
+            STAGE_TWO = BUILD_DIR.joinpath(Path("stage-2"))
+            if not STAGE_TWO.exists():
+                STAGE_TWO.mkdir()
+            if STAGE_TWO.exists():
+                shutil.rmtree(STAGE_TWO)
+                STAGE_TWO.mkdir()
+
+            shutil.copytree(
+                combine_with_build(STAGE_ONE), combine_with_build(STAGE_TWO)
+            )
             for act in self.defined_actions:
-                print(act)
+                self.action(act, STAGE_TWO.joinpath(ADDON_FOLDER.name))
+            shutil.make_archive(str(combine_with_build(BUILD_DIR)), "zip", STAGE_TWO)
+        else:
+            shutil.make_archive(str(combine_with_build(BUILD_DIR)), "zip", STAGE_ONE)
+
+    def action(self, action: str, folder: Path) -> None:
+        """
+        Runs an action
+
+        action: string representing the action name
+        folder: the root of the addon
+
+        Returns:
+            None
+        """
+        if action in self.actions:
+            import subprocess
+
+            subprocess.Popen(
+                [
+                    "python",
+                    self.config_path.parent.resolve().joinpath(
+                        Path(self.actions[action])
+                    ),
+                ],
+                cwd=folder,
+            )
