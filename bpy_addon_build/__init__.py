@@ -35,7 +35,7 @@ def main() -> None:
             return
         if "install_versions" in data and isinstance(data["install_versions"], List):
             versions = data["install_versions"]
-            if len(cli.versions):
+            if cli.versions:
                 versions = cli.versions
         else:
             print("install_versions must be list of floats!")

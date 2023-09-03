@@ -3,6 +3,12 @@ from pathlib import Path
 from typing import Dict, List
 from attrs import define, field, Attribute
 
+INSTALL_PATHS: List[str] = [
+    "~/AppData/Roaming/Blender Foundation/Blender/{0}/scripts/addons",
+    "~/Library/Application Support/Blender/{0}/scripts/addons",
+    "~/.config/blender/{0}/scripts/addons",
+]
+
 
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
@@ -130,6 +136,33 @@ class BuildContext:
             for act in self.defined_actions:
                 self.action(act, STAGE_ONE.joinpath(ADDON_FOLDER.name))
         shutil.make_archive(str(combine_with_build(BUILD_DIR)), "zip", STAGE_ONE)
+        self.install(Path(str(combine_with_build(BUILD_DIR)) + ".zip"))
+
+    def install(self, build_path: Path) -> None:
+        """
+        Installs the addon to the specified Blender
+        versions
+
+        build_path: Path to the built addon
+
+        Returns:
+            None
+        """
+        for v in self.install_versions:
+            installed = False
+            for p in INSTALL_PATHS:
+                path = Path(p.format(str(v))).expanduser()
+                if not path.exists():
+                    continue
+                else:
+                    addon_path = path.joinpath(Path(self.build_name))
+                    if addon_path.exists():
+                        shutil.rmtree(addon_path)
+                    shutil.unpack_archive(build_path, path)
+                    print(f"Installed to {str(path)}")
+                    installed = True
+            if not installed:
+                print(f"Cound not find {v}")
 
     def action(self, action: str, folder: Path) -> None:
         """

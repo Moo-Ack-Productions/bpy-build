@@ -34,15 +34,17 @@ class Args:
 
     @versions.validator
     def version_validate(self, _: Attribute, value: List[float]) -> None:
-        for ver in value:
-            if not isinstance(ver, float):
-                raise ValueError("Expected List of floating point values!")
+        if value:
+            for ver in value:
+                if not isinstance(ver, float):
+                    raise ValueError("Expected List of floating point values!")
 
     @actions.validator
     def actions_validate(self, _: Attribute, value: List[str]) -> None:
-        for act in value:
-            if not isinstance(act, str):
-                raise ValueError("Expect List of strings!")
+        if value:
+            for act in value:
+                if not isinstance(act, str):
+                    raise ValueError("Expect List of strings!")
 
 
 def parse_args() -> Args:
