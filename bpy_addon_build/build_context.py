@@ -127,21 +127,9 @@ class BuildContext:
 
         shutil.copytree(ADDON_FOLDER, combine_with_build(STAGE_ONE))
         if len(self.defined_actions):
-            STAGE_TWO = BUILD_DIR.joinpath(Path("stage-2"))
-            if not STAGE_TWO.exists():
-                STAGE_TWO.mkdir()
-            if STAGE_TWO.exists():
-                shutil.rmtree(STAGE_TWO)
-                STAGE_TWO.mkdir()
-
-            shutil.copytree(
-                combine_with_build(STAGE_ONE), combine_with_build(STAGE_TWO)
-            )
             for act in self.defined_actions:
-                self.action(act, STAGE_TWO.joinpath(ADDON_FOLDER.name))
-            shutil.make_archive(str(combine_with_build(BUILD_DIR)), "zip", STAGE_TWO)
-        else:
-            shutil.make_archive(str(combine_with_build(BUILD_DIR)), "zip", STAGE_ONE)
+                self.action(act, STAGE_ONE.joinpath(ADDON_FOLDER.name))
+        shutil.make_archive(str(combine_with_build(BUILD_DIR)), "zip", STAGE_ONE)
 
     def action(self, action: str, folder: Path) -> None:
         """
