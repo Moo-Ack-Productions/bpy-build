@@ -1,12 +1,9 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
-
 ## [unreleased]
 
-### Miscellaneous Tasks
 
-- Added support for auto-installing
+COMMIT - Added support for auto-installing
 
 Working on my birthday... *sigh*
 
@@ -16,7 +13,7 @@ argument. Now Bpy-Build's basic functionality has been returned, yay...
 
 Also happy birthday to me ^_^
 
-- Changed actions to be Python based
+COMMIT - Changed actions to be Python based
 
 Python based actions means less code to maintain on my end, and more
 flexibility on the developer's end, win-win.
@@ -27,9 +24,9 @@ define actions in Python like any regular Python script. No API, no
 nothing, just the assumption that the script will be ran in the
 intermediate directory.
 
-- Updated test recipe in Justfile
+COMMIT - Updated test recipe in Justfile
 
-- Changes to actions syntax
+COMMIT - Changes to actions syntax
 
 To make parsing easier, actions will now have the following syntax:
 !action <action args>
@@ -37,7 +34,7 @@ To make parsing easier, actions will now have the following syntax:
 This is not yet final, especially as I learn more on how YAML works, but
 the final version will likely be simmilar.
 
-- Added basic argument parsing and attrs dependency
+COMMIT - Added basic argument parsing and attrs dependency
 
 Since none of the existing libraries for argument parsing have quite
 what I want, I decided to write my own argument parser in Python using a
@@ -63,7 +60,7 @@ Python 3.11 anyway)
 While the class makes it seem like YAML will continue to be the config
 file format, I'm still deciding between YAML and TOML
 
-- Updated pre-commit hook for Mypy
+COMMIT - Updated pre-commit hook for Mypy
 
 We forgot pretty printing and specifying the folder, whoops
 
