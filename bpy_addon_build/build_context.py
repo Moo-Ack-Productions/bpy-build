@@ -53,7 +53,9 @@ class BuildContext:
         and checks to see if they're a float. In the future, we may also
         check to see if the version itself is valid.
         """
-
+        if value is None:
+            self.install_versions = []
+            return
         for ver in value:
             if not isinstance(ver, float):
                 raise ValueError(
@@ -68,7 +70,9 @@ class BuildContext:
         pairs defined in actions and checks to see if they are
         strings.
         """
-
+        if value is None:
+            self.actions = {}
+            return
         for key in value:
             if not isinstance(key, str):
                 raise ValueError(
@@ -86,7 +90,9 @@ class BuildContext:
         support generics. This iterates through all actions defined
         and checks to see if they're a string and are defined in actions
         """
-
+        if value is None:
+            self.defined_actions = []
+            return
         for act in value:
             if not isinstance(act, str):
                 raise ValueError(

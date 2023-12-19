@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, cast
+from typing import List, Optional, cast
 from attrs import define, field, Attribute
 
 
@@ -92,11 +92,16 @@ def parse_args() -> Args:
     )
 
     args: Namespace = parser.parse_args()
+    config: str = "bpy-build.yaml"
+
+    # the config path can be None
+    if cast(Optional[str], args.config) is not None:
+        config = args.config
 
     # We use cast here to prevent Mypy from complaining, the
     # validators should handle the types anyway, if argparse doesn't
     return Args(
-        Path(cast(str, args.config)),
+        Path(cast(str, config)),
         cast(List[float], args.versions),
         cast(List[str], args.build_actions),
     )
