@@ -71,6 +71,9 @@ def main() -> None:
             print("One of the config options is of an invalid type!")
             return
     print(context)
+    if not context.addon_path.exists():
+        print("Addon folder does not exist!")
+        return
     context.build()
 
 
