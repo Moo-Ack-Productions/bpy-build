@@ -27,6 +27,10 @@ class Args:
 
     @path.validator
     def path_validate(self, _: Attribute, value: Path) -> None:
+        # Assume the user did not pass
+        # a path in
+        if value is None:
+            return
         if not value.exists():
             raise FileNotFoundError("File does not exist!")
         if value.is_dir():
