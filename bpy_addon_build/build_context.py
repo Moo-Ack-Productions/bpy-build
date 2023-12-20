@@ -159,7 +159,10 @@ class BuildContext:
             for p in INSTALL_PATHS:
                 path = Path(p.format(str(v))).expanduser()
                 if not path.exists():
-                    continue
+                    # For cases like 2.8, 2.9, etc, check with this method
+                    path = Path(p.format(str(format(v, ".2f")))).expanduser()
+                    if not path.exists():
+                        continue
                 else:
                     addon_path = path.joinpath(Path(self.build_name))
                     if addon_path.exists():
