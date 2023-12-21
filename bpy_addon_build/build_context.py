@@ -2,6 +2,9 @@ import shutil
 from pathlib import Path
 from typing import Dict, List
 from attrs import define, field, Attribute
+from bpy_addon_build.args import Args
+
+from bpy_addon_build.config import Config
 
 INSTALL_PATHS: List[str] = [
     "~/AppData/Roaming/Blender Foundation/Blender/{0}/scripts/addons",
@@ -21,85 +24,19 @@ class BuildContext:
 
     Attributes
     ----------
-    addon_path: Path
-        Path of the addon source. By default, it is
-        assumed to be at the root of the current working
-        directory.
+    config_path: Path
+        Path to config file
 
-    build_name: str
-        Name of the final build
+    config: Config
+        Configuration defined by the user
 
-    install_versions: List[float]
-        The versions of Blender that Bpy-Build should
-        automatically install to.
-
-    actions: Dict[str, str]
-        All action names and the Python files they're
-        associated with.
+    cli: Args
+        Arguments passed by the user
     """
 
     config_path: Path
-    addon_path: Path = field(default=Path("."))
-    build_name: str = field(default="")
-    install_versions: List[float] = field(default=[])
-    actions: Dict[str, str] = field(default={})
-    defined_actions: List[str] = field(default=[])
-
-    @install_versions.validator
-    def install_versions_check(self, _: Attribute, value: List[float]) -> None:
-        """
-        Validator for install_versions since isinstance doesn't
-        support generics. This iterates through all versions defined
-        and checks to see if they're a float. In the future, we may also
-        check to see if the version itself is valid.
-        """
-        if value is None:
-            self.install_versions = []
-            return
-        for ver in value:
-            if not isinstance(ver, float):
-                raise ValueError(
-                    f"Expected a list of floats for install_versions!, found {ver}"
-                )
-
-    @actions.validator
-    def action_check(self, _: Attribute, value: Dict[str, str]) -> None:
-        """
-        Validator for actions since isinstance doesn't
-        support generics. This iterates through all key-value
-        pairs defined in actions and checks to see if they are
-        strings.
-        """
-        if value is None:
-            self.actions = {}
-            return
-        for key in value:
-            if not isinstance(key, str):
-                raise ValueError(
-                    f"Expected a dictionary of strings to strings, found {key} as a key!"
-                )
-            if not isinstance(value[key], str):
-                raise ValueError(
-                    f"Expected a dictionary of strings to strings, found {value[key]} as a value!"
-                )
-
-    @defined_actions.validator
-    def defined_actions_check(self, _: Attribute, value: List[float]) -> None:
-        """
-        Validator for defined_actions since isinstance doesn't
-        support generics. This iterates through all actions defined
-        and checks to see if they're a string and are defined in actions
-        """
-        if value is None:
-            self.defined_actions = []
-            return
-        for act in value:
-            if not isinstance(act, str):
-                raise ValueError(
-                    f"Expected a list of string for defined_actions!, found {act}"
-                )
-            if act not in self.actions:
-                raise Exception(f"{act} is not defined in actions!")
+    config: Config
+    cli: Args
 
     def build(self) -> None:
         """
@@ -113,7 +50,7 @@ class BuildContext:
         BUILD_DIR = Path("build")
         STAGE_ONE = BUILD_DIR.joinpath(Path("stage-1"))
 
-        ADDON_FOLDER = self.config_path.parent.joinpath(self.addon_path)
+        ADDON_FOLDER = self.config_path.parent.joinpath(self.config.addon_folder)
 
         if not BUILD_DIR.exists():
             BUILD_DIR.mkdir()
@@ -135,11 +72,11 @@ class BuildContext:
             Returns:
                 New path pointing to path/self.build_name
             """
-            return path.joinpath(Path(self.build_name))
+            return path.joinpath(Path(self.config.build_name))
 
         shutil.copytree(ADDON_FOLDER, combine_with_build(STAGE_ONE))
-        if len(self.defined_actions):
-            for act in self.defined_actions:
+        if len(self.cli.actions):
+            for act in self.cli.actions:
                 self.action(act, STAGE_ONE.joinpath(ADDON_FOLDER.name))
         shutil.make_archive(str(combine_with_build(BUILD_DIR)), "zip", STAGE_ONE)
         self.install(Path(str(combine_with_build(BUILD_DIR)) + ".zip"))
@@ -154,7 +91,14 @@ class BuildContext:
         Returns:
             None
         """
-        for v in self.install_versions:
+        if self.config.install_versions is None:
+            return
+        versions = (
+            self.cli.versions
+            if len(self.cli.versions)
+            else self.config.install_versions
+        )
+        for v in versions:
             installed = False
             for p in INSTALL_PATHS:
                 path = Path(p.format(str(v))).expanduser()
@@ -164,7 +108,7 @@ class BuildContext:
                     if not path.exists():
                         continue
                 else:
-                    addon_path = path.joinpath(Path(self.build_name))
+                    addon_path = path.joinpath(Path(self.config.build_name))
                     if addon_path.exists():
                         shutil.rmtree(addon_path)
                     shutil.unpack_archive(build_path, path)
@@ -183,7 +127,10 @@ class BuildContext:
         Returns:
             None
         """
-        if action in self.actions:
+        if self.config.build_actions is None:
+            print("Actions must be defined to use them!")
+            return
+        if action in self.cli.actions:
             import subprocess
 
             # We call wait here to make sure
@@ -195,7 +142,7 @@ class BuildContext:
                 [
                     "python",
                     self.config_path.parent.resolve().joinpath(
-                        Path(self.actions[action])
+                        Path(self.config.build_actions[action])
                     ),
                 ],
                 cwd=folder,

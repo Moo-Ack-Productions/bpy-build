@@ -19,6 +19,12 @@ class Args:
         the current directory.
 
         -c/--config can replace this path, should the user decide to do so.
+
+    versions: List[float]
+        Specific versions the user wants to install too
+
+    actions: List[str]
+        The actions that the user wants to execute
     """
 
     path: Path = field(default=Path("bpy-build.yaml"))
@@ -38,14 +44,18 @@ class Args:
 
     @versions.validator
     def version_validate(self, _: Attribute, value: List[float]) -> None:
-        if value:
+        if value is None:
+            self.versions = []
+        else:
             for ver in value:
                 if not isinstance(ver, float):
                     raise ValueError("Expected List of floating point values!")
 
     @actions.validator
     def actions_validate(self, _: Attribute, value: List[str]) -> None:
-        if value:
+        if value is None:
+            self.actions = ["default"]
+        else:
             for act in value:
                 if not isinstance(act, str):
                     raise ValueError("Expect List of strings!")
