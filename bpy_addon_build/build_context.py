@@ -5,6 +5,7 @@ from attrs import define, field, Attribute
 from bpy_addon_build.args import Args
 
 from bpy_addon_build.config import Config
+from rich.console import Console
 
 INSTALL_PATHS: List[str] = [
     "~/AppData/Roaming/Blender Foundation/Blender/{0}/scripts/addons",
@@ -98,6 +99,7 @@ class BuildContext:
             if len(self.cli.versions)
             else self.config.install_versions
         )
+        console = Console()
         for v in versions:
             installed = False
             for p in INSTALL_PATHS:
@@ -112,10 +114,10 @@ class BuildContext:
                     if addon_path.exists():
                         shutil.rmtree(addon_path)
                     shutil.unpack_archive(build_path, path)
-                    print(f"Installed to {str(path)}")
+                    console.print(f"Installed to {str(path)}", style="green")
                     installed = True
             if not installed:
-                print(f"Cound not find {v}")
+                console.print(f"Cound not find {v}", style="yellow")
 
     def action(self, action: str, folder: Path) -> None:
         """
