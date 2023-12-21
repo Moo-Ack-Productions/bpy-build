@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 from typing import List, Optional, cast
 from attrs import define, field, Attribute
@@ -30,6 +31,7 @@ class Args:
     path: Path = field(default=Path("bpy-build.yaml"))
     versions: List[float] = field(default=[])
     actions: List[str] = field(default=["default"])
+    debug_mode: bool = field(default=False)
 
     @path.validator
     def path_validate(self, _: Attribute, value: Path) -> None:
@@ -100,6 +102,13 @@ def parse_args() -> Args:
         nargs="+",
         type=str,
     )
+    parser.add_argument(
+        "-dbg",
+        "--debug-mode",
+        help="Activates debug mode to understand what's going on",
+        default=False,
+        action=argparse.BooleanOptionalAction,
+    )
 
     args: Namespace = parser.parse_args()
     config: str = "bpy-build.yaml"
@@ -120,4 +129,5 @@ def parse_args() -> Args:
         Path(cast(str, config)),
         cast(List[float], args.versions),
         cast(List[str], actions),
+        cast(bool, args.debug_mode),
     )

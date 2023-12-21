@@ -6,11 +6,15 @@ from bpy_addon_build.config import Config
 from . import args
 from .build_context import BuildContext
 import cattrs
+from rich.console import Console
 
 
 def main() -> None:
     cli = args.parse_args()
-    print(cli)
+    console = Console()
+
+    if cli.debug_mode:
+        console.print(cli)
 
     if not cli.path.exists():
         print(f"Could not find {str(cli.path)}")
@@ -19,9 +23,10 @@ def main() -> None:
     with open(cli.path, "r") as f:
         data: Dict[str, Union[str, List[float], Dict[str, str]]] = yaml.safe_load(f)
         config: Config = cattrs.structure(data, Config)
-
         context = BuildContext(cli.path, config, cli)
-    print(context)
+
+    if cli.debug_mode:
+        console.print(context)
     if not cli.path.parent.joinpath(config.addon_folder).exists():
         print("Addon folder does not exist!")
         return
