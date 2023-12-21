@@ -23,7 +23,7 @@ class Args:
 
     path: Path = field(default=Path("bpy-build.yaml"))
     versions: List[float] = field(default=[])
-    actions: List[str] = field(default=[])
+    actions: List[str] = field(default=["default"])
 
     @path.validator
     def path_validate(self, _: Attribute, value: Path) -> None:
@@ -93,15 +93,21 @@ def parse_args() -> Args:
 
     args: Namespace = parser.parse_args()
     config: str = "bpy-build.yaml"
+    actions: List[str] = ["default"]
 
-    # the config path can be None
+    # The config path can be None
     if cast(Optional[str], args.config) is not None:
         config = args.config
+
+    # This allows the default action to always
+    # be executed
+    if cast(List[str], args.build_actions) is not None:
+        actions += cast(List[str], args.build_actions)
 
     # We use cast here to prevent Mypy from complaining, the
     # validators should handle the types anyway, if argparse doesn't
     return Args(
         Path(cast(str, config)),
         cast(List[float], args.versions),
-        cast(List[str], args.build_actions),
+        cast(List[str], actions),
     )

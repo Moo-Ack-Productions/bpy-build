@@ -6,4 +6,5 @@ install_versions:
   - 3.4
 
 build_actions:
+  default: "default.py"
   dev: "dev.py"
