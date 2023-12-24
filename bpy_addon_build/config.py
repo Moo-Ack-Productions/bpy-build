@@ -6,6 +6,28 @@ from attrs import frozen
 # an expression of Any, likely due to how
 # attrs works
 @frozen  # type: ignore
+class BuildAction:
+    """
+    Class that represents a build
+    action
+
+    Attributes
+    ----------
+    script: str
+        The Python script associated with the action
+
+    filters: Optional[List[str]]
+        Filters to use when copying from the previous action
+    """
+
+    script: str
+    filters: Optional[List[str]] = None
+
+
+# Must be ignored to pass Mypy as this has
+# an expression of Any, likely due to how
+# attrs works
+@frozen  # type: ignore
 class Config:
     """
     Class to better handle config parsing, especially with more complex arguments
@@ -21,11 +43,11 @@ class Config:
     versions: Optional[List[float]]
         List of Blender versions to install the final addon to
 
-    actions: Optional[Dict[str, str]]
+    actions: Optional[Dict[str, BuildAction]]
         All actions that can occur during the build
     """
 
     addon_folder: str
     build_name: str
-    install_versions: Optional[List[float]]
-    build_actions: Optional[Dict[str, str]]
+    install_versions: Optional[List[float]] = None
+    build_actions: Optional[Dict[str, BuildAction]] = None
