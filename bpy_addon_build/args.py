@@ -107,7 +107,7 @@ def parse_args() -> Args:
         "--debug-mode",
         help="Activates debug mode to understand what's going on",
         default=False,
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
     )
 
     args: Namespace = parser.parse_args()
