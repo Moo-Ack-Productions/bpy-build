@@ -144,7 +144,7 @@ class BuildContext:
                 [
                     "python",
                     self.config_path.parent.resolve().joinpath(
-                        Path(self.config.build_actions[action])
+                        Path(self.config.build_actions[action].script)
                     ),
                 ],
                 cwd=folder,
