@@ -56,8 +56,8 @@ class BuildContext:
         if self.config.build_actions:
             for i in self.config.build_actions:
                 act = self.config.build_actions[i]
-                if act.filters and i in self.cli.actions:
-                    FILTERS += act.filters
+                if act.ignore_filters and i in self.cli.actions:
+                    FILTERS += act.ignore_filters
 
         ADDON_FOLDER = self.config_path.parent.joinpath(self.config.addon_folder)
 
