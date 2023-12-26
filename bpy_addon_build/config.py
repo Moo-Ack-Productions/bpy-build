@@ -15,13 +15,9 @@ class BuildAction:
     ----------
     script: str
         The Python script associated with the action
-
-    filters: Optional[List[str]]
-        Filters to use when copying from the previous action
     """
 
     script: str
-    filters: Optional[List[str]] = None
 
 
 # Must be ignored to pass Mypy as this has
