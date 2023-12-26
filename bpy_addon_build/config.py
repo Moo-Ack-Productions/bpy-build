@@ -16,13 +16,13 @@ class BuildAction:
     script: str
         The Python script associated with the action
 
-    filters: Optional[List[str]]
+    ignore_filters: Optional[List[str]]
         Glob filters to ignore when copying the addon
         folder with this action
     """
 
     script: str
-    filters: Optional[List[str]] = None
+    ignore_filters: Optional[List[str]] = None
 
 
 # Must be ignored to pass Mypy as this has
