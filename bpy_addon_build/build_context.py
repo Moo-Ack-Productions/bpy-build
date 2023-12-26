@@ -134,9 +134,10 @@ class BuildContext:
                     if addon_path.exists():
                         shutil.rmtree(addon_path)
                     shutil.unpack_archive(build_path, path)
-                    console.print(f"Installed to {str(path)}", style="green")
+                    if not self.cli.supress_messages:
+                        console.print(f"Installed to {str(path)}", style="green")
                     installed = True
-            if not installed:
+            if not installed and not self.cli.supress_messages:
                 console.print(f"Cound not find {v}", style="yellow")
 
     def action(self, action: str, folder: Path) -> None:
