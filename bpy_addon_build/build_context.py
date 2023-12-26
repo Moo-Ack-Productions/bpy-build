@@ -50,6 +50,14 @@ class BuildContext:
         # Create some constants
         BUILD_DIR = Path("build")
         STAGE_ONE = BUILD_DIR.joinpath(Path("stage-1"))
+        FILTERS = []
+
+        # Get all filters from currently used actions
+        if self.config.build_actions:
+            for i in self.config.build_actions:
+                act = self.config.build_actions[i]
+                if act.filters and i in self.cli.actions:
+                    FILTERS += act.filters
 
         ADDON_FOLDER = self.config_path.parent.joinpath(self.config.addon_folder)
 
@@ -75,10 +83,22 @@ class BuildContext:
             """
             return path.joinpath(Path(self.config.build_name))
 
-        shutil.copytree(ADDON_FOLDER, combine_with_build(STAGE_ONE))
+        # For some weird reason, shutil.ignore_patterns
+        # expects positional arguments for all patterns,
+        # and not a list like most would expect.
+        #
+        # Sigh...
+        #
+        # Due to weirdness of the ignore argument, we also
+        # need to add an ignore comment for Mypy
+        shutil.copytree(
+            ADDON_FOLDER,
+            combine_with_build(STAGE_ONE),
+            ignore=shutil.ignore_patterns(*FILTERS),  # type: ignore
+        )
         if len(self.cli.actions):
-            for act in self.cli.actions:
-                self.action(act, STAGE_ONE.joinpath(ADDON_FOLDER.name))
+            for k in self.cli.actions:
+                self.action(k, STAGE_ONE.joinpath(ADDON_FOLDER.name))
         shutil.make_archive(str(combine_with_build(BUILD_DIR)), "zip", STAGE_ONE)
         self.install(Path(str(combine_with_build(BUILD_DIR)) + ".zip"))
 
