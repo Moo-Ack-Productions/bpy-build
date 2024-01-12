@@ -48,7 +48,7 @@ class BuildContext:
         """
 
         # Create some constants
-        BUILD_DIR = Path("build")
+        BUILD_DIR = self.config_path.parent / Path("build")
         STAGE_ONE = BUILD_DIR.joinpath(Path("stage-1"))
         FILTERS = []
 
