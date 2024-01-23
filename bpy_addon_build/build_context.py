@@ -150,7 +150,7 @@ class BuildContext:
         Returns:
             None
         """
-        if self.config.build_actions is None:
+        if self.config.build_actions is None and len(self.cli.actions):
             print("Actions must be defined to use them!")
             return
         if action in self.cli.actions:
@@ -161,12 +161,13 @@ class BuildContext:
             # its entirity. Otherwise, the
             # addon will be built with a weird
             # result.
-            subprocess.Popen(
-                [
-                    "python",
-                    self.config_path.parent.resolve().joinpath(
-                        Path(self.config.build_actions[action].script)
-                    ),
-                ],
-                cwd=folder,
-            ).wait()
+            if self.config.build_actions is not None:
+                subprocess.Popen(
+                    [
+                        "python",
+                        self.config_path.parent.resolve().joinpath(
+                            Path(self.config.build_actions[action].script)
+                        ),
+                    ],
+                    cwd=folder,
+                ).wait()
