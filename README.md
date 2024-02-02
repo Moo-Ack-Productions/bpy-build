@@ -1,8 +1,6 @@
 # Bpy-build
 A tool to make building addons faster
 
-**Warning: in active rewrite mode, this README only applies to the PyPI version and not the Git version**
-
 # How to use
 Install from PyPi:
 `pip install bpy-addon-build`
@@ -13,7 +11,7 @@ addon_folder: . # or the folder with the addon source code
 build_name: my_addon
 ```
 
-Then run `bpy-addon-build`, your addon will be built in the `build` folder!
+Then run `bab`, your addon will be built in the `build` folder!
 
 Now let's automatically install our addon:
 ```yaml
@@ -21,7 +19,7 @@ addon_folder: . # or the folder with the addon source code
 build_name: my_addon
 
 install_versions:
-  - '3.5'
+  - 3.5
 ```
 
 We can also do stuff during the build process:
@@ -29,7 +27,7 @@ We can also do stuff during the build process:
 during_build:
   # This will always be executed
   default:
-    - create_file("mcprep_dev.txt") 
+    script: "default.py"
 ```
 
 When we build, the default case will always run. We can also define cases we want to only run if we specify them:
@@ -37,10 +35,15 @@ When we build, the default case will always run. We can also define cases we wan
 during_build:
   # This will always be executed
   default:
-    - create_file("mcprep_dev.txt") 
+    script: "default.py"
   dev:
-    - copy_file("some_file -> destination in the addon folder")
-    - [some_command with-args | and-pipes, another_command]
+    script: "dev.py"
+    
+    # We can ignore files as 
+    # well if we want to speed
+    # up build times for dev builds
+    ignore_filters:
+      - "*.blend"
 ```
 
 To run the `dev` case, we pass the `-b` argument, like `bpy-addon-build -b dev`. Note that when making an action, the action is ran at the root of your addon folder.
