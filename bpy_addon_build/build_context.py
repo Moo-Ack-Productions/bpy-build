@@ -129,14 +129,13 @@ class BuildContext:
                     path = Path(p.format(str(format(v, ".2f")))).expanduser()
                     if not path.exists():
                         continue
-                else:
-                    addon_path = path.joinpath(Path(self.config.build_name))
-                    if addon_path.exists():
-                        shutil.rmtree(addon_path)
-                    shutil.unpack_archive(build_path, path)
-                    if not self.cli.supress_messages:
-                        console.print(f"Installed to {str(path)}", style="green")
-                    installed = True
+                addon_path = path.joinpath(Path(self.config.build_name))
+                if addon_path.exists():
+                    shutil.rmtree(addon_path)
+                shutil.unpack_archive(build_path, path)
+                if not self.cli.supress_messages:
+                    console.print(f"Installed to {str(path)}", style="green")
+                installed = True
             if not installed and not self.cli.supress_messages:
                 console.print(f"Cound not find {v}", style="yellow")
 
