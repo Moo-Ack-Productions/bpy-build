@@ -4,6 +4,12 @@ build_name: MCprep_addon
 install_versions:
   - 3.5
   - 3.4
+  - 2.8
 
 build_actions:
-  dev: "dev.py"
+  default: 
+    script: "default.py"
+  dev: 
+    script: "dev.py"
+    ignore_filters: 
+      - "*.blend"
