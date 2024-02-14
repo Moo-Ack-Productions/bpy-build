@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bpy-addon-build"
-version = "0.3.0"
+version = "0.3.1"
 description = "A build system to make building and testing Blender addons 10 times easier"
 authors = ["StandingPad"]
 license = "MIT"
