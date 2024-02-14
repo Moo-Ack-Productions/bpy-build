@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional, Union
 import yaml
+from bpy_addon_build.api import Api
 
 from bpy_addon_build.config import Config
 from . import args
@@ -26,7 +27,8 @@ def main() -> None:
             str, Union[str, List[float], Dict[str, Dict[str, str]]]
         ] = yaml.safe_load(f)
         config: Config = converter.structure(data, Config)
-        context = BuildContext(cli.path, config, cli)
+        api: Api = Api(config, cli.path)
+        context = BuildContext(cli.path, config, cli, api)
 
     if cli.debug_mode:
         console.print(context)

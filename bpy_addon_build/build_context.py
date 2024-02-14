@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 from typing import Dict, List
 from attrs import define, field, Attribute
+from bpy_addon_build.api import Api
 from bpy_addon_build.args import Args
 
 from bpy_addon_build.config import Config
@@ -38,6 +39,7 @@ class BuildContext:
     config_path: Path
     config: Config
     cli: Args
+    api: Api
 
     def build(self) -> None:
         """
