@@ -31,10 +31,11 @@ def install(ctx: BuildContext, build_path: Path) -> None:
             addon_path = path.joinpath(Path(ctx.config.build_name))
             if addon_path.exists():
                 shutil.rmtree(addon_path)
+            hooks.run_preinstall_hooks(ctx, build_path)
             shutil.unpack_archive(build_path, path)
             if not ctx.cli.supress_messages:
                 console.print(f"Installed to {str(path)}", style="green")
             installed = True
-            hooks.run_postinstall_hook(ctx, path)
+            hooks.run_postinstall_hooks(ctx, path)
         if not installed and not ctx.cli.supress_messages:
             console.print(f"Cound not find {v}", style="yellow")

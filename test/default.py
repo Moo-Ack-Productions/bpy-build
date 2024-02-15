@@ -1,6 +1,11 @@
 import os
 
 
+def clean_up() -> None:
+    print("CLEAN UP")
+    print(os.listdir())
+
+
 def pre_build() -> None:
     print("HELLO")
     print(os.listdir())
