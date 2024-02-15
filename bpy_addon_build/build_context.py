@@ -1,9 +1,9 @@
 import os
 import shutil
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from attrs import define, field, Attribute
-from bpy_addon_build.api import Api
+from bpy_addon_build.api import Api, BpyError, BpyWarning
 from bpy_addon_build.args import Args
 
 from bpy_addon_build.config import Config
@@ -14,6 +14,8 @@ INSTALL_PATHS: List[str] = [
     "~/Library/Application Support/Blender/{0}/scripts/addons",
     "~/.config/blender/{0}/scripts/addons",
 ]
+
+console = Console()
 
 
 # Must be ignored to pass Mypy as this has
@@ -128,7 +130,6 @@ class BuildContext:
             if len(self.cli.versions)
             else self.config.install_versions
         )
-        console = Console()
         for v in versions:
             installed = False
             for p in INSTALL_PATHS:
@@ -166,4 +167,13 @@ class BuildContext:
                 print("Action not in API!")
                 return
             if hasattr(self.api.action_mods[action], "main"):
-                self.api.action_mods[action].main()
+                res: Optional[Union[BpyError, BpyWarning]] = self.api.action_mods[
+                    action
+                ].main()
+
+                if res is not None:
+                    if isinstance(res, BpyError):
+                        console.print(f"{res.msg}", style="red")
+                        quit(-1)
+                    elif isinstance(res, BpyWarning):
+                        console.print(f"{res.msg}", style="yellow")

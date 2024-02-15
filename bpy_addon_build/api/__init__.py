@@ -2,7 +2,18 @@ from types import ModuleType
 from typing import Dict, Optional
 from pathlib import Path
 from bpy_addon_build.config import Config
+from dataclasses import dataclass
 import sys
+
+
+@dataclass
+class BpyError:
+    msg: str
+
+
+@dataclass
+class BpyWarning:
+    msg: str
 
 
 class Api:
