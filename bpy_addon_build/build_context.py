@@ -1,6 +1,7 @@
+import os
 import shutil
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 from attrs import define, field, Attribute
 from bpy_addon_build.api import Api
 from bpy_addon_build.args import Args
@@ -54,6 +55,10 @@ class BuildContext:
         STAGE_ONE = BUILD_DIR.joinpath(Path("stage-1"))
         FILTERS = []
 
+        # Must be ignored because Mypy likes
+        # to complain about this for some reason
+        WORKING_DIR = Path.cwd()  # type: ignore
+
         # Get all filters from currently used actions
         if self.config.build_actions:
             for i in self.config.build_actions:
@@ -99,8 +104,10 @@ class BuildContext:
             ignore=shutil.ignore_patterns(*FILTERS),  # type: ignore
         )
         if len(self.cli.actions):
+            os.chdir(STAGE_ONE.joinpath(ADDON_FOLDER.name).expanduser())
             for k in self.cli.actions:
-                self.action(k, STAGE_ONE.joinpath(ADDON_FOLDER.name))
+                self.build_action_main(k)
+        os.chdir(WORKING_DIR)
         shutil.make_archive(str(combine_with_build(BUILD_DIR)), "zip", STAGE_ONE)
         self.install(Path(str(combine_with_build(BUILD_DIR)) + ".zip"))
 
@@ -141,7 +148,7 @@ class BuildContext:
             if not installed and not self.cli.supress_messages:
                 console.print(f"Cound not find {v}", style="yellow")
 
-    def action(self, action: str, folder: Path) -> None:
+    def build_action_main(self, action: str) -> None:
         """
         Runs an action
 
@@ -155,20 +162,8 @@ class BuildContext:
             print("Actions must be defined to use them!")
             return
         if action in self.cli.actions:
-            import subprocess
-
-            # We call wait here to make sure
-            # that the action has finished in
-            # its entirity. Otherwise, the
-            # addon will be built with a weird
-            # result.
-            if self.config.build_actions is not None:
-                subprocess.Popen(
-                    [
-                        "python",
-                        self.config_path.parent.resolve().joinpath(
-                            Path(self.config.build_actions[action].script)
-                        ),
-                    ],
-                    cwd=folder,
-                ).wait()
+            if action not in self.api.action_mods:
+                print("Action not in API!")
+                return
+            if hasattr(self.api.action_mods[action], "main"):
+                self.api.action_mods[action].main()
