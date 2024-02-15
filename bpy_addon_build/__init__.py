@@ -1,6 +1,8 @@
 from typing import Dict, List, Optional, Union
 import yaml
 from bpy_addon_build.api import Api
+from bpy_addon_build.build_context.build import build
+from bpy_addon_build.build_context.install import install
 
 from bpy_addon_build.config import Config
 from . import args
@@ -35,7 +37,8 @@ def main() -> None:
     if not cli.path.parent.joinpath(config.addon_folder).exists():
         print("Addon folder does not exist!")
         return
-    context.build()
+    build_path = build(context)
+    install(context, build_path)
 
 
 if __name__ == "__main__":
