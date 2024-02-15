@@ -1,8 +1,13 @@
 import os
 
 
-def prebuild() -> None:
+def pre_build() -> None:
     print("HELLO")
+    print(os.listdir())
+
+
+def post_install() -> None:
+    print("POST INSTALL")
     print(os.listdir())
 
 

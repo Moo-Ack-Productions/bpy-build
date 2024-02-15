@@ -9,11 +9,21 @@ from bpy_addon_build.args import Args
 from bpy_addon_build.config import Config
 from rich.console import Console
 
+from bpy_addon_build.hooks import (
+    build_action_main,
+    build_action_postinstall,
+    build_action_prebuild,
+)
+
 INSTALL_PATHS: List[str] = [
     "~/AppData/Roaming/Blender Foundation/Blender/{0}/scripts/addons",
     "~/Library/Application Support/Blender/{0}/scripts/addons",
     "~/.config/blender/{0}/scripts/addons",
 ]
+
+# Must be ignored because Mypy likes
+# to complain about this for some reason
+WORKING_DIR = Path.cwd()  # type: ignore
 
 console = Console()
 
@@ -57,10 +67,6 @@ class BuildContext:
         STAGE_ONE = BUILD_DIR.joinpath(Path("stage-1"))
         FILTERS = []
 
-        # Must be ignored because Mypy likes
-        # to complain about this for some reason
-        WORKING_DIR = Path.cwd()  # type: ignore
-
         # Get all filters from currently used actions
         if self.config.build_actions:
             for i in self.config.build_actions:
@@ -92,14 +98,7 @@ class BuildContext:
             """
             return path.joinpath(Path(self.config.build_name))
 
-        # Prebuild actions
-        if len(self.cli.actions):
-            os.chdir(
-                Path(self.config_path.parent, self.config.addon_folder).expanduser()
-            )
-            for k in self.cli.actions:
-                self.build_action_prebuild(k)
-            os.chdir(WORKING_DIR)
+        self.build_action_prebuild()
         # For some weird reason, shutil.ignore_patterns
         # expects positional arguments for all patterns,
         # and not a list like most would expect.
@@ -114,12 +113,7 @@ class BuildContext:
             ignore=shutil.ignore_patterns(*FILTERS),  # type: ignore
         )
 
-        # Regular actions
-        if len(self.cli.actions):
-            os.chdir(STAGE_ONE.joinpath(ADDON_FOLDER.name).expanduser())
-            for k in self.cli.actions:
-                self.build_action_main(k)
-            os.chdir(WORKING_DIR)
+        self.build_action_main(STAGE_ONE, ADDON_FOLDER)
         shutil.make_archive(str(combine_with_build(BUILD_DIR)), "zip", STAGE_ONE)
         self.install(Path(str(combine_with_build(BUILD_DIR)) + ".zip"))
 
@@ -156,61 +150,32 @@ class BuildContext:
                 if not self.cli.supress_messages:
                     console.print(f"Installed to {str(path)}", style="green")
                 installed = True
+                self.build_action_postinstall(path)
             if not installed and not self.cli.supress_messages:
                 console.print(f"Cound not find {v}", style="yellow")
 
-    def build_action_prebuild(self, action: str) -> None:
-        """
-        Runs an action's preload function
+    def build_action_prebuild(self) -> None:
+        if len(self.cli.actions):
+            os.chdir(
+                Path(self.config_path.parent, self.config.addon_folder).expanduser()
+            )
+            for k in self.cli.actions:
+                build_action_prebuild(self, k, console)
+            os.chdir(WORKING_DIR)
 
-        action: string representing the action name
+    def build_action_main(self, stage_one: Path, addon_folder: Path) -> None:
+        if len(self.cli.actions):
+            os.chdir(stage_one.joinpath(addon_folder.name).expanduser())
+            for k in self.cli.actions:
+                build_action_main(self, k, console)
+            os.chdir(WORKING_DIR)
 
-        Returns:
-            None
-        """
-        if self.config.build_actions is None and len(self.cli.actions):
-            print("Actions must be defined to use them!")
-            return
-        if action in self.cli.actions:
-            if action not in self.api.action_mods:
-                print("Action not in API!")
-                return
-            if hasattr(self.api.action_mods[action], "prebuild"):
-                res: Optional[Union[BpyError, BpyWarning]] = self.api.action_mods[
-                    action
-                ].prebuild()
+    def build_action_preinstall(self) -> None:
+        pass
 
-                if res is not None:
-                    if isinstance(res, BpyError):
-                        console.print(f"{res.msg}", style="red")
-                        quit(-1)
-                    elif isinstance(res, BpyWarning):
-                        console.print(f"{res.msg}", style="yellow")
-
-    def build_action_main(self, action: str) -> None:
-        """
-        Runs an action's main function
-
-        action: string representing the action name
-
-        Returns:
-            None
-        """
-        if self.config.build_actions is None and len(self.cli.actions):
-            print("Actions must be defined to use them!")
-            return
-        if action in self.cli.actions:
-            if action not in self.api.action_mods:
-                print("Action not in API!")
-                return
-            if hasattr(self.api.action_mods[action], "main"):
-                res: Optional[Union[BpyError, BpyWarning]] = self.api.action_mods[
-                    action
-                ].main()
-
-                if res is not None:
-                    if isinstance(res, BpyError):
-                        console.print(f"{res.msg}", style="red")
-                        quit(-1)
-                    elif isinstance(res, BpyWarning):
-                        console.print(f"{res.msg}", style="yellow")
+    def build_action_postinstall(self, v_path: Path) -> None:
+        if len(self.cli.actions):
+            os.chdir(v_path.expanduser())
+            for k in self.cli.actions:
+                build_action_postinstall(self, k, console)
+                os.chdir(WORKING_DIR)
