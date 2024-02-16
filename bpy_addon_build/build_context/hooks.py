@@ -42,9 +42,9 @@ def run_postinstall_hooks(ctx: BuildContext, v_path: Path) -> None:
             os.chdir(WORKING_DIR)
 
 
-def run_cleanup_hooks(ctx: BuildContext, build_folder: Path) -> None:
+def run_cleanup_hooks(ctx: BuildContext) -> None:
     if len(ctx.cli.actions):
-        os.chdir(build_folder.expanduser())
+        os.chdir(Path(ctx.config_path.parent, ctx.config.addon_folder).expanduser())
         for k in ctx.cli.actions:
             build_action_cleanup(ctx, k, console)
             os.chdir(WORKING_DIR)

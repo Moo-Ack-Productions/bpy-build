@@ -8,7 +8,6 @@ from bpy_addon_build.build_context.install import install
 from bpy_addon_build.config import Config
 from . import args
 from .build_context import BuildContext
-import cattrs
 from cattrs.preconf.pyyaml import make_converter
 from rich.console import Console
 
@@ -40,7 +39,7 @@ def main() -> None:
         return
     build_path = build(context)
     install(context, build_path)
-    hooks.run_cleanup_hooks(context, context.config_path.parent.joinpath("build"))
+    hooks.run_cleanup_hooks(context)
 
 
 if __name__ == "__main__":
