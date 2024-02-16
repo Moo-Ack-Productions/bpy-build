@@ -46,6 +46,14 @@ class Api:
         path = config_path.parent.resolve().joinpath(
             Path(self.build_actions[action].script)
         )
+
+        # Add the parent folder of the script to the sys path
+        # so that we don't get module errors
+        #
+        # While we could argue that developers should at least
+        # opt in by calling this themselves, I think automatically
+        # doing this isn't a problem for now
+        sys.path.append(str(path.expanduser().parent))
         action_spec = importlib.util.spec_from_file_location(action, path)
         if action_spec is None:
             return None
