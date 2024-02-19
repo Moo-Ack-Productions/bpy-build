@@ -62,6 +62,6 @@ def build(ctx: BuildContext) -> Path:
         ignore=shutil.ignore_patterns(*FILTERS),  # type: ignore
     )
 
-    hooks.run_main_hooks(ctx, STAGE_ONE, ADDON_FOLDER)
+    hooks.run_main_hooks(ctx, STAGE_ONE, Path(ctx.config.build_name))
     shutil.make_archive(str(combine_with_build(BUILD_DIR)), "zip", STAGE_ONE)
     return Path(str(combine_with_build(BUILD_DIR)) + ".zip")
