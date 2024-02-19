@@ -1,5 +1,5 @@
-from typing import Callable, Optional, Union
-from typeguard import check_type
+from typing import Callable, Optional, Union, get_type_hints
+from typeguard import TypeCheckError, check_type
 from bpy_addon_build.api import BabContext, BpyError, BpyWarning
 from rich.console import Console
 
@@ -31,7 +31,25 @@ def build_action_prebuild(
         return
     if hasattr(ctx.api.action_mods[action], "pre_build"):
         func: ApiFunction = ctx.api.action_mods[action].pre_build
-        check_type(func, ApiFunction)
+
+        try:
+            check_type(func, ApiFunction)
+        except TypeCheckError as e:
+            console.print(
+                f"pre_build function for {action} does not have the correct type signature!",
+                style="red",
+            )
+
+            # we disable mypy checks here because at this
+            # point, we don't care about the type that's
+            # returned in get_type_hints, we just want
+            # to know the length
+            if not len(get_type_hints(func)):  # type: ignore
+                console.print(
+                    f"Perhaps you are missing type annotations?", style="yellow"
+                )
+            print(e)
+
         res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
         if res is not None:
             if isinstance(res, BpyError):
@@ -64,7 +82,25 @@ def build_action_main(
         return
     if hasattr(ctx.api.action_mods[action], "main"):
         func: ApiFunction = ctx.api.action_mods[action].main
-        check_type(func, ApiFunction)
+
+        try:
+            check_type(func, ApiFunction)
+        except TypeCheckError as e:
+            console.print(
+                f"main function for {action} does not have the correct type signature!",
+                style="red",
+            )
+
+            # we disable mypy checks here because at this
+            # point, we don't care about the type that's
+            # returned in get_type_hints, we just want
+            # to know the length
+            if not len(get_type_hints(func)):  # type: ignore
+                console.print(
+                    f"Perhaps you are missing type annotations?", style="yellow"
+                )
+            print(e)
+
         res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
 
         if res is not None:
@@ -98,7 +134,25 @@ def build_action_preinstall(
         return
     if hasattr(ctx.api.action_mods[action], "pre_install"):
         func: ApiFunction = ctx.api.action_mods[action].pre_install
-        check_type(func, ApiFunction)
+
+        try:
+            check_type(func, ApiFunction)
+        except TypeCheckError as e:
+            console.print(
+                f"pre_install function for {action} does not have the correct type signature!",
+                style="red",
+            )
+
+            # we disable mypy checks here because at this
+            # point, we don't care about the type that's
+            # returned in get_type_hints, we just want
+            # to know the length
+            if not len(get_type_hints(func)):  # type: ignore
+                console.print(
+                    f"Perhaps you are missing type annotations?", style="yellow"
+                )
+            print(e)
+
         res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
 
         if res is not None:
@@ -132,7 +186,25 @@ def build_action_postinstall(
         return
     if hasattr(ctx.api.action_mods[action], "post_install"):
         func: ApiFunction = ctx.api.action_mods[action].post_install
-        check_type(func, ApiFunction)
+
+        try:
+            check_type(func, ApiFunction)
+        except TypeCheckError as e:
+            console.print(
+                f"post_install function for {action} does not have the correct type signature!",
+                style="red",
+            )
+
+            # we disable mypy checks here because at this
+            # point, we don't care about the type that's
+            # returned in get_type_hints, we just want
+            # to know the length
+            if not len(get_type_hints(func)):  # type: ignore
+                console.print(
+                    f"Perhaps you are missing type annotations?", style="yellow"
+                )
+            print(e)
+
         res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
 
         if res is not None:
@@ -166,7 +238,25 @@ def build_action_cleanup(
         return
     if hasattr(ctx.api.action_mods[action], "clean_up"):
         func: ApiFunction = ctx.api.action_mods[action].clean_up
-        check_type(func, ApiFunction)
+
+        try:
+            check_type(func, ApiFunction)
+        except TypeCheckError as e:
+            console.print(
+                f"clean_up function for {action} does not have the correct type signature!",
+                style="red",
+            )
+
+            # we disable mypy checks here because at this
+            # point, we don't care about the type that's
+            # returned in get_type_hints, we just want
+            # to know the length
+            if not len(get_type_hints(func)):  # type: ignore
+                console.print(
+                    f"Perhaps you are missing type annotations?", style="yellow"
+                )
+            print(e)
+
         res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
 
         if res is not None:
