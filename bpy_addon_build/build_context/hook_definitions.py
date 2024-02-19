@@ -1,11 +1,16 @@
-from typing import Optional, Union
-from bpy_addon_build.api import BpyError, BpyWarning
+from typing import Callable, Optional, Union
+from typeguard import check_type
+from bpy_addon_build.api import BabContext, BpyError, BpyWarning
 from rich.console import Console
 
 from bpy_addon_build.build_context import BuildContext
 
+ApiFunction = Callable[[BabContext], Optional[Union[BpyWarning, BpyError]]]
 
-def build_action_prebuild(ctx: BuildContext, action: str, console: Console) -> None:
+
+def build_action_prebuild(
+    ctx: BuildContext, action: str, console: Console, api_ctx: BabContext
+) -> None:
     """
     Runs an action's pre_build function
 
@@ -25,10 +30,9 @@ def build_action_prebuild(ctx: BuildContext, action: str, console: Console) -> N
         print("Action not in API!")
         return
     if hasattr(ctx.api.action_mods[action], "pre_build"):
-        res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
-            action
-        ].pre_build()
-
+        func: ApiFunction = ctx.api.action_mods[action].pre_build
+        check_type(func, ApiFunction)
+        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
         if res is not None:
             if isinstance(res, BpyError):
                 console.print(f"{res.msg}", style="red")
@@ -37,7 +41,9 @@ def build_action_prebuild(ctx: BuildContext, action: str, console: Console) -> N
                 console.print(f"{res.msg}", style="yellow")
 
 
-def build_action_main(ctx: BuildContext, action: str, console: Console) -> None:
+def build_action_main(
+    ctx: BuildContext, action: str, console: Console, api_ctx: BabContext
+) -> None:
     """
     Runs an action's main function
 
@@ -57,7 +63,9 @@ def build_action_main(ctx: BuildContext, action: str, console: Console) -> None:
         print("Action not in API!")
         return
     if hasattr(ctx.api.action_mods[action], "main"):
-        res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[action].main()
+        func: ApiFunction = ctx.api.action_mods[action].main
+        check_type(func, ApiFunction)
+        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
 
         if res is not None:
             if isinstance(res, BpyError):
@@ -67,7 +75,9 @@ def build_action_main(ctx: BuildContext, action: str, console: Console) -> None:
                 console.print(f"{res.msg}", style="yellow")
 
 
-def build_action_preinstall(ctx: BuildContext, action: str, console: Console) -> None:
+def build_action_preinstall(
+    ctx: BuildContext, action: str, console: Console, api_ctx: BabContext
+) -> None:
     """
     Runs an action's pre_install function
 
@@ -87,9 +97,9 @@ def build_action_preinstall(ctx: BuildContext, action: str, console: Console) ->
         print("Action not in API!")
         return
     if hasattr(ctx.api.action_mods[action], "pre_install"):
-        res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
-            action
-        ].pre_install()
+        func: ApiFunction = ctx.api.action_mods[action].pre_install
+        check_type(func, ApiFunction)
+        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
 
         if res is not None:
             if isinstance(res, BpyError):
@@ -99,7 +109,9 @@ def build_action_preinstall(ctx: BuildContext, action: str, console: Console) ->
                 console.print(f"{res.msg}", style="yellow")
 
 
-def build_action_postinstall(ctx: BuildContext, action: str, console: Console) -> None:
+def build_action_postinstall(
+    ctx: BuildContext, action: str, console: Console, api_ctx: BabContext
+) -> None:
     """
     Runs an action's post_install function
 
@@ -119,9 +131,9 @@ def build_action_postinstall(ctx: BuildContext, action: str, console: Console) -
         print("Action not in API!")
         return
     if hasattr(ctx.api.action_mods[action], "post_install"):
-        res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
-            action
-        ].post_install()
+        func: ApiFunction = ctx.api.action_mods[action].post_install
+        check_type(func, ApiFunction)
+        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
 
         if res is not None:
             if isinstance(res, BpyError):
@@ -131,7 +143,9 @@ def build_action_postinstall(ctx: BuildContext, action: str, console: Console) -
                 console.print(f"{res.msg}", style="yellow")
 
 
-def build_action_cleanup(ctx: BuildContext, action: str, console: Console) -> None:
+def build_action_cleanup(
+    ctx: BuildContext, action: str, console: Console, api_ctx: BabContext
+) -> None:
     """
     Runs an action's clean_up function
 
@@ -151,9 +165,9 @@ def build_action_cleanup(ctx: BuildContext, action: str, console: Console) -> No
         print("Action not in API!")
         return
     if hasattr(ctx.api.action_mods[action], "clean_up"):
-        res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
-            action
-        ].clean_up()
+        func: ApiFunction = ctx.api.action_mods[action].clean_up
+        check_type(func, ApiFunction)
+        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
 
         if res is not None:
             if isinstance(res, BpyError):

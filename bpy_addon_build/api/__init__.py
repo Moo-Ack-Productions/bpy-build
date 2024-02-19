@@ -16,6 +16,14 @@ class BpyWarning:
     msg: str
 
 
+@dataclass
+class BabContext:
+    # Path where the action is being
+    # executed in. This should be
+    # the intended cwd
+    current_path: Path
+
+
 class Api:
     """
     API object; this holds all scripts used as modules
