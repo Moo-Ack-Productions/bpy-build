@@ -23,7 +23,7 @@ def build_action_prebuild(ctx: BuildContext, action: str, console: Console) -> N
         if action not in ctx.api.action_mods:
             print("Action not in API!")
             return
-        if hasattr(ctx.api.action_mods[action], "prebuild"):
+        if hasattr(ctx.api.action_mods[action], "pre_build"):
             res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
                 action
             ].pre_build()
