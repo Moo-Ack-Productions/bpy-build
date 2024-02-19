@@ -19,21 +19,22 @@ def build_action_prebuild(ctx: BuildContext, action: str, console: Console) -> N
     if ctx.config.build_actions is None and len(ctx.cli.actions):
         print("Actions must be defined to use them!")
         return
-    if action in ctx.cli.actions:
-        if action not in ctx.api.action_mods:
-            print("Action not in API!")
-            return
-        if hasattr(ctx.api.action_mods[action], "pre_build"):
-            res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
-                action
-            ].pre_build()
+    if action not in ctx.cli.actions:
+        return
+    if action not in ctx.api.action_mods:
+        print("Action not in API!")
+        return
+    if hasattr(ctx.api.action_mods[action], "pre_build"):
+        res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
+            action
+        ].pre_build()
 
-            if res is not None:
-                if isinstance(res, BpyError):
-                    console.print(f"{res.msg}", style="red")
-                    quit(-1)
-                elif isinstance(res, BpyWarning):
-                    console.print(f"{res.msg}", style="yellow")
+        if res is not None:
+            if isinstance(res, BpyError):
+                console.print(f"{res.msg}", style="red")
+                quit(-1)
+            elif isinstance(res, BpyWarning):
+                console.print(f"{res.msg}", style="yellow")
 
 
 def build_action_main(ctx: BuildContext, action: str, console: Console) -> None:
@@ -50,21 +51,20 @@ def build_action_main(ctx: BuildContext, action: str, console: Console) -> None:
     if ctx.config.build_actions is None and len(ctx.cli.actions):
         print("Actions must be defined to use them!")
         return
-    if action in ctx.cli.actions:
-        if action not in ctx.api.action_mods:
-            print("Action not in API!")
-            return
-        if hasattr(ctx.api.action_mods[action], "main"):
-            res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
-                action
-            ].main()
+    if action not in ctx.cli.actions:
+        return
+    if action not in ctx.api.action_mods:
+        print("Action not in API!")
+        return
+    if hasattr(ctx.api.action_mods[action], "main"):
+        res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[action].main()
 
-            if res is not None:
-                if isinstance(res, BpyError):
-                    console.print(f"{res.msg}", style="red")
-                    quit(-1)
-                elif isinstance(res, BpyWarning):
-                    console.print(f"{res.msg}", style="yellow")
+        if res is not None:
+            if isinstance(res, BpyError):
+                console.print(f"{res.msg}", style="red")
+                quit(-1)
+            elif isinstance(res, BpyWarning):
+                console.print(f"{res.msg}", style="yellow")
 
 
 def build_action_preinstall(ctx: BuildContext, action: str, console: Console) -> None:
@@ -81,21 +81,22 @@ def build_action_preinstall(ctx: BuildContext, action: str, console: Console) ->
     if ctx.config.build_actions is None and len(ctx.cli.actions):
         print("Actions must be defined to use them!")
         return
-    if action in ctx.cli.actions:
-        if action not in ctx.api.action_mods:
-            print("Action not in API!")
-            return
-        if hasattr(ctx.api.action_mods[action], "pre_install"):
-            res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
-                action
-            ].pre_install()
+    if action not in ctx.cli.actions:
+        return
+    if action not in ctx.api.action_mods:
+        print("Action not in API!")
+        return
+    if hasattr(ctx.api.action_mods[action], "pre_install"):
+        res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
+            action
+        ].pre_install()
 
-            if res is not None:
-                if isinstance(res, BpyError):
-                    console.print(f"{res.msg}", style="red")
-                    quit(-1)
-                elif isinstance(res, BpyWarning):
-                    console.print(f"{res.msg}", style="yellow")
+        if res is not None:
+            if isinstance(res, BpyError):
+                console.print(f"{res.msg}", style="red")
+                quit(-1)
+            elif isinstance(res, BpyWarning):
+                console.print(f"{res.msg}", style="yellow")
 
 
 def build_action_postinstall(ctx: BuildContext, action: str, console: Console) -> None:
@@ -112,21 +113,22 @@ def build_action_postinstall(ctx: BuildContext, action: str, console: Console) -
     if ctx.config.build_actions is None and len(ctx.cli.actions):
         print("Actions must be defined to use them!")
         return
-    if action in ctx.cli.actions:
-        if action not in ctx.api.action_mods:
-            print("Action not in API!")
-            return
-        if hasattr(ctx.api.action_mods[action], "post_install"):
-            res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
-                action
-            ].post_install()
+    if action not in ctx.cli.actions:
+        return
+    if action not in ctx.api.action_mods:
+        print("Action not in API!")
+        return
+    if hasattr(ctx.api.action_mods[action], "post_install"):
+        res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
+            action
+        ].post_install()
 
-            if res is not None:
-                if isinstance(res, BpyError):
-                    console.print(f"{res.msg}", style="red")
-                    quit(-1)
-                elif isinstance(res, BpyWarning):
-                    console.print(f"{res.msg}", style="yellow")
+        if res is not None:
+            if isinstance(res, BpyError):
+                console.print(f"{res.msg}", style="red")
+                quit(-1)
+            elif isinstance(res, BpyWarning):
+                console.print(f"{res.msg}", style="yellow")
 
 
 def build_action_cleanup(ctx: BuildContext, action: str, console: Console) -> None:
@@ -143,18 +145,19 @@ def build_action_cleanup(ctx: BuildContext, action: str, console: Console) -> No
     if ctx.config.build_actions is None and len(ctx.cli.actions):
         print("Actions must be defined to use them!")
         return
-    if action in ctx.cli.actions:
-        if action not in ctx.api.action_mods:
-            print("Action not in API!")
-            return
-        if hasattr(ctx.api.action_mods[action], "clean_up"):
-            res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
-                action
-            ].clean_up()
+    if action not in ctx.cli.actions:
+        return
+    if action not in ctx.api.action_mods:
+        print("Action not in API!")
+        return
+    if hasattr(ctx.api.action_mods[action], "clean_up"):
+        res: Optional[Union[BpyError, BpyWarning]] = ctx.api.action_mods[
+            action
+        ].clean_up()
 
-            if res is not None:
-                if isinstance(res, BpyError):
-                    console.print(f"{res.msg}", style="red")
-                    quit(-1)
-                elif isinstance(res, BpyWarning):
-                    console.print(f"{res.msg}", style="yellow")
+        if res is not None:
+            if isinstance(res, BpyError):
+                console.print(f"{res.msg}", style="red")
+                quit(-1)
+            elif isinstance(res, BpyWarning):
+                console.print(f"{res.msg}", style="yellow")
