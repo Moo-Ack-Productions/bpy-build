@@ -27,7 +27,9 @@ def build_action_prebuild(
     if action not in ctx.cli.actions:
         return
     if action not in ctx.api.action_mods:
-        print("Action not in API!")
+        if ctx.cli.debug_mode:
+            print("Action not in API! Action:", action)
+            console.print(ctx.api.action_mods)
         return
     if hasattr(ctx.api.action_mods[action], "pre_build"):
         func: ApiFunction = ctx.api.action_mods[action].pre_build

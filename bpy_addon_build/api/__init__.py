@@ -37,18 +37,20 @@ class Api:
         Action name to module
     """
 
-    def __init__(self, conf: Config, config_path: Path) -> None:
+    def __init__(self, conf: Config, config_path: Path, debug_mode: bool) -> None:
         if conf.build_actions is not None:
             self.build_actions = conf.build_actions
             self.action_mods: Dict[str, ModuleType] = {}
 
             for action in self.build_actions:
-                mod = self.add_modules(config_path, action)
+                mod = self.add_modules(config_path, action, debug_mode)
                 if mod is None:
                     continue
                 self.action_mods[action] = mod
 
-    def add_modules(self, config_path: Path, action: str) -> Optional[ModuleType]:
+    def add_modules(
+        self, config_path: Path, action: str, debug_mode: bool
+    ) -> Optional[ModuleType]:
         import importlib.util
 
         path = config_path.parent.resolve().joinpath(
@@ -64,9 +66,15 @@ class Api:
         sys.path.append(str(path.expanduser().parent))
         action_spec = importlib.util.spec_from_file_location(action, path)
         if action_spec is None:
+            if debug_mode:
+                print("Can not generate action spec for", action)
+                print("Path:", path)
             return None
         action_mod = importlib.util.module_from_spec(action_spec)
         if action_mod is None:
+            if debug_mode:
+                print("Can not generate module from spec for", action)
+                print("Path:", path)
             return None
 
         sys.modules[action] = action_mod

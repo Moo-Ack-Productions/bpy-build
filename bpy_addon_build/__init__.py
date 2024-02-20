@@ -29,7 +29,7 @@ def main() -> None:
             str, Union[str, List[float], Dict[str, Dict[str, str]]]
         ] = yaml.safe_load(f)
         config: Config = converter.structure(data, Config)
-        api: Api = Api(config, cli.path)
+        api: Api = Api(config, cli.path, cli.debug_mode)
         context = BuildContext(cli.path, config, cli, api)
 
     if cli.debug_mode:
