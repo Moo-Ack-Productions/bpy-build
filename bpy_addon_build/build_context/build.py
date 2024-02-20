@@ -3,9 +3,27 @@ import shutil
 from pathlib import Path
 
 
+def combine_with_build(ctx: BuildContext, path: Path) -> Path:
+    """
+    Local function to get the path with build name.
+
+    We don't need to have a variable for every single
+    path, let's just make a function to handle that.
+
+    ctx: Build context
+    path: Path you want to add on to
+
+    Returns:
+        New path pointing to path/ctx.build_name
+    """
+    return path.joinpath(Path(ctx.config.build_name))
+
+
 def build(ctx: BuildContext) -> Path:
     """
     Function that does the actual building.
+
+    ctx: Build context
 
     Returns:
         None
@@ -18,9 +36,8 @@ def build(ctx: BuildContext) -> Path:
 
     # Get all filters from currently used actions
     if ctx.config.build_actions:
-        for i in ctx.config.build_actions:
-            act = ctx.config.build_actions[i]
-            if act.ignore_filters and i in ctx.cli.actions:
+        for name, act in ctx.config.build_actions.items():
+            if act.ignore_filters and name in ctx.cli.actions:
                 FILTERS += act.ignore_filters
 
     ADDON_FOLDER = ctx.config_path.parent.joinpath(ctx.config.addon_folder)
@@ -33,20 +50,6 @@ def build(ctx: BuildContext) -> Path:
         shutil.rmtree(STAGE_ONE)
         STAGE_ONE.mkdir()
 
-    def combine_with_build(path: Path) -> Path:
-        """
-        Local function to get the path with build name.
-
-        We don't need to have a variable for every single
-        path, let's just make a function to handle that.
-
-        path: Path you want to add on to
-
-        Returns:
-            New path pointing to path/ctx.build_name
-        """
-        return path.joinpath(Path(ctx.config.build_name))
-
     hooks.run_prebuild_hooks(ctx)
     # For some weird reason, shutil.ignore_patterns
     # expects positional arguments for all patterns,
@@ -58,10 +61,12 @@ def build(ctx: BuildContext) -> Path:
     # need to add an ignore comment for Mypy
     shutil.copytree(
         ADDON_FOLDER,
-        combine_with_build(STAGE_ONE),
+        combine_with_build(ctx, STAGE_ONE),
         ignore=shutil.ignore_patterns(*FILTERS),  # type: ignore
     )
 
     hooks.run_main_hooks(ctx, STAGE_ONE, Path(ctx.config.build_name))
-    shutil.make_archive(str(combine_with_build(BUILD_DIR)), "zip", STAGE_ONE)
-    return Path(str(combine_with_build(BUILD_DIR)) + ".zip")
+
+    combined_str = str(combine_with_build(ctx, BUILD_DIR))
+    shutil.make_archive(combined_str, "zip", STAGE_ONE)
+    return Path(combined_str + ".zip")
