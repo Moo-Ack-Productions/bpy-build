@@ -40,10 +40,9 @@ def run_preinstall_hooks(ctx: BuildContext, zip_path: Path) -> None:
 
 def run_postinstall_hooks(ctx: BuildContext, v_path: Path) -> None:
     if len(ctx.cli.actions):
-        cwd = v_path.expanduser()
-        os.chdir(cwd)
+        os.chdir(v_path)
         for k in ctx.cli.actions:
-            build_action_postinstall(ctx, k, console, BabContext(cwd))
+            build_action_postinstall(ctx, k, console, BabContext(v_path))
             os.chdir(WORKING_DIR)
 
 
