@@ -26,14 +26,14 @@ just mypy
 poetry run mypy --pretty bpy_addon_build
 ```
 # Formatting
-All commits must be formatted with https://github.com/psf/black. We have a pre-commit hook for this (see the Pre-Commit Hooks section).
+All commits must be formatted with https://github.com/astral-sh/ruff. We have a pre-commit hook for this (see the Pre-Commit Hooks section).
 
-In addition, Black is a developer dependency defined in `pyproject.toml`, in case you want to run it at any moment in time, which can be done with the following:
+In addition, Ruff is a developer dependency defined in `pyproject.toml`, in case you want to run it at any moment in time, which can be done with the following:
 ```sh
 just format
 
 # Or if you don't have just installed
-poetry run black bpy_addon_build
+poetry run ruff format bpy_addon_build
 ```
 
 # Commits

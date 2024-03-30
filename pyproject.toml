@@ -13,9 +13,9 @@ pyyaml = "^6.0.1"
 cattrs = "^23.2.3"
 rich = "^13.7.0"
 typeguard = "^4.1.5"
+ruff = "^0.3.4"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.7.0"
 mypy = "^1.4.1"
 types-pyyaml = "^6.0.12.11"
 
