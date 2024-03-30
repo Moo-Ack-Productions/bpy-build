@@ -7,15 +7,17 @@ Install from PyPi:
 
 First create a file called `bpy-build.yaml` and add the following contents:
 ```yaml
-addon_folder: . # or the folder with the addon source code
+addon_folder: my_addon # the folder with the addon source code
 build_name: my_addon
 ```
+
+**Note: the addon source code must be in a subfolder! BpyBuild does not support using `.` for `addon_folder`**
 
 Then run `bab`, your addon will be built in the `build` folder!
 
 Now let's automatically install our addon:
 ```yaml
-addon_folder: . # or the folder with the addon source code
+addon_folder: my_addon # the folder with the addon source code
 build_name: my_addon
 
 install_versions:
