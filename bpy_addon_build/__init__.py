@@ -45,9 +45,9 @@ def main() -> None:
 
     context: Optional[BuildContext] = None
     with open(cli.path, "r") as f:
-        data: Dict[
-            str, Union[str, List[float], Dict[str, Dict[str, str]]]
-        ] = yaml.safe_load(f)
+        data: Dict[str, Union[str, List[float], Dict[str, Dict[str, str]]]] = (
+            yaml.safe_load(f)
+        )
         config: Config = converter.structure(data, Config)
         api: Api = Api(config, cli.path, cli.debug_mode)
         context = BuildContext(cli.path, config, cli, api)
