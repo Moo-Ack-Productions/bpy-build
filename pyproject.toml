@@ -3,7 +3,7 @@ name = "bpy-addon-build"
 version = "0.3.1"
 description = "A build system to make building and testing Blender addons 10 times easier"
 authors = ["StandingPad"]
-license = "MIT"
+license = "BSD-3-Clause"
 homepage = "https://github.com/StandingPadAnimations/bpy-build"
 
 [tool.poetry.dependencies]
