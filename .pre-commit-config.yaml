@@ -3,7 +3,14 @@ repos:
   rev: v1.9.0
   hooks:
     - id: mypy
-      args: [--pretty, --ignore-missing-imports]
+      args: [--pretty, --strict]
+      additional_dependencies: [
+        "attrs==23.1.0",
+        "pyyaml==6.0.1",
+        "cattrs==23.2.3",
+        "rich==13.7.0",
+        "typeguard==4.1.5",
+      ]
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
