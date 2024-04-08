@@ -8,7 +8,6 @@ from bpy_addon_build.build_context.hook_definitions import (
     build_action_preinstall,
 )
 from pathlib import Path
-import os
 
 
 def run_prebuild_hooks(ctx: BuildContext) -> None:
@@ -21,7 +20,6 @@ def run_prebuild_hooks(ctx: BuildContext) -> None:
 def run_main_hooks(ctx: BuildContext, stage_one: Path, addon_folder: Path) -> None:
     if len(ctx.cli.actions):
         cwd = stage_one.joinpath(addon_folder.name).expanduser()
-        os.chdir(cwd)
         for k in ctx.cli.actions:
             build_action_main(ctx, k, console, BabContext(cwd))
 
