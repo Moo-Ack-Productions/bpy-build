@@ -1,22 +1,17 @@
-import os
 from bpy_addon_build.api import BabContext
 
 
 def clean_up(ctx: BabContext) -> None:
-    print("CLEAN UP")
-    print(os.listdir())
+    print("CLEAN UP", ctx.current_path)
 
 
 def pre_build(ctx: BabContext) -> None:
-    print("HELLO")
-    print(os.listdir())
+    print("PRE BUILD", ctx.current_path)
 
 
 def post_install(ctx: BabContext) -> None:
-    print("POST INSTALL")
-    print(os.listdir())
+    print("POST INSTALL", ctx.current_path)
 
 
 def main(ctx: BabContext) -> None:
-    print("DEFAULT")
-    print(os.listdir())
+    print("MAIN", ctx.current_path)
