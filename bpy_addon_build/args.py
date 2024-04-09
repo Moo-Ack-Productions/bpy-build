@@ -1,4 +1,3 @@
-import argparse
 from pathlib import Path
 from typing import List, Optional, cast
 from attrs import define, field, Attribute
@@ -41,18 +40,18 @@ class Args:
     supress_messages: bool = field(default=False)
 
     @path.validator
-    def path_validate(self, _: Attribute, value: Path) -> None:
+    def path_validate(self, _: Attribute, value: Optional[Path]) -> None:
         # Assume the user did not pass
         # a path in
         if value is None:
             return
         if not value.exists():
-            raise FileNotFoundError("File does not exist!")
+            raise FileNotFoundError(f"File {value} does not exist!")
         if value.is_dir():
             raise IsADirectoryError("Expected a file, got a direcory!")
 
     @versions.validator
-    def version_validate(self, _: Attribute, value: List[float]) -> None:
+    def version_validate(self, _: Attribute, value: Optional[List[float]]) -> None:
         if value is None:
             self.versions = []
         else:
@@ -61,7 +60,7 @@ class Args:
                     raise ValueError("Expected List of floating point values!")
 
     @actions.validator
-    def actions_validate(self, _: Attribute, value: List[str]) -> None:
+    def actions_validate(self, _: Attribute, value: Optional[List[str]]) -> None:
         if value is None:
             self.actions = ["default"]
         else:
