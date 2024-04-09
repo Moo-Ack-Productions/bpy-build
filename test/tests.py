@@ -62,6 +62,20 @@ class TestBpyBuild(unittest.TestCase):
         self.assertRegex(mock_stdout.getvalue(), r"usage: ")
 
     @mock.patch("sys.stdout", new_callable=StringIO)
+    def test_non_existant(self, _: StringIO) -> None:
+        """Test if BpyBuild returns an exception
+        when a non-existant config file is passed.
+
+        This runs BpyBuild with -c doesnt_exist and check
+        if a FileNotFoundError is raised with the message
+        "File doesnt_exist does not exist!"
+        """
+        with mock.patch("sys.argv", ["bab", "-c", "doesnt_exist"]):
+            with self.assertRaises(FileNotFoundError) as cm:
+                bab.main()
+        self.assertEqual(str(cm.exception), "File doesnt_exist does not exist!")
+
+    @mock.patch("sys.stdout", new_callable=StringIO)
     def test_build(self, mock_stdout: StringIO) -> None:
         """Perform a test build using the
         project in test_addon.
