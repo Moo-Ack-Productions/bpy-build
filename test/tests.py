@@ -48,7 +48,11 @@ class TestBpyBuild(unittest.TestCase):
 
     @mock.patch("sys.stdout", new_callable=StringIO)
     def test_args(self, mock_stdout: StringIO) -> None:
-        """Test arguments in BpyBuild."""
+        """Test arguments in BpyBuild.
+
+        This runs the help command for BpyBuild and checks
+        to see if the help message is printed.
+        """
         with mock.patch("sys.argv", ["bab", "-h"]):
             with self.assertRaises(SystemExit):
                 # Calling BpyBuild directly from
@@ -68,6 +72,7 @@ class TestBpyBuild(unittest.TestCase):
         - Build folder
         - MCprep_addon.zip
         - stage-1 folder
+        - "MAIN" in mock_stdout
         """
         with mock.patch(
             "sys.argv", ["bab", "-c", f"{TEST_FOLDER}/test_addon/bpy-build.yaml"]
@@ -77,6 +82,9 @@ class TestBpyBuild(unittest.TestCase):
         self.assertTrue(build.exists() and build.is_dir())
         self.assertTrue((build / "MCprep_addon.zip").exists())
         self.assertTrue((build / "stage-1").exists())
+
+        # Check mock_stdout for expected strings.
+        self.assertRegex(mock_stdout.getvalue(), r"MAIN")  # default action
 
     @mock.patch("sys.stdout", new_callable=StringIO)
     def test_actions(self, mock_stdout: StringIO) -> None:
@@ -92,6 +100,10 @@ class TestBpyBuild(unittest.TestCase):
         - MCprep_addon.zip
         - stage-1 folder
         - stage-1/MCprep_addon/mcprep_dev.txt
+        - Lack of stage-1/MCprep_addon/ignore.blend
+        - "DEV MAIN" in mock_stdout
+        - "MAIN" in mock_stdout
+        - "hi guys c:" in stage-1/MCprep_addon/mcprep_dev.txt
         """
         with mock.patch(
             "sys.argv",
@@ -99,10 +111,64 @@ class TestBpyBuild(unittest.TestCase):
         ):
             bab.main()
         build = Path(f"{TEST_FOLDER}/test_addon/build")
+
+        # This could be consolidated into a single call,
+        # but I feel this is more readable as it's calling
+        # for each individual condition, and reduces complexity.
         self.assertTrue(build.exists() and build.is_dir())
         self.assertTrue((build / "MCprep_addon.zip").exists())
         self.assertTrue((build / "stage-1").exists())
         self.assertTrue((build / "stage-1/MCprep_addon/mcprep_dev.txt").exists())
+        self.assertFalse((build / "stage-1/MCprep_addon/ignore.blend").exists())
+
+        # Check mock_stdout and mcprep_dev.txt for some
+        # expected strings.
+        self.assertRegex(mock_stdout.getvalue(), r"DEV MAIN")  # dev action
+        self.assertRegex(mock_stdout.getvalue(), r"MAIN")  # default action
+
+        with open(build / "stage-1/MCprep_addon/mcprep_dev.txt", "r") as f:
+            self.assertEqual(f.read().strip(), "hi guys c:")
+
+    @mock.patch("sys.stdout", new_callable=StringIO)
+    def test_hooks(self, mock_stdout: StringIO) -> None:
+        """Perform a test build using the
+        project in test_addon.
+
+        This uses the standard default action, but
+        now checks for the output of different
+        hooks in mock_stdout.
+
+        To make sure this test is accurate, we
+        use the -s flag to suppress extra BpyBuild
+        output.
+
+        This test will check for:
+        - "PRE BUILD {TEST_FOLDER}/test/test_addon/MCprep_addon" in mock_stdout
+        - "MAIN {TEST_FOLDER}/test/test_addon/build/stage-1/MCprep_addon" in mock_stdout
+        - "POST INSTALL " in mock_stdout
+        - "CLEAN UP {TEST_FOLDER}/test/test_addon/MCprep_addon" in mock_stdout
+
+        TODO: add more complexity to hooks
+        """
+        with mock.patch(
+            "sys.argv",
+            ["bab", "-c", f"{TEST_FOLDER}/test_addon/bpy-build.yaml", "-s"],
+        ):
+            bab.main()
+
+        # Check mock_stdout for expected strings.
+        stdout_list = mock_stdout.getvalue().split("\n")
+        self.assertIn(f"PRE BUILD {TEST_FOLDER}/test_addon/MCprep_addon", stdout_list)
+        self.assertIn(
+            f"MAIN {TEST_FOLDER}/test_addon/build/stage-1/MCprep_addon", stdout_list
+        )
+        self.assertIn(f"CLEAN UP {TEST_FOLDER}/test_addon/MCprep_addon", stdout_list)
+
+        # TODO: Check folder of post install
+        #
+        # This is dependent on the system, so
+        # reliably checking this is much harder
+        self.assertRegex(mock_stdout.getvalue(), r"POST INSTALL ")
 
 
 if __name__ == "__main__":
