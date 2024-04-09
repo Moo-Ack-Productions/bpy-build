@@ -178,10 +178,22 @@ class TestBpyBuild(unittest.TestCase):
         )
         self.assertIn(f"CLEAN UP {TEST_FOLDER}/test_addon/MCprep_addon", stdout_list)
 
-        # TODO: Check folder of post install
+        # Check post install output
         #
-        # This is dependent on the system, so
-        # reliably checking this is much harder
+        # TODO: Check folder output as well
+        #
+        # Info for the future:
+        # This uses the format of "POST INSTALL {path}", where
+        # path is the path to the addon folder. This vastly differs
+        # depending on the system and versions installed, but the major
+        # operating systems use the following paths:
+        # Windows: ~/AppData/Roaming/Blender Foundation/Blender/{version}/scripts/addons
+        # macOS: ~/Library/Application Support/Blender/{version}/scripts/addons
+        # Linux: ~/.config/blender/{version}/scripts/addons
+        #
+        # We need to validate not only for the correct path, but also
+        # the correct version.
+
         self.assertRegex(mock_stdout.getvalue(), r"POST INSTALL ")
 
 
