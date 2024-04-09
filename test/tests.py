@@ -31,6 +31,10 @@ import unittest
 from unittest import mock
 from io import StringIO
 import bpy_addon_build as bab
+from pathlib import Path
+
+# parent folder of the tests
+TEST_FOLDER = Path(__file__).parent
 
 
 class TestBpyBuild(unittest.TestCase):
@@ -43,7 +47,7 @@ class TestBpyBuild(unittest.TestCase):
     """
 
     @mock.patch("sys.stdout", new_callable=StringIO)
-    def test_args(self, mock_stderr: StringIO) -> None:
+    def test_args(self, mock_stdout: StringIO) -> None:
         """Test arguments in BpyBuild."""
         with mock.patch("sys.argv", ["bab", "-h"]):
             with self.assertRaises(SystemExit):
@@ -51,7 +55,54 @@ class TestBpyBuild(unittest.TestCase):
                 # the main function rather then
                 # launching a subprocess.
                 bab.main()
-        self.assertRegex(mock_stderr.getvalue(), r"usage: ")
+        self.assertRegex(mock_stdout.getvalue(), r"usage: ")
+
+    @mock.patch("sys.stdout", new_callable=StringIO)
+    def test_build(self, mock_stdout: StringIO) -> None:
+        """Perform a test build using the
+        project in test_addon.
+
+        For our test addon, this will perform a build
+        without any actions, and will check for the
+        following:
+        - Build folder
+        - MCprep_addon.zip
+        - stage-1 folder
+        """
+        with mock.patch(
+            "sys.argv", ["bab", "-c", f"{TEST_FOLDER}/test_addon/bpy-build.yaml"]
+        ):
+            bab.main()
+        build = Path(f"{TEST_FOLDER}/test_addon/build")
+        self.assertTrue(build.exists() and build.is_dir())
+        self.assertTrue((build / "MCprep_addon.zip").exists())
+        self.assertTrue((build / "stage-1").exists())
+
+    @mock.patch("sys.stdout", new_callable=StringIO)
+    def test_actions(self, mock_stdout: StringIO) -> None:
+        """Perform a test build using the
+        project in test_addon
+
+        This is identical to test_build, but
+        the build command is now ran with -b dev,
+        which adds some extra things to check for.
+
+        This test will check for:
+        - Build folder
+        - MCprep_addon.zip
+        - stage-1 folder
+        - stage-1/MCprep_addon/mcprep_dev.txt
+        """
+        with mock.patch(
+            "sys.argv",
+            ["bab", "-c", f"{TEST_FOLDER}/test_addon/bpy-build.yaml", "-b", "dev"],
+        ):
+            bab.main()
+        build = Path(f"{TEST_FOLDER}/test_addon/build")
+        self.assertTrue(build.exists() and build.is_dir())
+        self.assertTrue((build / "MCprep_addon.zip").exists())
+        self.assertTrue((build / "stage-1").exists())
+        self.assertTrue((build / "stage-1/MCprep_addon/mcprep_dev.txt").exists())
 
 
 if __name__ == "__main__":
