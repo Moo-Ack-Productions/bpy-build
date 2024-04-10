@@ -1,4 +1,5 @@
-from bpy_addon_build.build_context import BuildContext, hooks
+from bpy_addon_build.build_context.core import BuildContext
+from bpy_addon_build.build_context import hooks
 import shutil
 from pathlib import Path
 

@@ -7,7 +7,7 @@ from bpy_addon_build.build_context.install import install
 
 from bpy_addon_build.config import Config
 from . import args
-from .build_context import BuildContext
+from .build_context.core import BuildContext
 from cattrs.preconf.pyyaml import make_converter
 from rich.console import Console
 

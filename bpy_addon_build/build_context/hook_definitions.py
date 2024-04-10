@@ -3,7 +3,7 @@ from typeguard import TypeCheckError, check_type
 from bpy_addon_build.api import BabContext, BpyError, BpyWarning
 from rich.console import Console
 
-from bpy_addon_build.build_context import BuildContext
+from bpy_addon_build.build_context.core import BuildContext
 from bpy_addon_build.util import print_error, print_warning
 
 # Function signature of all hooks
