@@ -13,3 +13,5 @@ build_actions:
     script: "dev.py"
     ignore_filters: 
       - "*.blend"
+  old:
+    script: "old.py"
