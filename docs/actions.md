@@ -16,7 +16,8 @@ build_actions:
 from bpy_addon_build.api import BabContext
 
 def main(ctx: BabContext) -> None:
-    with open("mcprep_dev.txt", "w") as f:
+    print("DEV MAIN")
+    with open((ctx.current_path / "mcprep_dev.txt"), "w") as f:
         f.write("hi guys c:")
 ```
 
@@ -27,11 +28,11 @@ def main(ctx: BabContext) -> None:
 
 # Hooks
 BpyBuild also supports the concept of hooks. Currently, the following hooks are supported:
-- `main`: executed during the build process; working directory is set to a copy of the source tree under `build/stage-1`
-- `pre_build`: executed before building; working directory is set to the `addon_folder` variable defined in `bpy-build.yaml`
-- `pre_install`: executed before installing the built addon; working directory is set to `build/`
-- `post_install`: executed after installing the built addon; working directory is set to the addons folder of the Blender version last installed to
-- `clean_up`: executed after all other build processes; working directory is set to the `addon_folder` variable defined in `bpy-build.yaml`
+- `main`: executed during the build process; directory is set to a copy of the source tree under `build/stage-1`
+- `pre_build`: executed before building; directory is set to the `addon_folder` variable defined in `bpy-build.yaml`
+- `pre_install`: executed before installing the built addon; directory is set to `build/`
+- `post_install`: executed after installing the built addon; directory is set to the addons folder of the Blender version last installed to
+- `clean_up`: executed after all other build processes; directory is set to the `addon_folder` variable defined in `bpy-build.yaml`
 
 > [!IMPORTANT]
 > `pre_install` and `post_install` are executed for each version BpyBuild installs the addon to. For example, if BpyBuild installs to Blender 4.0 and Blender 4.1, `pre_install` and `post_install` will be executed twice, once for 4.0 and once for 4.1
@@ -67,10 +68,9 @@ def clean_up(ctx: BabContext):
 ```py
 @dataclass
 class BabContext:
-    # Path where the action is being
-    # executed in. This should be
-    # the intended cwd
+    # Target path of the 
+    # action
     current_path: Path
 ```
 
-- `current_path`: the intended working directory the function is executed in. This can be used to validate if you're in the correct working directory, or if you want to perform some file manipulation
+- `current_path`: the path of the action's target directory. This can be thought of as the working directory for the action, though the working directory is not changed when running actions.
