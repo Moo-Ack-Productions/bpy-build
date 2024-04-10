@@ -31,10 +31,12 @@ import unittest
 from unittest import mock
 from io import StringIO
 import bpy_addon_build as bab
+from bpy_addon_build.build_context.install import get_paths
 from pathlib import Path
 
 # parent folder of the tests
 TEST_FOLDER = Path(__file__).parent
+VERSIONS = [2.8, 3.4, 3.5]
 
 
 class TestBpyBuild(unittest.TestCase):
@@ -159,7 +161,7 @@ class TestBpyBuild(unittest.TestCase):
         This test will check for:
         - "PRE BUILD {TEST_FOLDER}/test/test_addon/MCprep_addon" in mock_stdout
         - "MAIN {TEST_FOLDER}/test/test_addon/build/stage-1/MCprep_addon" in mock_stdout
-        - "POST INSTALL " in mock_stdout
+        - "POST INSTALL {install_path}" in mock_stdout
         - "CLEAN UP {TEST_FOLDER}/test/test_addon/MCprep_addon" in mock_stdout
 
         TODO: add more complexity to hooks
@@ -178,23 +180,11 @@ class TestBpyBuild(unittest.TestCase):
         )
         self.assertIn(f"CLEAN UP {TEST_FOLDER}/test_addon/MCprep_addon", stdout_list)
 
-        # Check post install output
-        #
-        # TODO: Check folder output as well
-        #
-        # Info for the future:
-        # This uses the format of "POST INSTALL {path}", where
-        # path is the path to the addon folder. This vastly differs
-        # depending on the system and versions installed, but the major
-        # operating systems use the following paths:
-        # Windows: ~/AppData/Roaming/Blender Foundation/Blender/{version}/scripts/addons
-        # macOS: ~/Library/Application Support/Blender/{version}/scripts/addons
-        # Linux: ~/.config/blender/{version}/scripts/addons
-        #
-        # We need to validate not only for the correct path, but also
-        # the correct version.
-
-        self.assertRegex(mock_stdout.getvalue(), r"POST INSTALL ")
+        # Check the post install paths. This can be
+        # different depending on the system and the
+        # versions of Blender intsalled.
+        for path in get_paths(VERSIONS):
+            self.assertIn(f"POST INSTALL {path}", stdout_list)
 
 
 if __name__ == "__main__":
