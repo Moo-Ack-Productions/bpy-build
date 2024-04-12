@@ -31,6 +31,9 @@
 #
 # This won't test every feature of BpyBuild (unlike tests.py), but the tests
 # are far more sophisticated due to added complexity.
+#
+# Git operations will have type checking ignored due to Mypy not being able
+# to handle cls
 
 import unittest
 from unittest import mock
@@ -52,6 +55,7 @@ MCPREP_REPO = f"{TEST_FOLDER}/MCprep"
 # The commit to clone from
 MCPREP_SHA = "a95b7e9fb3ac229562897892a8f811bcedafe468"
 MCPREP_URL = "https://github.com/Moo-Ack-Productions/MCprep.git"
+MCPREP_BRANCH = "milestone-3-6-0"
 
 POLIB_SHA = "cc05cfd048cb85031b51aef8c5c720fa9930624b"
 POLIB_URL = f"https://raw.githubusercontent.com/izimobil/polib/{POLIB_SHA}/polib.py"
@@ -65,8 +69,11 @@ class TestBpyBuildProd(unittest.TestCase):
         polib to deps/, verify the sha256 checksum,
         and add deps/ to sys.path.
         """
-        repo = Repo.clone_from(MCPREP_URL, MCPREP_REPO, branch="milestone-3-6-0")  # type: ignore
-        repo.commit(MCPREP_SHA)
+        print("Cloning MCprep...")
+        cls.repo = Repo.clone_from(MCPREP_URL, MCPREP_REPO, branch=MCPREP_BRANCH)  # type: ignore
+        cls.repo.commit(MCPREP_SHA)  # type: ignore
+
+        print("Downloading polib...")
         _ = urllib.request.urlretrieve(POLIB_URL, f"{TEST_FOLDER}/deps/polib.py")
         with open(f"{TEST_FOLDER}/deps/polib.py", "rb") as file:
             polib = file.read()
@@ -81,33 +88,133 @@ class TestBpyBuildProd(unittest.TestCase):
         shutil.rmtree(f"{TEST_FOLDER}/MCprep")
 
     def test_config(self) -> None:
-        """Check the MCprep repo if
-        bpy-build.yaml exists"""
+        """Check the MCprep repo if bpy-build.yaml exists"""
         self.assertTrue(Path(f"{MCPREP_REPO}/bpy-build.yaml").exists())
 
     @mock.patch("sys.stdout", new_callable=StringIO)
     def test_build(self, mock_stdout: StringIO) -> None:
-        """Perform a test build of MCprep at the path
-        defined in MCPREP_REPO.
+        """Perform a test build of MCprep at the path defined in MCPREP_REPO.
 
-        The following tests are performed:
+        This test will check for:
         - stage-1 in build/
         - MCprep_addon.zip in build/
         - MCprep installed in the right paths
         """
 
+        # Check if MCPREP_BRANCH is the current branch
+        # and switch to it if not
+        if TestBpyBuildProd.repo.active_branch.name != MCPREP_BRANCH:  # type: ignore
+            TestBpyBuildProd.repo.git.checkout("-f", MCPREP_BRANCH)  # type: ignore
+
         with mock.patch("sys.argv", ["bab", "-c", f"{MCPREP_REPO}/bpy-build.yaml"]):
             bab.main()
 
-        # Check if the build/ folder exists
         self.assertTrue(Path(f"{MCPREP_REPO}/build").exists())
-
-        # Check if the MCprep_addon.zip exists
         self.assertTrue(Path(f"{MCPREP_REPO}/build/MCprep_addon.zip").exists())
 
         # Check if the MCprep addon is installed in the right paths
         for version in get_paths(VERSIONS):
             self.assertTrue(Path(f"{version}/MCprep_addon").exists())
+
+    @mock.patch("sys.stdout", new_callable=StringIO)
+    def test_translations(self, mock_stdout: StringIO) -> None:
+        """Perform a test build of MCprep at the path defined in MCPREP_REPO, but using the translate action by passing -b translate to bab.
+
+        This test will check for:
+        - stage-1 in build/
+        - MCprep_addon.zip in build/
+        - MCprep installed in the right paths
+        - translations.py in stage-1/MCprep_addon
+        - *.mo files in stage-1/MCprep_addon/MCprep_resources/Languages/
+          where *.po files exist
+        - "Building MO files..." in mock_stdout
+        - "Building Translations..." in mock_stdout
+        """
+
+        # Check if MCPREP_BRANCH is the current branch
+        # and switch to it if not
+        if TestBpyBuildProd.repo.active_branch.name != MCPREP_BRANCH:  # type: ignore
+            TestBpyBuildProd.repo.git.checkout("-f", MCPREP_BRANCH)  # type: ignore
+
+        with mock.patch(
+            "sys.argv",
+            ["bab", "-c", f"{MCPREP_REPO}/bpy-build.yaml", "-b", "translate"],
+        ):
+            bab.main()
+
+        self.assertTrue(Path(f"{MCPREP_REPO}/build").exists())
+        self.assertTrue(Path(f"{MCPREP_REPO}/build/MCprep_addon.zip").exists())
+
+        # Check if the MCprep addon is installed in the right paths
+        for version in get_paths(VERSIONS):
+            self.assertTrue(Path(f"{version}/MCprep_addon").exists())
+
+        # Check if the translations are in the right paths
+        self.assertTrue(
+            Path(f"{MCPREP_REPO}/build/stage-1/MCprep_addon/translations.py").exists()
+        )
+        self.assertTrue(
+            Path(
+                f"{MCPREP_REPO}/build/stage-1/MCprep_addon/MCprep_resources/Languages/"
+            ).exists()
+        )
+
+        path = Path(
+            f"{MCPREP_REPO}/build/stage-1/MCprep_addon/MCprep_resources/Languages/"
+        )
+        for po in path.glob("*.po"):
+            self.assertTrue(Path(f"{path}/{po.stem}.mo").exists())
+
+        # Check mock_stdout for expected strings.
+        stdout_list = mock_stdout.getvalue().split("\n")
+        self.assertIn("Building MO files...", stdout_list)
+        self.assertIn("Building Translations...", stdout_list)
+
+    @mock.patch("sys.stdout", new_callable=StringIO)
+    def test_hook_patch(self, mock_stdout: StringIO) -> None:
+        """Perform a test build of MCprep at the path defined in MCPREP_REPO, but on the xgettext-replacement-action branch, patched with {TEST_FOLDER}/mcprep-patches/build_pot_prebuild.patch.
+
+        This is to make sure hooks can be migrated easily
+        with simple changes.
+
+        This test will check for:
+        - stage-1 in build/
+        - MCprep_addon.zip in build/
+        - MCprep installed in the right paths
+        - mcprep.pot in MCPREP_REPO/MCprep_addon/MCprep_resources/Languages/
+        """
+
+        # Switch branch and patch
+        TestBpyBuildProd.repo.git.checkout("-f", "xgettext-replacement-action")  # type: ignore
+        TestBpyBuildProd.repo.git.apply(  # type: ignore
+            f"{TEST_FOLDER}/mcprep-patches/build_pot_prebuild.patch"
+        )
+
+        with mock.patch(
+            "sys.argv",
+            [
+                "bab",
+                "-c",
+                f"{MCPREP_REPO}/bpy-build.yaml",
+                "-b",
+                "xgettext-replacement-action",
+            ],
+        ):
+            bab.main()
+
+        self.assertTrue(Path(f"{MCPREP_REPO}/build").exists())
+        self.assertTrue(Path(f"{MCPREP_REPO}/build/MCprep_addon.zip").exists())
+
+        # Check if the MCprep addon is installed in the right paths
+        for version in get_paths(VERSIONS):
+            self.assertTrue(Path(f"{version}/MCprep_addon").exists())
+
+        # Check if the mcprep.pot is in the right path
+        self.assertTrue(
+            Path(
+                f"{MCPREP_REPO}/MCprep_addon/MCprep_resources/Languages/mcprep.pot"
+            ).exists()
+        )
 
 
 if __name__ == "__main__":
