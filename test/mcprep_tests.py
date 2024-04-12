@@ -46,6 +46,8 @@ import shutil
 import urllib.request
 import hashlib
 import sys
+import multiprocessing as mp
+from multiprocessing.managers import DictProxy
 
 # parent folder of the tests
 TEST_FOLDER = Path(__file__).parent
@@ -62,6 +64,27 @@ POLIB_URL = f"https://raw.githubusercontent.com/izimobil/polib/{POLIB_SHA}/polib
 POLIB_HASH = "3a4dc3d0682cf71f9bbfc40e526b58e4beaa6171a49712f6182736a45b797e9a"
 
 
+def clone_mcprep(repo: DictProxy) -> None:
+    """Clone the MCprep repo"""
+    print("Cloning MCprep...")
+    repo["repo"] = Repo.clone_from(MCPREP_URL, MCPREP_REPO, branch=MCPREP_BRANCH)  # type: ignore
+    repo["repo"].commit(MCPREP_SHA)  # type: ignore
+    print("Cloned MCprep")
+
+
+def download_polib() -> None:
+    """Download polib to deps/"""
+    print("Downloading polib...")
+    _ = urllib.request.urlretrieve(POLIB_URL, f"{TEST_FOLDER}/deps/polib.py")
+    print("Downloaded polib, verifying hash...")
+    with open(f"{TEST_FOLDER}/deps/polib.py", "rb") as file:
+        polib = file.read()
+    hasher = hashlib.sha256()
+    hasher.update(polib)
+    assert hasher.hexdigest() == POLIB_HASH
+    print("Verified polib")
+
+
 class TestBpyBuildProd(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -69,23 +92,35 @@ class TestBpyBuildProd(unittest.TestCase):
         polib to deps/, verify the sha256 checksum,
         and add deps/ to sys.path.
         """
-        print("Cloning MCprep...")
-        cls.repo = Repo.clone_from(MCPREP_URL, MCPREP_REPO, branch=MCPREP_BRANCH)  # type: ignore
-        cls.repo.commit(MCPREP_SHA)  # type: ignore
 
-        print("Downloading polib...")
-        _ = urllib.request.urlretrieve(POLIB_URL, f"{TEST_FOLDER}/deps/polib.py")
-        with open(f"{TEST_FOLDER}/deps/polib.py", "rb") as file:
-            polib = file.read()
-        hasher = hashlib.sha256()
-        hasher.update(polib)
-        assert hasher.hexdigest() == POLIB_HASH
+        # This repo object allow
+        # us to "return" the repo
+        # object so we can set it
+        # as a class attribute
+        manager = mp.Manager()
+        repo: DictProxy[str, Repo] = manager.dict()
+
+        processes = [
+            mp.Process(target=clone_mcprep, args=(repo,)),  # type: ignore
+            mp.Process(target=download_polib),  # type: ignore
+        ]
+        for process in processes:
+            process.start()
+
+        for process in processes:
+            process.join()
+
+        # Add the repo object
+        # to the class and set
+        # sys.path to include deps/
+        cls.repo = repo["repo"]  # type: ignore
         sys.path.append(f"{TEST_FOLDER}/deps")
 
     @classmethod
     def tearDownClass(cls) -> None:
         """Remove the MCprep repo"""
         shutil.rmtree(f"{TEST_FOLDER}/MCprep")
+        Path(f"{TEST_FOLDER}/deps/polib.py").unlink()
 
     def test_config(self) -> None:
         """Check the MCprep repo if bpy-build.yaml exists"""
@@ -118,7 +153,8 @@ class TestBpyBuildProd(unittest.TestCase):
 
     @mock.patch("sys.stdout", new_callable=StringIO)
     def test_translations(self, mock_stdout: StringIO) -> None:
-        """Perform a test build of MCprep at the path defined in MCPREP_REPO, but using the translate action by passing -b translate to bab.
+        """Perform a test build of MCprep at the path defined in
+        MCPREP_REPO, but using the translate action by passing -b translate to bab.
 
         This test will check for:
         - stage-1 in build/
@@ -172,7 +208,8 @@ class TestBpyBuildProd(unittest.TestCase):
 
     @mock.patch("sys.stdout", new_callable=StringIO)
     def test_hook_patch(self, mock_stdout: StringIO) -> None:
-        """Perform a test build of MCprep at the path defined in MCPREP_REPO, but on the xgettext-replacement-action branch, patched with {TEST_FOLDER}/mcprep-patches/build_pot_prebuild.patch.
+        """Perform a test build of MCprep at the path defined in MCPREP_REPO,
+        but on the xgettext-replacement-action branch, patched with {TEST_FOLDER}/mcprep-patches/build_pot_prebuild.patch.
 
         This is to make sure hooks can be migrated easily
         with simple changes.
