@@ -7,8 +7,7 @@ mypy:
   poetry run mypy --pretty bpy_addon_build
 
 format:
-  poetry run black bpy_addon_build
-  just mypy
+  poetry run ruff format bpy_addon_build
 
-test: mypy
+test:
   poetry run bab -b dev -c test/bpy-build.yaml  

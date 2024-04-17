@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0] - 2024-02-02
+
+
+### Fix: Fixed issue with not finding .X0 versions
+
+
+
+### Test: Added 2.8 to test file
+
+
+## [0.3.0-alpha-2] - 2023-12-19
+
 ## [0.3.0-alpha-1] - 2023-09-03
 
 

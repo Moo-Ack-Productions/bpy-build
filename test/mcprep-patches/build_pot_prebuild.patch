@@ -1,0 +1,35 @@
+diff --git a/action-scripts/translate_scripts/build_pot.py b/action-scripts/translate_scripts/build_pot.py
+index 7057075..35adba2 100644
+--- a/action-scripts/translate_scripts/build_pot.py
++++ b/action-scripts/translate_scripts/build_pot.py
+@@ -1,6 +1,7 @@
+ import ast
+ from pathlib import Path
+ import polib
++from bpy_addon_build.api import BabContext
+ 
+ class TranslateCallVisitor(ast.NodeVisitor):
+     def __init__(self):
+@@ -42,11 +43,11 @@ class TranslateCallVisitor(ast.NodeVisitor):
+                 self.keys[msgid.value].append(msgid.lineno)
+         self.generic_visit(node)
+ 
+-def main():
++def pre_build(ctx: BabContext):
+     print("Building POT...")
+     path = Path(".")
+     extracted_strings = {}
+-    for p in path.rglob("*.py"):
++    for p in path.rglob(f"{ctx.current_path}/*.py"):
+         with open(p, 'r') as f:
+             root = ast.parse(f.read())
+             visitor = TranslateCallVisitor()
+@@ -75,7 +76,4 @@ def main():
+                 occurrences=[(file, n) for n in lineno]
+             )
+             po.append(entry)
+-            po.save("MCprep_resources/Languages/mcprep.pot")
+-
+-if __name__ == "__main__":
+-    main()
++            po.save(f"{ctx.current_path}/MCprep_resources/Languages/mcprep.pot")
