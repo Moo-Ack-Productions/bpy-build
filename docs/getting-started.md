@@ -35,7 +35,7 @@ during_build:
     script: "default.py"
 ```
 
-Check the [action docs](./actions.md) for more information.
+Check the [action docs](/docs/actions.md) for more information.
 
 When we build, the default case will always run. We can also define cases we want to only run if we specify them:
 ```yaml
