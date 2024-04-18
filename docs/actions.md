@@ -74,3 +74,16 @@ class BabContext:
 ```
 
 - `current_path`: the path of the action's target directory. This can be thought of as the working directory for the action, though the working directory is not changed when running actions.
+
+# Compatibility 
+> [!ALERT]
+> This is intended for MCprep through [MCprep-first development](/docs/mcprep-first.md)
+
+For backwards compatibility, BpyBuild can run declarations of the `main` hook with no arguments, at the cost of not being allowed to return warnings or errors. If argument-less `main` exists, it will be ran with the working directory set to the build directory.
+
+For example:
+```py
+def main() -> None:
+    # do stuff...
+```
+
