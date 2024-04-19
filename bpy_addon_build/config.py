@@ -13,7 +13,7 @@ class BuildAction:
 
     Attributes
     ----------
-    script: str
+    script: Optional[str]
         The Python script associated with the action
 
     ignore_filters: Optional[List[str]]
@@ -21,7 +21,7 @@ class BuildAction:
         folder with this action
     """
 
-    script: str
+    script: Optional[str] = None
     ignore_filters: Optional[List[str]] = None
 
 

@@ -43,6 +43,8 @@ class Api:
             self.action_mods: Dict[str, ModuleType] = {}
 
             for action in self.build_actions:
+                if self.build_actions[action].script is None:
+                    continue
                 mod = self.add_modules(config_path, action, debug_mode)
                 if mod is None:
                     continue
@@ -53,9 +55,10 @@ class Api:
     ) -> Optional[ModuleType]:
         import importlib.util
 
-        path = config_path.parent.resolve().joinpath(
-            Path(self.build_actions[action].script)
-        )
+        script = self.build_actions[action].script
+        if script is None:
+            return None
+        path = config_path.parent.resolve().joinpath(Path(script))
 
         # Add the parent folder of the script to the sys path
         # so that we don't get module errors

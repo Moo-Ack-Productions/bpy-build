@@ -146,6 +146,48 @@ class TestBpyBuild(unittest.TestCase):
             self.assertEqual(f.read().strip(), "hi guys c:")
 
     @mock.patch("sys.stdout", new_callable=StringIO)
+    def test_no_script_actions(self, mock_stdout: StringIO) -> None:
+        """Perform a test build using the
+        project in test_addon
+
+        This is identical to test_build, but
+        the build command is now ran with -b no-script,
+        which has no Python script associated with it
+        and only has ignore filters
+
+        This test will check for:
+        - Build folder
+        - MCprep_addon.zip
+        - stage-1 folder
+        - Lack of stage-1/MCprep_addon/ignore.blend
+        - "MAIN" in mock_stdout
+        """
+        with mock.patch(
+            "sys.argv",
+            [
+                "bab",
+                "-c",
+                f"{TEST_FOLDER}/test_addon/bpy-build.yaml",
+                "-b",
+                "no-script",
+            ],
+        ):
+            bab.main()
+        build = Path(f"{TEST_FOLDER}/test_addon/build")
+
+        # This could be consolidated into a single call,
+        # but I feel this is more readable as it's calling
+        # for each individual condition, and reduces complexity.
+        self.assertTrue(build.exists() and build.is_dir())
+        self.assertTrue((build / "MCprep_addon.zip").exists())
+        self.assertTrue((build / "stage-1").exists())
+        self.assertFalse((build / "stage-1/MCprep_addon/ignore.blend").exists())
+
+        # Check mock_stdout and mcprep_dev.txt for some
+        # expected strings.
+        self.assertRegex(mock_stdout.getvalue(), r"MAIN")  # default action
+
+    @mock.patch("sys.stdout", new_callable=StringIO)
     def test_hooks(self, mock_stdout: StringIO) -> None:
         """Perform a test build using the
         project in test_addon.
