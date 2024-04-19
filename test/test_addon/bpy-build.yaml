@@ -15,3 +15,6 @@ build_actions:
       - "*.blend"
   old:
     script: "old.py"
+  no-script:
+    ignore_filters:
+      - "*.blend"
