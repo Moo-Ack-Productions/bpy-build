@@ -29,6 +29,7 @@
 
 from typing import Dict, List, Optional, Union
 import yaml
+from bpy_addon_build.config import build_config
 from bpy_addon_build.api import Api
 from bpy_addon_build.build_context import hooks
 from bpy_addon_build.build_context.build import build
@@ -37,14 +38,12 @@ from bpy_addon_build.build_context.install import install
 from bpy_addon_build.config import Config
 from . import args
 from .build_context.core import BuildContext
-from cattrs.preconf.pyyaml import make_converter
 from rich.console import Console
 
 
 def main() -> None:
     cli = args.parse_args()
     console = Console()
-    converter = make_converter()
 
     if cli.debug_mode:
         console.print(cli)
@@ -57,7 +56,7 @@ def main() -> None:
         data: Dict[str, Union[str, List[float], Dict[str, Dict[str, str]]]] = (
             yaml.safe_load(f)
         )
-        config: Config = converter.structure(data, Config)
+        config: Config = build_config(cli, data)
         api: Api = Api(config, cli.path, cli.debug_mode)
         context = BuildContext(cli.path, config, cli, api)
 

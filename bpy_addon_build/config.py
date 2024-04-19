@@ -1,5 +1,9 @@
 from typing import Dict, List, Optional
 from attrs import frozen
+from cattrs.preconf.pyyaml import make_converter
+import cattrs
+
+from .args import Args
 
 
 # Must be ignored to pass Mypy as this has
@@ -7,9 +11,7 @@ from attrs import frozen
 # attrs works
 @frozen  # type: ignore
 class BuildAction:
-    """
-    Class that represents a build
-    action
+    """Class that represents a build action
 
     Attributes
     ----------
@@ -30,8 +32,7 @@ class BuildAction:
 # attrs works
 @frozen  # type: ignore
 class Config:
-    """
-    Class to better handle config parsing, especially with more complex arguments
+    """Class to better handle config parsing, especially with more complex arguments
 
     Attributes
     ----------
@@ -52,3 +53,38 @@ class Config:
     build_name: str
     install_versions: Optional[List[float]] = None
     build_actions: Optional[Dict[str, BuildAction]] = None
+
+
+def build_config(args: Args, data: Dict) -> Config:
+    """Create a config object to represent the config.
+
+    NOTE: This will terminate the program if an exception
+    occurs in catters
+
+    args: Args
+        Arguments passed to the CLI.
+
+    data: Dict
+        Raw data from YAML config.
+
+    Returns:
+        - Config if successful
+    """
+
+    # Lots of type ignores because cattrs
+    # is weird with types, like attrs
+    converter = make_converter()
+    try:
+        return converter.structure(data, Config)  # type: ignore
+    except cattrs.errors.ClassValidationError as e:  # type: ignore
+        structure_errors: List[KeyError] = []
+        for err in e.exceptions[0].exceptions:  # type: ignore
+            structure_errors.append(err.exceptions[0])  # type: ignore
+
+        print("Issues in unstructuring the following: ")
+        for s in structure_errors:
+            print(s)
+
+        if args.debug_mode:
+            raise e
+        quit()
