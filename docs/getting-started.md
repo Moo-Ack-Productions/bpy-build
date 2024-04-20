@@ -1,4 +1,6 @@
-# Getting Started
+# Getting Started: Building your own addoon
+
+To get started using bpy-build to manage building and reloading your own blender addon project, follow the steps below.
 Install from PyPi:
 `pip install bpy-addon-build`
 
