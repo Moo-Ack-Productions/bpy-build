@@ -1,9 +1,26 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TypedDict
+from typing_extensions import NotRequired
 from attrs import frozen
 from cattrs.preconf.pyyaml import make_converter
 import cattrs
 
 from .args import Args
+
+
+class BuildActionDict(TypedDict):
+    """TypeDict version of BuildAction"""
+
+    script: NotRequired[str]
+    ignore_filters: NotRequired[str]
+
+
+class ConfigDict(TypedDict):
+    """TypeDict version of Config"""
+
+    addon_folder: str
+    build_name: str
+    install_versions: NotRequired[List[float]]
+    build_actions: NotRequired[Dict[str, BuildActionDict]]
 
 
 # Must be ignored to pass Mypy as this has
@@ -55,7 +72,7 @@ class Config:
     build_actions: Optional[Dict[str, BuildAction]] = None
 
 
-def build_config(args: Args, data: Dict) -> Config:
+def build_config(args: Args, data: ConfigDict) -> Config:
     """Create a config object to represent the config.
 
     NOTE: This will terminate the program if an exception

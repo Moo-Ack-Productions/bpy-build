@@ -27,9 +27,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from typing import Dict, List, Optional, Union
+from typing import Optional
 import yaml
-from bpy_addon_build.config import build_config
+from bpy_addon_build.config import ConfigDict, build_config
 from bpy_addon_build.api import Api
 from bpy_addon_build.build_context import hooks
 from bpy_addon_build.build_context.build import build
@@ -53,9 +53,7 @@ def main() -> None:
 
     context: Optional[BuildContext] = None
     with open(cli.path, "r") as f:
-        data: Dict[str, Union[str, List[float], Dict[str, Dict[str, str]]]] = (
-            yaml.safe_load(f)
-        )
+        data: ConfigDict = yaml.safe_load(f)
         config: Config = build_config(cli, data)
         api: Api = Api(config, cli.path, cli.debug_mode)
         context = BuildContext(cli.path, config, cli, api)
