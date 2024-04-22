@@ -1,6 +1,6 @@
 from rich.console import Console
 
-EXIT_FAIL = 1
+EXIT_FAIL: int = 1
 
 
 def print_warning(msg: str, console: Console) -> None:

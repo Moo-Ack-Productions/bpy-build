@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 from pathlib import Path
 import shutil
-from typing import List
+
 from bpy_addon_build.build_context.core import BuildContext, INSTALL_PATHS, console
 from bpy_addon_build.build_context import hooks
 
 
-def get_paths(versions: List[float]) -> List[Path]:
+def get_paths(versions: list[float]) -> list[Path]:
     """Given a list of versions, return paths
     that exist to the corresponding addon folders
     on the system.
@@ -13,7 +15,7 @@ def get_paths(versions: List[float]) -> List[Path]:
     Returns:
         - List[Path]: List of paths that exist
     """
-    paths: List[Path] = []
+    paths: list[Path] = []
     for v in versions:
         for p in INSTALL_PATHS:
             path = Path(p.format(str(v))).expanduser()

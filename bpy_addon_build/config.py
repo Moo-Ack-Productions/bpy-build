@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import sys
 import traceback
-
 from typing import Dict, List, Optional, TypedDict, Union
+
 from typing_extensions import NotRequired
 from attrs import frozen
 import cattrs
@@ -24,8 +26,8 @@ class ConfigDict(TypedDict):
 
     addon_folder: str
     build_name: str
-    install_versions: NotRequired[List[float]]
-    build_actions: NotRequired[Dict[str, Union[BuildActionDict, None]]]
+    install_versions: NotRequired[list[float]]
+    build_actions: NotRequired[dict[str, Union[BuildActionDict, None]]]
 
 
 # Must be ignored to pass Mypy as this has
@@ -130,7 +132,7 @@ def build_config(args: Args, data: ConfigDict) -> Config:
     try:
         return converter.structure(data, Config)  # type: ignore
     except cattrs.errors.ClassValidationError as e:  # type: ignore
-        structure_errors: List[KeyError] = []
+        structure_errors: list[KeyError] = []
         for err in e.exceptions[0].exceptions:  # type: ignore
             structure_errors.append(err.exceptions[0])  # type: ignore
 

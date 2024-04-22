@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import List
+
 from attrs import define
 from bpy_addon_build.api import Api
 from bpy_addon_build.args import Args
@@ -7,7 +9,7 @@ from bpy_addon_build.args import Args
 from bpy_addon_build.config import Config
 from rich.console import Console
 
-INSTALL_PATHS: List[str] = [
+INSTALL_PATHS: list[str] = [
     "~/AppData/Roaming/Blender Foundation/Blender/{0}/scripts/addons",
     "~/Library/Application Support/Blender/{0}/scripts/addons",
     "~/.config/blender/{0}/scripts/addons",
