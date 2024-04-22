@@ -84,7 +84,7 @@ class Config:
     build_actions: Optional[Dict[str, BuildAction]] = None
 
 
-def build_config(args: Args, data: ConfigDict) -> Config:
+def build_config(data: ConfigDict) -> Config:
     """Create a config object to represent the config.
 
     NOTE: This will terminate the program if an error occurs
