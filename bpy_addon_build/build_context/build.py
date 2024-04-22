@@ -1,7 +1,8 @@
-from bpy_addon_build.build_context.core import BuildContext
-from bpy_addon_build.build_context import hooks
 import shutil
 from pathlib import Path
+
+from bpy_addon_build.build_context import hooks
+from bpy_addon_build.build_context.core import BuildContext
 
 
 def combine_with_build(ctx: BuildContext, path: Path) -> Path:
