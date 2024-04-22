@@ -1,5 +1,7 @@
 from rich.console import Console
 
+EXIT_FAIL = 1
+
 
 def print_warning(msg: str, console: Console) -> None:
     """
