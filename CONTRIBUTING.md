@@ -26,6 +26,15 @@ just mypy
 # Or if you don't have just installed
 poetry run mypy --pretty bpy_addon_build
 ```
+
+## Typing
+Although BpyBuild supports Python 3.8, we try to use [PEP 585](https://peps.python.org/pep-0585/) types wherever possible, using `annotations` from the `__futures__` module. This means for the most part, `dict`, `list`, `tuple`, etc. can be used with little issue. That being said, the following has to be kept in mind:
+- These annotations are hackish in the CPython interpreter, so these can't be used for `attrs`/`cattrs` classes, or if `cast` needs to be performed. In those cases, their `typing` counterparts will have to be used
+- New files that use PEP 585 annotations will need to have `from __future__ import annotations` as the first import in the file
+- Although it would be nice, [PEP 604](https://peps.python.org/pep-0604/) syntax for Unions is not an option with `__futures__` in Python 3.8
+
+Despite some of the headaches with using annotations from `__futures__`, we encourage their use so that migrating becomes less of a burden in the future.
+
 # Formatting
 All commits must be formatted with https://github.com/astral-sh/ruff. We have a pre-commit hook for this (see the Pre-Commit Hooks section).
 

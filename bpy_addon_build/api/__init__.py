@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from types import ModuleType
-from typing import Dict, Optional
+from typing import Optional
 from pathlib import Path
 from bpy_addon_build.config import Config
 from dataclasses import dataclass
@@ -40,7 +42,7 @@ class Api:
     def __init__(self, conf: Config, config_path: Path, debug_mode: bool) -> None:
         if conf.build_actions is not None:
             self.build_actions = conf.build_actions
-            self.action_mods: Dict[str, ModuleType] = {}
+            self.action_mods: dict[str, ModuleType] = {}
 
             for action in self.build_actions:
                 if self.build_actions[action].script is None:
