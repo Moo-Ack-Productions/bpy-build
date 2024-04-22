@@ -1,10 +1,11 @@
-from enum import Enum
 import os
+from enum import Enum
 from typing import Callable, Optional, Union, cast, get_type_hints
-from typeguard import TypeCheckError, check_type
-from bpy_addon_build.api import BabContext, BpyError, BpyWarning
-from rich.console import Console
 
+from rich.console import Console
+from typeguard import TypeCheckError, check_type
+
+from bpy_addon_build.api import BabContext, BpyError, BpyWarning
 from bpy_addon_build.build_context.core import WORKING_DIR, BuildContext
 from bpy_addon_build.util import print_error, print_warning
 

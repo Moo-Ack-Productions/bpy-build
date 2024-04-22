@@ -3,11 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from attrs import define
+from rich.console import Console
+
 from bpy_addon_build.api import Api
 from bpy_addon_build.args import Args
-
 from bpy_addon_build.config import Config
-from rich.console import Console
 
 INSTALL_PATHS: list[str] = [
     "~/AppData/Roaming/Blender Foundation/Blender/{0}/scripts/addons",

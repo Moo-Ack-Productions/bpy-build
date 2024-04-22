@@ -1,13 +1,14 @@
+from pathlib import Path
+
 from bpy_addon_build.api import BabContext
 from bpy_addon_build.build_context.core import BuildContext, console
 from bpy_addon_build.build_context.hook_definitions import (
     build_action_cleanup,
-    build_action_prebuild,
     build_action_main,
     build_action_postinstall,
+    build_action_prebuild,
     build_action_preinstall,
 )
-from pathlib import Path
 
 
 def run_prebuild_hooks(ctx: BuildContext) -> None:

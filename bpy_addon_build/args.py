@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List, Optional, cast
-from attrs import define, field, Attribute
+
+from attrs import Attribute, define, field
 
 
 # Must be ignored to pass Mypy as this has

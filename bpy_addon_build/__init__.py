@@ -30,17 +30,18 @@
 from __future__ import annotations
 
 from typing import Optional
+
 import yaml
-from bpy_addon_build.config import ConfigDict, build_config
+from rich.console import Console
+
 from bpy_addon_build.api import Api
 from bpy_addon_build.build_context import hooks
 from bpy_addon_build.build_context.build import build
 from bpy_addon_build.build_context.install import install
+from bpy_addon_build.config import Config, ConfigDict, build_config
 
-from bpy_addon_build.config import Config
 from . import args
 from .build_context.core import BuildContext
-from rich.console import Console
 
 
 def main() -> None:

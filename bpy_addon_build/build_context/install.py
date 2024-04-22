@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
 import shutil
+from pathlib import Path
 
-from bpy_addon_build.build_context.core import BuildContext, INSTALL_PATHS, console
 from bpy_addon_build.build_context import hooks
+from bpy_addon_build.build_context.core import INSTALL_PATHS, BuildContext, console
 
 
 def get_paths(versions: list[float]) -> list[Path]:

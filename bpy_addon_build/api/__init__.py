@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import sys
+from dataclasses import dataclass
+from pathlib import Path
 from types import ModuleType
 from typing import Optional
-from pathlib import Path
+
 from bpy_addon_build.config import Config
-from dataclasses import dataclass
-import sys
 
 
 @dataclass
