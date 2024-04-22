@@ -8,8 +8,7 @@ from attrs import frozen
 from rich.console import Console
 from typing_extensions import NotRequired
 
-from .args import Args
-from .util import EXIT_FAIL, print_error
+from .util import EXIT_FAIL, check_string, print_error
 
 ADDON_FOLDER: Literal["addon_folder"] = "addon_folder"
 BUILD_NAME: Literal["build_name"] = "build_name"
@@ -105,12 +104,28 @@ def build_config(data: ConfigDict) -> Config:
         if ADDON_FOLDER not in data:
             print_error("addon_folder not defined!", console)
             sys.exit(EXIT_FAIL)
+
+        # Disallow '.' as a folder option
+        # as it's been found to cause issues
+        # during the copy phase.
+        #
+        # When used, BpyBuild will recursively
+        # copy the build folder, as well as .git,
+        # leading to a whole load of pain later on.
+        #
+        # As such, this is simply not allowed.
         elif data[ADDON_FOLDER] == ".":
             print_error("Addon must be in a subfolder!", console)
+            sys.exit(EXIT_FAIL)
+        elif not check_string(data[ADDON_FOLDER]):
+            print_error("addon_folder uses unsupported characters!", console)
             sys.exit(EXIT_FAIL)
 
         if BUILD_NAME not in data:
             print_error("build_name must be defined!", console)
+            sys.exit(EXIT_FAIL)
+        elif not check_string(data[BUILD_NAME]):
+            print_error("build_name uses unsupported characters!", console)
             sys.exit(EXIT_FAIL)
 
         if INSTALL_VERSIONS in data:
@@ -123,14 +138,36 @@ def build_config(data: ConfigDict) -> Config:
 
         if BUILD_ACTIONS in data:
             for act in data[BUILD_ACTIONS]:
+                if not check_string(act):
+                    print_error(f"{act} uses unsupported characters!", console)
+                    sys.exit(EXIT_FAIL)
                 action_data = data[BUILD_ACTIONS][act]
                 if action_data is not None:
+                    # We need to make sure the script name
+                    # matches the restrictions we've defined
+                    # in check_string. Otherwise, we could
+                    # have issues when importing the script
+                    # as a module later on.
+                    if SCRIPT in action_data and not check_string(
+                        action_data[SCRIPT][:-3]
+                    ):
+                        print_error(
+                            f"Script defined for {act} uses unsupported characters in file name!",
+                            console,
+                        )
+                        sys.exit(EXIT_FAIL)
+
+                    # Add the action to parsed_build_acts to
+                    # use later in Config construction
                     parsed_build_acts[act] = BuildAction(
                         script=action_data[SCRIPT] if SCRIPT in action_data else None,
                         ignore_filters=action_data[IGNORE_FILTERS]
                         if IGNORE_FILTERS in action_data
                         else None,
                     )
+
+                # If an action has nothing defined, what's the
+                # point of said action?
                 print_error(f"{act} must have something defined!", console)
                 sys.exit(EXIT_FAIL)
 
