@@ -1,10 +1,15 @@
-from typing import Dict, List, Optional, TypedDict
+import sys
+import traceback
+
+from typing import Dict, List, Optional, TypedDict, Union
 from typing_extensions import NotRequired
 from attrs import frozen
-from cattrs.preconf.pyyaml import make_converter
 import cattrs
+from cattrs.preconf.pyyaml import make_converter
+from rich.console import Console
 
 from .args import Args
+from .util import EXIT_FAIL
 
 
 class BuildActionDict(TypedDict):
@@ -20,7 +25,7 @@ class ConfigDict(TypedDict):
     addon_folder: str
     build_name: str
     install_versions: NotRequired[List[float]]
-    build_actions: NotRequired[Dict[str, BuildActionDict]]
+    build_actions: NotRequired[Dict[str, Union[BuildActionDict, None]]]
 
 
 # Must be ignored to pass Mypy as this has
@@ -88,6 +93,37 @@ def build_config(args: Args, data: ConfigDict) -> Config:
         - Config if successful
     """
 
+    console = Console()
+    try:
+        if "addon_folder" not in data:
+            console.print("Addon Folder not defined in Config", style="bold red")
+            sys.exit(EXIT_FAIL)
+        elif data["addon_folder"] == ".":
+            console.print("Addon must be in a subfolder!", style="bold red")
+            sys.exit(EXIT_FAIL)
+
+        if "build_actions" in data:
+            for act in data["build_actions"]:
+                if data["build_actions"][act] is not None:
+                    continue
+                console.print(f"{act} must have something defined!", style="bold red")
+                sys.exit(EXIT_FAIL)
+
+        if "install_versions" in data:
+            for ver in data["install_versions"]:
+                try:
+                    _ = float(ver)
+                except Exception:
+                    console.print(
+                        f"{ver} isn't a valid floating point value", style="bold red"
+                    )
+                    sys.exit(EXIT_FAIL)
+    except Exception as e:
+        console.print(e)
+        console.print(traceback.format_exc())
+        console.print(data)
+        sys.exit(EXIT_FAIL)
+
     # Lots of type ignores because cattrs
     # is weird with types, like attrs
     converter = make_converter()
@@ -104,4 +140,4 @@ def build_config(args: Args, data: ConfigDict) -> Config:
 
         if args.debug_mode:
             raise e
-        quit()
+        quit(1)
