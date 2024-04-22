@@ -32,10 +32,10 @@ class Api:
 
     Attributes
     ----------
-    build_actions: Dict[str, str]
+    build_actions: dict[str, str]
         Action name to script file
 
-    action_mods: Dict[str, ModuleType]
+    action_mods: dict[str, ModuleType]
         Action name to module
     """
 
