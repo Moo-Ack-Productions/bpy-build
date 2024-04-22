@@ -57,7 +57,7 @@ def main() -> None:
     context: Optional[BuildContext] = None
     with open(cli.path, "r") as f:
         data: ConfigDict = yaml.safe_load(f)
-        config: Config = build_config(cli, data)
+        config: Config = build_config(data)
         api: Api = Api(config, cli.path, cli.debug_mode)
         context = BuildContext(cli.path, config, cli, api)
 
