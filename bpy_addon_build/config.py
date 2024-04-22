@@ -130,9 +130,7 @@ def build_config(data: ConfigDict) -> Config:
 
         if INSTALL_VERSIONS in data:
             for ver in data[INSTALL_VERSIONS]:
-                try:
-                    _ = float(ver)
-                except Exception:
+                if not isinstance(ver, float):
                     print_error(f"{ver} isn't a valid floating point value", console)
                     sys.exit(EXIT_FAIL)
 
@@ -165,6 +163,7 @@ def build_config(data: ConfigDict) -> Config:
                         if IGNORE_FILTERS in action_data
                         else None,
                     )
+                    continue
 
                 # If an action has nothing defined, what's the
                 # point of said action?
