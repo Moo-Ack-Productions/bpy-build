@@ -2,23 +2,28 @@ from __future__ import annotations
 
 import sys
 import traceback
-from typing import Dict, List, Optional, TypedDict, Union
+from typing import Dict, List, Literal, Optional, TypedDict
 
-from typing_extensions import NotRequired
 from attrs import frozen
-import cattrs
-from cattrs.preconf.pyyaml import make_converter
 from rich.console import Console
+from typing_extensions import NotRequired
 
 from .args import Args
-from .util import EXIT_FAIL
+from .util import EXIT_FAIL, print_error
+
+ADDON_FOLDER: Literal["addon_folder"] = "addon_folder"
+BUILD_NAME: Literal["build_name"] = "build_name"
+INSTALL_VERSIONS: Literal["install_versions"] = "install_versions"
+BUILD_ACTIONS: Literal["build_actions"] = "build_actions"
+SCRIPT: Literal["script"] = "script"
+IGNORE_FILTERS: Literal["ignore_filters"] = "ignore_filters"
 
 
 class BuildActionDict(TypedDict):
     """TypeDict version of BuildAction"""
 
     script: NotRequired[str]
-    ignore_filters: NotRequired[str]
+    ignore_filters: NotRequired[list[str]]
 
 
 class ConfigDict(TypedDict):
@@ -27,7 +32,7 @@ class ConfigDict(TypedDict):
     addon_folder: str
     build_name: str
     install_versions: NotRequired[list[float]]
-    build_actions: NotRequired[dict[str, Union[BuildActionDict, None]]]
+    build_actions: NotRequired[dict[str, Optional[BuildActionDict]]]
 
 
 # Must be ignored to pass Mypy as this has
@@ -82,8 +87,7 @@ class Config:
 def build_config(args: Args, data: ConfigDict) -> Config:
     """Create a config object to represent the config.
 
-    NOTE: This will terminate the program if an exception
-    occurs in catters
+    NOTE: This will terminate the program if an error occurs
 
     args: Args
         Arguments passed to the CLI.
@@ -96,50 +100,51 @@ def build_config(args: Args, data: ConfigDict) -> Config:
     """
 
     console = Console()
+    parsed_build_acts: dict[str, BuildAction] = {}
     try:
-        if "addon_folder" not in data:
-            console.print("Addon Folder not defined in Config", style="bold red")
+        if ADDON_FOLDER not in data:
+            print_error("addon_folder not defined!", console)
             sys.exit(EXIT_FAIL)
-        elif data["addon_folder"] == ".":
-            console.print("Addon must be in a subfolder!", style="bold red")
+        elif data[ADDON_FOLDER] == ".":
+            print_error("Addon must be in a subfolder!", console)
             sys.exit(EXIT_FAIL)
 
-        if "build_actions" in data:
-            for act in data["build_actions"]:
-                if data["build_actions"][act] is not None:
-                    continue
-                console.print(f"{act} must have something defined!", style="bold red")
-                sys.exit(EXIT_FAIL)
+        if BUILD_NAME not in data:
+            print_error("build_name must be defined!", console)
+            sys.exit(EXIT_FAIL)
 
-        if "install_versions" in data:
-            for ver in data["install_versions"]:
+        if INSTALL_VERSIONS in data:
+            for ver in data[INSTALL_VERSIONS]:
                 try:
                     _ = float(ver)
                 except Exception:
-                    console.print(
-                        f"{ver} isn't a valid floating point value", style="bold red"
-                    )
+                    print_error(f"{ver} isn't a valid floating point value", console)
                     sys.exit(EXIT_FAIL)
+
+        if BUILD_ACTIONS in data:
+            for act in data[BUILD_ACTIONS]:
+                action_data = data[BUILD_ACTIONS][act]
+                if action_data is not None:
+                    parsed_build_acts[act] = BuildAction(
+                        script=action_data[SCRIPT] if SCRIPT in action_data else None,
+                        ignore_filters=action_data[IGNORE_FILTERS]
+                        if IGNORE_FILTERS in action_data
+                        else None,
+                    )
+                print_error(f"{act} must have something defined!", console)
+                sys.exit(EXIT_FAIL)
+
     except Exception as e:
         console.print(e)
         console.print(traceback.format_exc())
         console.print(data)
         sys.exit(EXIT_FAIL)
 
-    # Lots of type ignores because cattrs
-    # is weird with types, like attrs
-    converter = make_converter()
-    try:
-        return converter.structure(data, Config)  # type: ignore
-    except cattrs.errors.ClassValidationError as e:  # type: ignore
-        structure_errors: list[KeyError] = []
-        for err in e.exceptions[0].exceptions:  # type: ignore
-            structure_errors.append(err.exceptions[0])  # type: ignore
-
-        print("Issues in unstructuring the following: ")
-        for s in structure_errors:
-            print(s)
-
-        if args.debug_mode:
-            raise e
-        quit(1)
+    return Config(
+        addon_folder=data["addon_folder"],
+        build_name=data["build_name"],
+        install_versions=data["install_versions"]
+        if "install_versions" in data
+        else None,
+        build_actions=parsed_build_acts if len(parsed_build_acts) else None,
+    )
