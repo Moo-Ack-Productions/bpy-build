@@ -11,11 +11,17 @@ from bpy_addon_build.config import Config
 
 @dataclass
 class BpyError:
+    """Error object for BpyBuild"""
+
+    # Message to print in the console
     msg: str
 
 
 @dataclass
 class BpyWarning:
+    """Warning object for BpyBuild"""
+
+    # Message to print in the console
     msg: str
 
 
