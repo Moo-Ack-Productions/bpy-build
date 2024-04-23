@@ -10,7 +10,15 @@ addon_folder: my_addon # the folder with the addon source code
 build_name: my_addon
 ```
 
-**Note: the addon source code must be in a subfolder! BpyBuild does not support using `.` for `addon_folder`**
+> [!IMPORTANT]
+> For security and compatibility reasons, BpyBuild only allows a subset of characters for `addon_folder` and `build_name`. These are:
+> - All English letters (a-z, A-Z)
+> - Numerical digits (0-9)
+> - Whitespace
+> - Hyphens and underscores
+
+> [!CAUTION]
+> Note: the addon source code must be in a subfolder! BpyBuild does not support using `.` for `addon_folder`
 
 Then run `bab`, your addon will be built in the `build` folder!
 
