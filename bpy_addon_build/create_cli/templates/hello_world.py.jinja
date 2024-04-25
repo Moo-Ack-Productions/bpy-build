@@ -1,4 +1,4 @@
-HELLO_WORLD_TEMPLATE = """# ##### BEGIN GPL LICENSE BLOCK #####
+# ##### BEGIN GPL LICENSE BLOCK #####
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -25,12 +25,12 @@ HELLO_WORLD_TEMPLATE = """# ##### BEGIN GPL LICENSE BLOCK #####
 import bpy
 
 bl_info = {
-    "name": {{ addon_name }},
-    "author": {{ author }},
+    "name": "{{ addon_name }}",
+    "author": "{{ author }}",
     "version": (0, 1),
     "blender": ({{ major_version }}, {{ minor_version }}, 0),
     "location": "",
-    "description": {{ desc }},
+    "description": "{{ desc }}",
     "warning": "",
     "support": "COMMUNITY",
     "wiki_url": "",
@@ -64,4 +64,3 @@ def unregister() -> None:
 
 if __name__ == "__main__":
     register()
-"""

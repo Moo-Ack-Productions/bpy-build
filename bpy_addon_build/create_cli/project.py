@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 import yaml
-from jinja2 import Template
+from jinja2 import Environment, PackageLoader, select_autoescape
 from rich.console import Console
 from rich.prompt import FloatPrompt, Prompt
 
@@ -12,7 +12,6 @@ from bpy_addon_build.config import (
     INSTALL_VERSIONS,
     ConfigDict,
 )
-from bpy_addon_build.create_cli.util import HELLO_WORLD_TEMPLATE
 from bpy_addon_build.util import EXIT_FAIL, check_string, print_error
 
 
@@ -80,10 +79,11 @@ def create_project() -> None:
             "desc": desc,
         }
 
-        # Based on the doc string of Template.__new__, this
-        # should return a Template, but it's defined as returning
-        # Any due to something related to Jinja2's development tools
-        template = Template(HELLO_WORLD_TEMPLATE)  # type: ignore
+        env = Environment(
+            loader=PackageLoader("bpy_addon_build.create_cli"),
+            autoescape=select_autoescape(),
+        )  # type: ignore
+        template = env.get_template("hello_world.py.jinja")  # type: ignore
         _ = f.write(template.render(bl_info_template))  # type: ignore
 
 
