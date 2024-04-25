@@ -13,6 +13,7 @@ pyyaml = "^6.0.1"
 rich = "^13.7.0"
 typeguard = "^4.1.5"
 typing-extensions = "^4.11.0"
+jinja2 = "^3.1.3"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.4.1"
@@ -22,7 +23,7 @@ gitpython = "^3.1.43"
 
 [tool.poetry.scripts]
 bab = "bpy_addon_build:main"
-bab-create = "bpy_addon_build.create_project:create_project"
+bab-create = "bpy_addon_build.create_cli.project:create_project"
 
 [build-system]
 requires = ["poetry-core"]
