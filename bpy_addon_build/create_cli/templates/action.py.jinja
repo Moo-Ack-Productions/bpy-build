@@ -1,0 +1,68 @@
+# #####
+# This file was created with BpyBuild. Check it out at: 
+# https://github.com/Moo-Ack-Productions/bpy-build
+# #####
+
+from bpy_addon_build.api import BabContext, BpyWarning, BpyError
+{% if minor_version < 10 %}
+from typing import Optional, Union
+{% endif %}
+
+{# Change the return annotation based on Python version
+because Python 3.10 deprecated Union and Optional, and 
+the new will likely become more familiar to future devs 
+compared to the old syntax
+#}
+{% macro return_annotation(version) -%}
+{% if minor_version >= 10 %}BpyWarning | BpyError | None{% else %}Optional[Union[BpyWarning, BpyError]]{% endif %}
+{%- endmacro %}
+
+{%- if pre_build %}
+def pre_build(ctx: BabContext) -> {{ return_annotation(version) -}}: 
+    """pre_build hook, ran before building.
+    
+    ctx.current_path will be the source folder 
+    defined in bpy-build.yaml.
+    """
+    pass
+{% endif -%}
+
+{% if main %}
+def main(ctx: BabContext) -> {{ return_annotation(version) -}}:
+    """main hook, ran during the build.
+    
+    ctx.current_path will be a special copy
+    of the source folder.
+    """
+    pass
+{% endif -%}
+
+{% if pre_install %}
+def pre_install(ctx: BabContext) -> {{ return_annotation(version) -}}:
+    """pre_install function, ran before 
+    installing in general.
+    
+    ctx.current_path will be the build/ folder.
+    """
+    pass
+{% endif -%}
+
+{% if post_install %}
+def post_install(ctx: BabContext) -> {{ return_annotation(version) -}}:
+    """post_install function, ran after each
+    install of the built addon.
+
+    ctx.current_path will be the path to the addons
+    folder where the addon was last added.
+    """
+    pass
+{% endif -%}
+
+{% if clean_up %}
+def clean_up(ctx: BabContext) -> {{ return_annotation(version) -}}:
+    """clean_up function, ran after everything is done.
+
+    ctx.current_path will be the source folder.
+    """
+    pass
+{% endif -%}

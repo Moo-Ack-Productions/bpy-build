@@ -23,7 +23,7 @@ gitpython = "^3.1.43"
 
 [tool.poetry.scripts]
 bab = "bpy_addon_build:main"
-babex = "bpy_addon_build.create_cli.project:create_project"
+babex = "bpy_addon_build.create_cli:main"
 
 [build-system]
 requires = ["poetry-core"]
