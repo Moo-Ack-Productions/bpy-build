@@ -46,11 +46,11 @@ def parse_args() -> Optional[cc.Args]:
 
     args = ca.create_arguments()
     if hasattr(args, "command"):
-        if args.command == "init":  # type: ignore
+        if args.command == "init":  # type: ignore[misc]
             return cc.Args(command=cc.Command.INIT)
-        elif args.command == "action":  # type: ignore
+        elif args.command == "action":  # type: ignore[misc]
             if hasattr(args, "add_subcommand"):
-                if args.add_subcommand == "add":  # type: ignore
+                if args.add_subcommand == "add":  # type: ignore[misc]
                     return cc.Args(
                         command=cc.Command.ACTION, subcommand=cc.SubCommand.ADD
                     )
