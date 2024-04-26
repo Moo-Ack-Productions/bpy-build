@@ -29,8 +29,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 import yaml
 from rich.console import Console
 
@@ -54,7 +52,7 @@ def main() -> None:
     if not cli.path.exists():
         print(f"Could not find {str(cli.path)}")
 
-    context: Optional[BuildContext] = None
+    context: BuildContext | None = None
     with open(cli.path, "r") as f:
         data: ConfigDict = yaml.safe_load(f)
         config: Config = build_config(data)

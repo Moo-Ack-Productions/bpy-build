@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import sys
 import traceback
-from typing import Dict, List, Literal, Optional, TypedDict
+from typing import Literal, TypedDict
 
 from attrs import frozen
 from rich.console import Console
@@ -60,7 +60,7 @@ class ConfigDict(TypedDict):
     addon_folder: str
     build_name: str
     install_versions: NotRequired[list[float]]
-    build_actions: NotRequired[dict[str, Optional[BuildActionDict]]]
+    build_actions: NotRequired[dict[str, BuildActionDict | None]]
 
 
 # Must be ignored to pass Mypy as this has
@@ -72,16 +72,16 @@ class BuildAction:
 
     Attributes
     ----------
-    script: Optional[str]
+    script: str | None
         The Python script associated with the action
 
-    ignore_filters: Optional[List[str]]
+    ignore_filters: list[str] | None
         Glob filters to ignore when copying the addon
         folder with this action
     """
 
-    script: Optional[str] = None
-    ignore_filters: Optional[List[str]] = None
+    script: str | None = None
+    ignore_filters: list[str] | None = None
 
 
 # Must be ignored to pass Mypy as this has
@@ -99,17 +99,17 @@ class Config:
     build_name: str
         Name of the final build
 
-    versions: Optional[List[float]]
+    versions: list[float] | None
         List of Blender versions to install the final addon to
 
-    actions: Optional[Dict[str, BuildAction]]
+    actions: dict[str, BuildAction] | None
         All actions that can occur during the build
     """
 
     addon_folder: str
     build_name: str
-    install_versions: Optional[List[float]] = None
-    build_actions: Optional[Dict[str, BuildAction]] = None
+    install_versions: list[float] | None = None
+    build_actions: dict[str, BuildAction] | None = None
 
 
 def build_config(data: ConfigDict) -> Config:

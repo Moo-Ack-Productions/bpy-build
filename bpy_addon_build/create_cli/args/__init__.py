@@ -29,13 +29,11 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from bpy_addon_build.create_cli.args import command_classes as cc
 from bpy_addon_build.create_cli.args import create_arguments as ca
 
 
-def parse_args() -> Optional[cc.Args]:
+def parse_args() -> cc.Args | None:
     """Parse arguments with argparse and
     returns an Args object.
 

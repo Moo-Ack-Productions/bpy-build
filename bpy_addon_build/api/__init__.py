@@ -34,7 +34,6 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from types import ModuleType
-from typing import Optional
 
 from typing_extensions import override
 
@@ -133,7 +132,7 @@ class Api:
 
     def add_modules(
         self, config_path: Path, action: str, debug_mode: bool
-    ) -> Optional[ModuleType]:
+    ) -> ModuleType | None:
         import importlib.util
 
         script = self.build_actions[action].script
@@ -154,7 +153,7 @@ class Api:
                 print("Can not generate action spec for", action)
                 print("Path:", path)
             return None
-        action_mod = importlib.util.module_from_spec(action_spec)
+        action_mod: ModuleType | None = importlib.util.module_from_spec(action_spec)
         if action_mod is None:
             if debug_mode:
                 print("Can not generate module from spec for", action)

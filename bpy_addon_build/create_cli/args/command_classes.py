@@ -31,7 +31,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class Command(Enum):
@@ -61,4 +60,4 @@ class Args:
     """
 
     command: Command
-    subcommand: Optional[SubCommand] = None
+    subcommand: SubCommand | None = None
