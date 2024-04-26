@@ -33,12 +33,12 @@ from typing import Callable, Optional, Union, cast, get_type_hints
 from rich.console import Console
 from typeguard import TypeCheckError, check_type
 
-from bpy_addon_build.api import BabContext, BpyError, BpyWarning
+from bpy_addon_build.api import BabContext, BabErrorBase, PrintAs
 from bpy_addon_build.build_context.core import WORKING_DIR, BuildContext
-from bpy_addon_build.util import print_error, print_warning
+from bpy_addon_build.util import print_error, print_tip, print_warning
 
 # Function signature of all hooks
-ApiFunction = Callable[[BabContext], Optional[Union[BpyWarning, BpyError]]]
+ApiFunction = Callable[[BabContext], Optional[BabErrorBase]]
 
 # Old main function for
 # backwards compatibility
@@ -129,9 +129,7 @@ def check_action(ctx: BuildContext, action: str, console: Console) -> bool:
     return True
 
 
-def perform_returns(
-    res: Optional[Union[BpyWarning, BpyError]], console: Console
-) -> None:
+def perform_returns(res: Optional[BabErrorBase], console: Console) -> None:
     """
     Performs tasks based on the return value of an API function.
 
@@ -142,11 +140,14 @@ def perform_returns(
         None
     """
     if res is not None:
-        if isinstance(res, BpyError):
-            print_error(res.msg, console)
-            quit(-1)
-        elif isinstance(res, BpyWarning):
-            print_error(res.msg, console)
+        msg, as_what = res.message_to_print()
+        if as_what is PrintAs.ERROR:
+            print_error(msg, console)
+        elif as_what is PrintAs.WARNING:
+            print_warning(msg, console)
+        elif as_what is PrintAs.TIP:
+            print_tip(msg, console)
+        res.on_exit()
 
 
 def build_action_prebuild(
@@ -167,7 +168,7 @@ def build_action_prebuild(
     if hasattr(ctx.api.action_mods[action], PRE_BUILD):
         func: ApiFunction = ctx.api.action_mods[action].pre_build
         _ = check_api_func(PRE_BUILD, func, action, console)
-        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
+        res: Optional[BabErrorBase] = func(api_ctx)
         perform_returns(res, console)
 
 
@@ -194,9 +195,7 @@ def build_action_main(
             cast(OldMain, func)()
             os.chdir(WORKING_DIR)
         else:
-            res: Optional[Union[BpyError, BpyWarning]] = cast(ApiFunction, func)(
-                api_ctx
-            )
+            res: Optional[BabErrorBase] = cast(ApiFunction, func)(api_ctx)
             perform_returns(res, console)
 
 
@@ -218,7 +217,7 @@ def build_action_preinstall(
     if hasattr(ctx.api.action_mods[action], PRE_INSTALL):
         func: ApiFunction = ctx.api.action_mods[action].pre_install
         _ = check_api_func(PRE_INSTALL, func, action, console)
-        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
+        res: Optional[BabErrorBase] = func(api_ctx)
         perform_returns(res, console)
 
 
@@ -240,7 +239,7 @@ def build_action_postinstall(
     if hasattr(ctx.api.action_mods[action], POST_INSTALL):
         func: ApiFunction = ctx.api.action_mods[action].post_install
         _ = check_api_func(POST_INSTALL, func, action, console)
-        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
+        res: Optional[BabErrorBase] = func(api_ctx)
         perform_returns(res, console)
 
 
@@ -262,5 +261,5 @@ def build_action_cleanup(
     if hasattr(ctx.api.action_mods[action], CLEAN_UP):
         func: ApiFunction = ctx.api.action_mods[action].clean_up
         _ = check_api_func(CLEAN_UP, func, action, console)
-        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
+        res: Optional[BabErrorBase] = func(api_ctx)
         perform_returns(res, console)

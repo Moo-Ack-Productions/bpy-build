@@ -31,27 +31,70 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from types import ModuleType
 from typing import Optional
 
+from typing_extensions import override
+
 from bpy_addon_build.config import Config
+from bpy_addon_build.util import EXIT_FAIL
 
 
-@dataclass
-class BpyError:
+class PrintAs(Enum):
+    ERROR = 0
+    WARNING = 1
+    TIP = 2
+
+
+class BabErrorBase(object):
+    """Base objects for stuff that
+    prints to standard output"""
+
+    def __init__(self, msg: str) -> None:
+        self.msg = msg
+
+    def message_to_print(self) -> tuple[str, PrintAs]:
+        """The message to print"""
+        return self.msg, PrintAs.ERROR
+
+    def on_exit(self) -> None:
+        """What to do afterwards"""
+        return
+
+
+class BpyError(BabErrorBase):
     """Error object for BpyBuild"""
 
-    # Message to print in the console
-    msg: str
+    def __init__(self, msg: str) -> None:
+        super().__init__(msg)
+
+    @override
+    def on_exit(self) -> None:
+        sys.exit(EXIT_FAIL)
 
 
-@dataclass
-class BpyWarning:
+class BpyWarning(BabErrorBase):
     """Warning object for BpyBuild"""
 
-    # Message to print in the console
-    msg: str
+    def __init__(self, msg: str) -> None:
+        super().__init__(msg)
+
+    @override
+    def message_to_print(self) -> tuple[str, PrintAs]:
+        return self.msg, PrintAs.WARNING
+
+
+class BpyTip(BabErrorBase):
+    """Tip object for BpyBuild"""
+
+    def __init__(self, msg: str) -> None:
+        super().__init__(msg)
+
+    @override
+    def message_to_print(self) -> tuple[str, PrintAs]:
+        return self.msg, PrintAs.TIP
 
 
 @dataclass

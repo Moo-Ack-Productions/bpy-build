@@ -74,6 +74,18 @@ def print_warning(msg: str, console: Console) -> None:
     console.print(msg, style="yellow")
 
 
+def print_tip(msg: str, console: Console) -> None:
+    """Prints a tip to the console.
+
+    msg: string to print
+    console: Console from Rich
+
+    Returns:
+        None
+    """
+    console.print(msg, style="cyan")
+
+
 def print_error(msg: str, console: Console) -> None:
     """Prints an error to the console.
 
