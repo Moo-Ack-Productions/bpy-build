@@ -27,37 +27,31 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from rich.console import Console
+from __future__ import annotations
 
-from bpy_addon_build.create_cli.action import create_action
+from typing import Optional
+
 from bpy_addon_build.create_cli.args import command_classes as cc
-from bpy_addon_build.create_cli.args import parse_args
-from bpy_addon_build.create_cli.project import create_project
-from bpy_addon_build.util import print_error
+from bpy_addon_build.create_cli.args import create_arguments as ca
 
 
-def main() -> None:
-    """BabEx entry point
+def parse_args() -> Optional[cc.Args]:
+    """Parse arguments with argparse and
+    returns an Args object.
 
-    BabEx (a play on Bab and FedEx) is a tool to manage
-    BpyBuild projects. It allows creation of a new project,
-    adding actions, etc, handling boilerplate and configuration
-    and making everything easier in general.
+    Returns:
+        - Args if sucessful
+        - None if error
     """
 
-    args = parse_args()
-    console = Console()
-    if args is None:
-        print_error("Invalid command", console)
-        return
-    if args.command == cc.Command.INIT:
-        create_project()
-    elif args.command == cc.Command.ACTION:
-        if args.subcommand == cc.SubCommand.ADD:
-            create_action()
-        else:
-            print_error("Invalid command {}", console)
-
-
-if __name__ == "__main__":
-    main()
+    args = ca.create_arguments()
+    if hasattr(args, "command"):
+        if args.command == "init":  # type: ignore
+            return cc.Args(command=cc.Command.INIT)
+        elif args.command == "action":  # type: ignore
+            if hasattr(args, "add_subcommand"):
+                if args.add_subcommand == "add":  # type: ignore
+                    return cc.Args(
+                        command=cc.Command.ACTION, subcommand=cc.SubCommand.ADD
+                    )
+    return None

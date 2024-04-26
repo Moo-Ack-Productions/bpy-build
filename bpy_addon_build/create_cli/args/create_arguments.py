@@ -27,66 +27,34 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import argparse
-from dataclasses import dataclass
-from enum import Enum
-from typing import Optional
 
 
-class Command(Enum):
-    INIT = "init"
-    ACTION = "action"
+def _create_init_command(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+) -> None:
+    """Create the init command"""
+    _ = subparsers.add_parser("init", help="Initialize a project")
 
 
-class SubCommand(Enum):
-    ADD = "add"
+def _create_action_command(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+) -> None:
+    """Create the action command with its subcommands"""
+    parser_action = subparsers.add_parser("action", help="Manage actions in a project")
+    action_subparser = parser_action.add_subparsers(
+        help="sub-command help", dest="add_subcommand"
+    )
+    _ = action_subparser.add_parser("add", help="Add an action to a project")
 
 
-@dataclass
-class Args:
-    """Arguments for BabEx
-
-    Attributes
-    ----------
-    command: Command
-        The command for BabEx to execute
-
-    subcommand: Optional[SubCommand]
-        Subcommand for whatever command is
-    """
-
-    command: Command
-    subcommand: Optional[SubCommand]
-
-
-def parse_args() -> Optional[Args]:
-    """Parse arguments with argparse and
-    returns an Args object.
-
-    Returns:
-        - Args if sucessful
-        - None if error
-    """
+def create_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="BabEx", description="Manage a BpyBuild project"
     )
     subparsers = parser.add_subparsers(help="sub-command help", dest="command")
-
-    _ = subparsers.add_parser("init", help="Initialize a project")
-
-    parser_action = subparsers.add_parser("action", help="Manage actions in a project")
-    action_subparser = parser_action.add_subparsers(
-        help="sub-command help", dest="subcommand"
-    )
-    _ = action_subparser.add_parser("add", help="Add an action to a project")
-
-    args = parser.parse_args()
-
-    if hasattr(args, "command"):
-        if args.command == "init":  # type: ignore
-            return Args(command=Command.INIT, subcommand=None)
-        elif args.command == "action":  # type: ignore
-            if hasattr(args, "subcommand"):
-                if args.subcommand == "add":  # type: ignore
-                    return Args(command=Command.ACTION, subcommand=SubCommand.ADD)
-    return None
+    _create_init_command(subparsers)
+    _create_action_command(subparsers)
+    return parser.parse_args()

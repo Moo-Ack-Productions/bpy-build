@@ -27,37 +27,38 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from rich.console import Console
+from __future__ import annotations
 
-from bpy_addon_build.create_cli.action import create_action
-from bpy_addon_build.create_cli.args import command_classes as cc
-from bpy_addon_build.create_cli.args import parse_args
-from bpy_addon_build.create_cli.project import create_project
-from bpy_addon_build.util import print_error
+from dataclasses import dataclass
+from enum import Enum
+from typing import Optional
 
 
-def main() -> None:
-    """BabEx entry point
+class Command(Enum):
+    INIT = "init"
+    ACTION = "action"
 
-    BabEx (a play on Bab and FedEx) is a tool to manage
-    BpyBuild projects. It allows creation of a new project,
-    adding actions, etc, handling boilerplate and configuration
-    and making everything easier in general.
+
+class SubCommand(Enum):
+    ADD = "add"
+
+
+class InitFlags(Enum):
+    IN_PLACE = "--in-place"
+
+
+@dataclass
+class Args:
+    """Arguments for BabEx
+
+    Attributes
+    ----------
+    command: Command
+        The command for BabEx to execute
+
+    subcommand: Optional[SubCommand]
+        Subcommand for whatever command is
     """
 
-    args = parse_args()
-    console = Console()
-    if args is None:
-        print_error("Invalid command", console)
-        return
-    if args.command == cc.Command.INIT:
-        create_project()
-    elif args.command == cc.Command.ACTION:
-        if args.subcommand == cc.SubCommand.ADD:
-            create_action()
-        else:
-            print_error("Invalid command {}", console)
-
-
-if __name__ == "__main__":
-    main()
+    command: Command
+    subcommand: Optional[SubCommand] = None
