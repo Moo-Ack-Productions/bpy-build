@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # https://github.com/Moo-Ack-Productions/bpy-build
 # #####
 
-from bpy_addon_build.api import BabContext, BpyWarning, BpyError
+from bpy_addon_build.api import BabContext, BpyWarning, BpyError, BpyTip
 {% if minor_version < 10 %}
 from typing import Optional, Union
 {% endif %}
@@ -44,7 +44,7 @@ the new will likely become more familiar to future devs
 compared to the old syntax
 #}
 {% macro return_annotation(version) -%}
-{% if minor_version >= 10 %}BpyWarning | BpyError | None{% else %}Optional[Union[BpyWarning, BpyError]]{% endif %}
+{% if minor_version >= 10 %}BpyWarning | BpyError | BpyTip | None{% else %}Optional[Union[BpyWarning, BpyError, BpyTip]]{% endif %}
 {%- endmacro %}
 
 {%- if pre_build %}
