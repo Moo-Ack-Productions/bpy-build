@@ -36,7 +36,7 @@ from attrs import Attribute, define, field
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
 # attrs works
-@define  # type: ignore
+@define  # type: ignore[misc]
 class Args:
     """
     All arguments defined, converted into their intended

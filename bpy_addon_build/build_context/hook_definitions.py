@@ -99,7 +99,7 @@ def check_api_func(
         # point, we don't care about the type that's
         # returned in get_type_hints, we just want
         # to know the length
-        if not len(get_type_hints(func)):  # type: ignore
+        if not len(get_type_hints(func)):  # type: ignore[misc]
             print_warning("Perhaps you are missing type annotations?", console)
         raise
 

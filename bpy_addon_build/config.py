@@ -66,7 +66,7 @@ class ConfigDict(TypedDict):
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
 # attrs works
-@frozen  # type: ignore
+@frozen  # type: ignore[misc]
 class BuildAction:
     """Class that represents a build action
 
@@ -87,7 +87,7 @@ class BuildAction:
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
 # attrs works
-@frozen  # type: ignore
+@frozen  # type: ignore[misc]
 class Config:
     """Class to better handle config parsing, especially with more complex arguments
 

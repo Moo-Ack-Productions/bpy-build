@@ -46,7 +46,7 @@ INSTALL_PATHS: list[str] = [
 
 # Must be ignored because Mypy likes
 # to complain about this for some reason
-WORKING_DIR = Path.cwd()  # type: ignore
+WORKING_DIR = Path.cwd()  # type: ignore[misc]
 
 console = Console()
 
@@ -54,7 +54,7 @@ console = Console()
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
 # attrs works
-@define  # type: ignore
+@define  # type: ignore[misc]
 class BuildContext:
     """
     Context of the build environment, from settings to

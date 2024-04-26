@@ -93,7 +93,7 @@ def build(ctx: BuildContext) -> Path:
     shutil.copytree(
         ADDON_FOLDER,
         combine_with_build(ctx, STAGE_ONE),
-        ignore=shutil.ignore_patterns(*FILTERS),  # type: ignore
+        ignore=shutil.ignore_patterns(*FILTERS),  # type: ignore[misc]
     )
 
     hooks.run_main_hooks(ctx, STAGE_ONE, Path(ctx.config.build_name))

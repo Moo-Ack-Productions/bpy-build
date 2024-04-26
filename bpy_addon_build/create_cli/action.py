@@ -95,9 +95,9 @@ def create_action() -> None:
             autoescape=select_autoescape(),
             trim_blocks=True,
             lstrip_blocks=True,
-        )  # type: ignore
-        template = env.get_template("action.py.jinja")  # type: ignore
-        _ = f.write(template.render(template_vars))  # type: ignore
+        )  # type: ignore[misc]
+        template = env.get_template("action.py.jinja")  # type: ignore[misc]
+        _ = f.write(template.render(template_vars))  # type: ignore[misc]
 
     with open("bpy-build.yaml", "r+") as f:
         data: ConfigDict = yaml.safe_load(f)
