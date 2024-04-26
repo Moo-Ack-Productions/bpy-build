@@ -6,6 +6,7 @@ This guide will assume you already know how to use Git and understand enough Pyt
 # Building Bpy-Build
 To make building the final package easier, we use [Poetry](https://python-poetry.org/). To build, you can use the following command:
 ```sh
+poetry install
 poetry build
 ```
 
@@ -71,6 +72,14 @@ This will make all commits use that template and perform verbose commits (where 
 
 # Pre-Commit Hooks
 To make things easier for developers, we define pre-commit hooks that allow developers to commit changes and automatically have Mypy and Black run on said commit. This is not required
-Set up [pre-commit](https://pre-commit.com/). This must be installed seperately and is not included in the Poetry dependencies. Then run `pre-commit install`. This will set up pre-commit hooks for the following:
+Set up [pre-commit](https://pre-commit.com/). This must be installed separately and is not included in the Poetry dependencies. Then run `pre-commit install`. This will set up pre-commit hooks for the following:
 - Mypy static checking
-- Black code formatter
+- Linting with Ruff
+- Code formatting with Ruff
+
+# Tests
+BpyBuild has 2 sets of unittests, `test/tests.py` and `test/mcprep_tests.py`. The former tests every feature in BpyBuild, but isn't sophisticated. The latter clones the MCprep repo, which means less features are used, but the tests are more sophisticated and test for backwards compatibility (as required under [MCprep-first development](/docs/mcprep-first.md)).
+
+To run with Poetry, the following commands can be used:
+- Regular tests: `poetry run python -m unittest test.tests`
+- MCprep tests: `poetry run python -m unittest test.mcprep_tests`

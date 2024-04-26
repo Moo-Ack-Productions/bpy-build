@@ -1,56 +1,10 @@
 # Bpy-build
-A tool to make building addons faster
+BpyBuild is a tool that makes building addons faster. It was created as part of the [MCprep](https://github.com/Moo-Ack-Productions/MCprep) project for the purposes of speeding up development, and is now available as a general tool. It is available under the BSD 3-Clause License.
 
-# How to use
-Install from PyPi:
-`pip install bpy-addon-build`
+Please check out our [Getting Started guide](/docs/getting-started.md) to get started with BpyBuild in your project.
 
-First create a file called `bpy-build.yaml` and add the following contents:
-```yaml
-addon_folder: my_addon # the folder with the addon source code
-build_name: my_addon
-```
-
-**Note: the addon source code must be in a subfolder! BpyBuild does not support using `.` for `addon_folder`**
-
-Then run `bab`, your addon will be built in the `build` folder!
-
-Now let's automatically install our addon:
-```yaml
-addon_folder: my_addon # the folder with the addon source code
-build_name: my_addon
-
-install_versions:
-  - 3.5
-```
-
-We can also do stuff during the build process:
-```yaml
-during_build:
-  # This will always be executed
-  default:
-    script: "default.py"
-```
-
-When we build, the default case will always run. We can also define cases we want to only run if we specify them:
-```yaml
-during_build:
-  # This will always be executed
-  default:
-    script: "default.py"
-  dev:
-    script: "dev.py"
-    
-    # We can ignore files as 
-    # well if we want to speed
-    # up build times for dev builds
-    ignore_filters:
-      - "*.blend"
-```
-
-To run the `dev` case, we pass the `-b` argument, like `bpy-addon-build -b dev`. Note that when making an action, the action is ran at the root of your addon folder.
-
-Our addon will now automatically be installed in Blender 3.5! If it doesn't exist, `bpy-build` will just ignore it.
+> [!NOTE]
+> BpyBuild is in alpha. Although we've had great success using BpyBuild in production for MCprep, we're aware that there's still issues that need to be addressed. If you encounter any bugs, please report them on GitHub Issues.
 
 ```
 BSD 3-Clause License
