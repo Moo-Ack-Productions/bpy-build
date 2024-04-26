@@ -6,6 +6,7 @@ This guide will assume you already know how to use Git and understand enough Pyt
 # Building Bpy-Build
 To make building the final package easier, we use [Poetry](https://python-poetry.org/). To build, you can use the following command:
 ```sh
+poetry install
 poetry build
 ```
 
