@@ -29,6 +29,7 @@
 
 import sys
 from pathlib import Path
+from typing import TypedDict
 
 import yaml
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -46,49 +47,28 @@ from bpy_addon_build.config import BUILD_ACTIONS, SCRIPT, ConfigDict
 from bpy_addon_build.util import EXIT_FAIL, print_error
 
 
-def create_action() -> None:
-    """Create a new BpyBuild action"""
-    console = Console()
+class GenerateActionDict(TypedDict):
+    name: str
+    hooks: str
 
-    if not Path("bpy-build.yaml").exists():
-        print_error("Must be in project root!", console)
-        sys.exit(EXIT_FAIL)
 
+def _generate_action(args: GenerateActionDict) -> None:
+    """Generates an action
+
+    This is made a separate function for testing purposes"""
     action_scripts = Path("action-scripts")
-    while True:
-        name = Prompt.ask("What is the name of this action?", default="my_action")
-        if not Path(action_scripts, f"{name}.py").exists():
-            break
-        print_error(f"{name} already defined!", console)
-
-    while True:
-        options = [PRE_BUILD, MAIN, PRE_INSTALL, POST_INSTALL, CLEAN_UP]
-        actions = Prompt.ask(
-            f"List the hooks you want, spaces in between (Options: {options})",
-            default=MAIN,
-        )
-
-        break_loop = True
-        for a in actions.strip().split(", "):
-            if a not in options:
-                break_loop = False
-                print_error(f"{a} is not a valid hook!", console)
-
-        if break_loop:
-            break
-
     if not action_scripts.exists():
         action_scripts.mkdir()
 
-    script_path = Path(action_scripts, f"{name}.py")
+    script_path = Path(action_scripts, f"{args['name']}.py")
     with open(script_path, "w") as f:
         template_vars = {
             "minor_version": sys.version_info[1],
-            PRE_BUILD: PRE_BUILD in actions,
-            MAIN: MAIN in actions,
-            PRE_INSTALL: PRE_INSTALL in actions,
-            POST_INSTALL: POST_INSTALL in actions,
-            CLEAN_UP: CLEAN_UP in actions,
+            PRE_BUILD: PRE_BUILD in args["hooks"],
+            MAIN: MAIN in args["hooks"],
+            PRE_INSTALL: PRE_INSTALL in args["hooks"],
+            POST_INSTALL: POST_INSTALL in args["hooks"],
+            CLEAN_UP: CLEAN_UP in args["hooks"],
         }
         env = Environment(
             loader=PackageLoader("bpy_addon_build.create_cli"),
@@ -105,5 +85,39 @@ def create_action() -> None:
         if BUILD_ACTIONS not in data:
             data[BUILD_ACTIONS] = {}
 
-        data[BUILD_ACTIONS][name] = {SCRIPT: str(script_path)}
+        data[BUILD_ACTIONS][args["name"]] = {SCRIPT: str(script_path)}
         yaml.dump(data, f)
+
+
+def create_action() -> None:
+    """Create a new BpyBuild action"""
+    console = Console()
+
+    if not Path("bpy-build.yaml").exists():
+        print_error("Must be in project root!", console)
+        sys.exit(EXIT_FAIL)
+
+    action_scripts = Path("action-scripts")
+    while True:
+        name: str = Prompt.ask("What is the name of this action?", default="my_action")
+        if not Path(action_scripts, f"{name}.py").exists():
+            break
+        print_error(f"{name} already defined!", console)
+
+    while True:
+        options = [PRE_BUILD, MAIN, PRE_INSTALL, POST_INSTALL, CLEAN_UP]
+        actions: str = Prompt.ask(
+            f"List the hooks you want, spaces in between (Options: {options})",
+            default=MAIN,
+        )
+
+        break_loop = True
+        for a in actions.strip().split(", "):
+            if a not in options:
+                break_loop = False
+                print_error(f"{a} is not a valid hook!", console)
+
+        if break_loop:
+            break
+
+    _generate_action({"name": name, "hooks": actions})
