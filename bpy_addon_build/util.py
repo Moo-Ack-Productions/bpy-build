@@ -40,8 +40,9 @@ EXIT_FAIL: int = 1
 # - ASCII letters (upper and lower)
 # - Numeral digits (0-9)
 # - Whitespace
+# - Slash (for files)
 # - Hyphens and underscores (to prevent issues with importing modules)
-ALLOWED_CHARS = set(string.ascii_letters + string.digits + string.whitespace + "-_")
+ALLOWED_CHARS = set(string.ascii_letters + string.digits + string.whitespace + "-_/")
 
 
 def check_string(string: str) -> bool:
