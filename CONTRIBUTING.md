@@ -1,6 +1,9 @@
 # Contributing Guide
 Hey there, looks like you're interested in contributing to Bpy-Build! To get started, read this guide which has a lot of important information regarding contributions.
 
+> [!CAUTION]
+> For those that have contributed to MCprep in the past, note that BpyBuild has stricter contributing requirements in comparison.
+
 This guide will assume you already know how to use Git and understand enough Python to know how to use type annotations.
 
 # Building Bpy-Build
