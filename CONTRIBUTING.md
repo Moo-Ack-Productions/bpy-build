@@ -93,6 +93,48 @@ This will make all commits use that template and perform verbose commits (where 
 ## Commits MUST *fully commit* to a given change
 When a commit is made, the change stated in the commit must be fully committed to. For example, a commit that states `refactor: Use sys.exit method for program exit` **must** implement that change across all files, not just one or two.
 
+## Signing Off Commits
+BpyBuild requires signing off of all commits, to certify the origin of the change. When you sign off of a commit in BpyBuild, you certify that the commit was made in line with the Developer's Certificate of Origin:
+```
+Developer's Certificate of Origin 1.1
+By making a contribution to this project, I certify that:
+
+a. The contribution was created in whole or in part by me and I have the right to submit it under the open source license indicated in the file; or
+b. The contribution is based upon previous work that, to the best of my knowledge, is covered under an appropriate open source license and I have the right under that license to submit that work with modifications, whether created in whole or in part by me, under the same open source license (unless I am permitted to submit under a different license), as indicated in the file; or
+c. The contribution was provided directly to me by some other person who certified (a), (b) or (c) and I have not modified it.
+d I understand and agree that this project and the contribution are public and that a record of the contribution (including all personal information I submit with it, including my sign-off) is maintained indefinitely and may be redistributed consistent with this project or the open source license(s) involved.
+```
+
+If indeed the change was made in line with the Developer's Certificate of Origin, add the following at the end of the commit:
+```
+Signed-off-by: Random J Developer <random@developer.example.org>
+```
+
+**This much be your real name and a working email address.**
+
+If the change was given to you by someone else, and you have permission to contribute it here, that change must be signed off by the person who gave the change to you, and anyone before that (basically a chain of sign offs). Example:
+```
+<commit message and summery by John Doe, who recieved the change from Jane Doe>
+
+Signed-off-by: John Doe <johndoe@email.com>
+Signed-off-by: Jane Doe <janedoe@email.com>
+```
+
+If multiple authors were involved in writing the change, then `Co-developed-by` must be present for both you and any other authors involved in the change. As an example with 2 authors:
+```
+<commit message and summery>
+
+Co-developed-by: John Doe <johndoe@email.com>
+Signed-off-by: John Doe <johndoe@email.com>
+Co-developed-by: Jane Doe <janedoe@email.com>
+Signed-off-by: Jane Doe <janedoe@email.com>
+```
+
+> [!NOTE]
+> *For those interested in where this convention comes from*
+>
+> Signing off commits was first adopted by the Linux Kernel after [the SCO lawsuits against IBM](https://en.wikipedia.org/wiki/SCO_Group,_Inc._v._International_Business_Machines_Corp.). One of SCO's main arguments was that the Linux Kernel used code from SCO's version of UNIX. Although this turned out to be false, the Linux Kernel project soon required developers to certify that their commits with signing off.
+
 # Pre-Commit Hooks
 To make things easier for developers, we define pre-commit hooks that allow developers to commit changes and automatically have Mypy and Black run on said commit. This is not required
 Set up [pre-commit](https://pre-commit.com/). This must be installed separately and is not included in the Poetry dependencies. Then run `pre-commit install`. This will set up pre-commit hooks for the following:
