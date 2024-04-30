@@ -132,7 +132,7 @@ Signed-off-by: Jane Doe <janedoe@email.com>
 > [!NOTE]
 > *For those interested in where this convention comes from*
 >
-> Signing off commits was first adopted by the Linux Kernel after [the SCO lawsuits against IBM](https://en.wikipedia.org/wiki/SCO_Group,_Inc._v._International_Business_Machines_Corp.). One of SCO's main arguments was that the Linux Kernel used code from SCO's version of UNIX. Although this turned out to be false, the Linux Kernel project soon required developers to certify that their commits with signing off.
+> Signing off commits was first adopted by the Linux Kernel after [the SCO lawsuits against IBM](https://en.wikipedia.org/wiki/SCO_Group,_Inc._v._International_Business_Machines_Corp.). One of SCO's main arguments was that the Linux Kernel used code from SCO's version of UNIX. Although this turned out to be false, the Linux Kernel project soon required developers to certify that their commits were allowed to be part of the Linux Kernel with signing off.
 
 # Pre-Commit Hooks
 To make things easier for developers, we define pre-commit hooks that allow developers to commit changes and automatically have Mypy and Black run on said commit. This is not required
