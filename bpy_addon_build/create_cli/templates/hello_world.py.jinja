@@ -68,7 +68,7 @@ bl_info = {
     "category": "Object"
 }
 
-class HelloWorldPanel(bpy.types.Panel):
+class {{ addon_name }}_PT_main_panel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_hello_world"
     bl_label = "Hello World"
     bl_space_type = 'PROPERTIES'
@@ -80,7 +80,7 @@ class HelloWorldPanel(bpy.types.Panel):
 
 
 classes = [
-    HelloWorldPanel
+    {{ addon_name }}_PT_main_panel
 ]
 
 def register() -> None:
