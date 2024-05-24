@@ -27,6 +27,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from typing import cast
+
 from rich.console import Console
 
 from bpy_addon_build.create_cli.action import create_action
@@ -51,7 +53,7 @@ def main() -> None:
         print_error("Invalid command", console)
         return
     if args.command == cc.Command.INIT:
-        create_project()
+        create_project(cast(list[cc.InitFlags], args.args))
     elif args.command == cc.Command.ACTION:
         if args.subcommand == cc.SubCommand.ADD:
             create_action()

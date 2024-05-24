@@ -29,6 +29,8 @@
 
 from __future__ import annotations
 
+from argparse import Namespace
+
 from bpy_addon_build.create_cli.args import command_classes as cc
 from bpy_addon_build.create_cli.args import create_arguments as ca
 
@@ -45,11 +47,22 @@ def parse_args() -> cc.Args | None:
     args = ca.create_arguments()
     if hasattr(args, "command"):
         if args.command == "init":  # type: ignore[misc]
-            return cc.Args(command=cc.Command.INIT)
+            return cc.Args(command=cc.Command.INIT, args=parse_flags(args))
         elif args.command == "action":  # type: ignore[misc]
             if hasattr(args, "add_subcommand"):
                 if args.add_subcommand == "add":  # type: ignore[misc]
                     return cc.Args(
-                        command=cc.Command.ACTION, subcommand=cc.SubCommand.ADD
+                        command=cc.Command.ACTION, subcommand=cc.SubCommand.ADD, args=[]
                     )
     return None
+
+
+def parse_flags(args: Namespace) -> list[cc.SubCommandFlags]:
+    """Parse arguments for flags to commands
+
+    Returns:
+        list[cc.SubCommadnFlags]
+    """
+    if args.command == "init":  # type: ignore [misc]
+        return [cc.InitFlags.IN_PLACE] if args.in_place else []  # type: ignore[misc]
+    return []

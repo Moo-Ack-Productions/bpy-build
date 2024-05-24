@@ -36,7 +36,10 @@ def _create_init_command(
     subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
 ) -> None:
     """Create the init command"""
-    _ = subparsers.add_parser("init", help="Initialize a project")
+    init = subparsers.add_parser("init", help="Initialize a project")
+    _ = init.add_argument(
+        "--in-place", help="Create project in place", default=False, action="store_true"
+    )
 
 
 def _create_action_command(

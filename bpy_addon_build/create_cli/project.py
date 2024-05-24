@@ -42,6 +42,7 @@ from bpy_addon_build.config import (
     INSTALL_VERSIONS,
     ConfigDict,
 )
+from bpy_addon_build.create_cli.args.command_classes import InitFlags
 from bpy_addon_build.util import EXIT_FAIL, check_string, print_error
 
 
@@ -54,7 +55,7 @@ class GenerateProjectDict(TypedDict):
     min_bv: float
 
 
-def _generate_project(args: GenerateProjectDict) -> None:
+def _generate_project(args: GenerateProjectDict, flags: list[InitFlags]) -> None:
     """Generate the project itself
 
     This is a seperate function for the purposes of unit testing"""
@@ -65,7 +66,9 @@ def _generate_project(args: GenerateProjectDict) -> None:
         INSTALL_VERSIONS: [args["min_bv"]],
     }
 
-    project_root = Path(args["addon_name"])
+    project_root = (
+        Path(args["addon_name"]) if InitFlags.IN_PLACE not in flags else Path(".")
+    )
     src_folder = project_root / Path("src")
     config_file = project_root / Path("bpy-build.yaml")
     init_file = src_folder / Path("__init__.py")
@@ -112,7 +115,7 @@ def _generate_project(args: GenerateProjectDict) -> None:
         _ = f.write(template.render(bl_info_template))  # type: ignore[misc]
 
 
-def create_project() -> None:
+def create_project(flags: list[InitFlags]) -> None:
     """Create a new BpyBuild project by asking the user some questions"""
 
     # Ask user questions related to the project
@@ -141,9 +144,6 @@ def create_project() -> None:
             "desc": desc,
             "author": author_name,
             "min_bv": minimum_supported_version,
-        }
+        },
+        flags=flags,
     )
-
-
-if __name__ == "__main__":
-    create_project()

@@ -42,7 +42,13 @@ class SubCommand(Enum):
     ADD = "add"
 
 
-class InitFlags(Enum):
+class SubCommandFlags(Enum):
+    """This exists as a placeholder class"""
+
+    pass
+
+
+class InitFlags(SubCommandFlags):
     IN_PLACE = "--in-place"
 
 
@@ -55,9 +61,13 @@ class Args:
     command: Command
         The command for BabEx to execute
 
+    args: list[SubCommandFlags]
+        Flags for the subcommand
+
     subcommand: Optional[SubCommand]
         Subcommand for whatever command is
     """
 
     command: Command
+    args: list[SubCommandFlags]
     subcommand: SubCommand | None = None
