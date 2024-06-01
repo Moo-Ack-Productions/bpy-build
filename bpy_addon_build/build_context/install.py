@@ -46,9 +46,11 @@ def install(ctx: BuildContext, build_path: Path) -> None:
     )
     for path in get_paths(versions):
         addon_path = path.joinpath(Path(ctx.config.build_name))
-        if not addon_path.exists():
-            continue
-        shutil.rmtree(addon_path)
+
+        # Remove previous install
+        if addon_path.exists():
+            shutil.rmtree(addon_path)
+
         hooks.run_preinstall_hooks(ctx, build_path)
         shutil.unpack_archive(build_path, path)
         if not ctx.cli.supress_messages:
