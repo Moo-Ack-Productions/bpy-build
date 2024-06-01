@@ -29,6 +29,7 @@
 
 from __future__ import annotations
 
+from decimal import getcontext
 from typing import Optional
 
 import yaml
@@ -45,6 +46,10 @@ from .build_context.core import BuildContext
 
 
 def main() -> None:
+    # Set the precision for Decimal to
+    # 3, which corresponds to X.XX
+    getcontext().prec = 3
+
     cli = args.parse_args()
     console = Console()
 

@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import sys
 import traceback
+from decimal import Decimal, getcontext
 from typing import Dict, List, Literal, Optional, TypedDict
 
 from attrs import frozen
 from rich.console import Console
-from typing_extensions import NotRequired
+from typing_extensions import NotRequired, Union
 
 from .util import EXIT_FAIL, check_string, print_error
 
@@ -16,6 +17,12 @@ INSTALL_VERSIONS: Literal["install_versions"] = "install_versions"
 BUILD_ACTIONS: Literal["build_actions"] = "build_actions"
 SCRIPT: Literal["script"] = "script"
 IGNORE_FILTERS: Literal["ignore_filters"] = "ignore_filters"
+
+VERSION_JUMPS = {
+    Decimal(2.83): Decimal(2.9),
+    Decimal(2.93): Decimal(3.0),
+    Decimal(3.6): Decimal(4.0),
+}
 
 
 class BuildActionDict(TypedDict):
@@ -30,7 +37,7 @@ class ConfigDict(TypedDict):
 
     addon_folder: str
     build_name: str
-    install_versions: NotRequired[list[float]]
+    install_versions: NotRequired[list[Union[float, str]]]
     build_actions: NotRequired[dict[str, Optional[BuildActionDict]]]
 
 
@@ -79,7 +86,7 @@ class Config:
 
     addon_folder: str
     build_name: str
-    install_versions: Optional[List[float]] = None
+    install_versions: Optional[List[Decimal]] = None
     build_actions: Optional[Dict[str, BuildAction]] = None
 
 
@@ -100,6 +107,15 @@ def build_config(data: ConfigDict) -> Config:
 
     console = Console()
     parsed_build_acts: dict[str, BuildAction] = {}
+    install_versions: list[Decimal] = []
+
+    # Set the precision for Decimal to
+    # 3, which corresponds to X.XX
+    #
+    # This is performed in main, but we
+    # do this here as well for sanity purposes
+    getcontext().prec = 3
+
     try:
         if ADDON_FOLDER not in data:
             print_error("addon_folder not defined!", console)
@@ -130,7 +146,14 @@ def build_config(data: ConfigDict) -> Config:
 
         if INSTALL_VERSIONS in data:
             for ver in data[INSTALL_VERSIONS]:
-                if not isinstance(ver, float):
+                if isinstance(ver, float):
+                    # Due to some weird conversion bug, we
+                    # first turn ver to a string, then make a
+                    # decimal from it
+                    install_versions.append(Decimal(str(ver)))
+                elif isinstance(ver, str):
+                    install_versions += version_shorthand_expand(ver)
+                else:
                     print_error(f"{ver} isn't a valid floating point value", console)
                     sys.exit(EXIT_FAIL)
 
@@ -179,8 +202,69 @@ def build_config(data: ConfigDict) -> Config:
     return Config(
         addon_folder=data["addon_folder"],
         build_name=data["build_name"],
-        install_versions=data["install_versions"]
+        install_versions=sorted(install_versions)
         if "install_versions" in data
         else None,
         build_actions=parsed_build_acts if len(parsed_build_acts) else None,
     )
+
+
+def version_shorthand_expand(ver: str) -> list[Decimal]:
+    """Given a version string, return a list
+    of Decimal versions that correspond to the
+    shorthand in question.
+
+    Returns:
+        list[Decimal] of versions
+    """
+
+    versions: list[Decimal] = []
+    if ver.count("+") > 0:
+        # the + shorthand states to calculate
+        # 10 versions above the minimum. Unlike ..,
+        # this does not take into account VERSION_JUMPS,
+        # in order to encourage developers to also
+        # use .. for defining explicit ranges
+        split_ver = ver.split("+", 1)
+
+        accumulator = Decimal(split_ver[0])
+        versions.append(accumulator)
+
+        # Add one to the max since the first + won't
+        # be included in the range, and add one more
+        # to make it a proper count of 10
+        for i in range(1, (10 * (len(split_ver[1]) + 2))):
+            # Due to changes in Blender versioning,
+            # we add 0.01 for pre-3.0 (eg. 2.93 -> 2.93)
+            # and 0.1 for everything else (eg. 3.0 -> 3.1)
+            if accumulator < Decimal(3.0):
+                accumulator += Decimal(0.01)
+            else:
+                accumulator += Decimal(0.1)
+            versions.append(accumulator)
+
+    elif ".." in ver:
+        # .. gets the ranges of versions between
+        # the minimum and maximum. Since we want people
+        # to use this (as it defines an explicit range), we
+        # also take into account VERSION_JUMPS
+        split_ver = ver.split("..")
+        accumulator = Decimal(split_ver[0])
+        max_ver = Decimal(split_ver[1])
+        del split_ver
+
+        versions.append(accumulator)
+        while accumulator < max_ver:
+            # Due to changes in Blender versioning,
+            # we add 0.01 for pre-3.0 (eg. 2.93 -> 2.93)
+            # and 0.1 for everything else (eg. 3.0 -> 3.1)
+            if accumulator < Decimal(3.0):
+                accumulator += Decimal(0.01)
+            else:
+                accumulator += Decimal(0.1)
+            versions.append(accumulator)
+
+            # Jump versions
+            if accumulator in VERSION_JUMPS:
+                accumulator = VERSION_JUMPS[accumulator]
+    return versions
