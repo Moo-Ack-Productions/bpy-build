@@ -12,7 +12,9 @@ EXIT_FAIL: int = 1
 # - Numeral digits (0-9)
 # - Whitespace
 # - Hyphens and underscores (to prevent issues with importing modules)
-ALLOWED_CHARS = set(string.ascii_letters + string.digits + string.whitespace + "-_")
+# - Backslash (NOTE: Temporary)
+# TODO: Handle backslash in the importing of scripts itself
+ALLOWED_CHARS = set(string.ascii_letters + string.digits + string.whitespace + "-_/")
 
 
 def check_string(string: str) -> bool:
