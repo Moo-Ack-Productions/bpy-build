@@ -27,24 +27,31 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from typing import Dict, List, Optional, Union
+from __future__ import annotations
+
+from decimal import getcontext
+from typing import Optional
+
 import yaml
+from rich.console import Console
+
 from bpy_addon_build.api import Api
 from bpy_addon_build.build_context import hooks
 from bpy_addon_build.build_context.build import build
 from bpy_addon_build.build_context.install import install
+from bpy_addon_build.config import Config, ConfigDict, build_config
 
-from bpy_addon_build.config import Config
 from . import args
 from .build_context.core import BuildContext
-from cattrs.preconf.pyyaml import make_converter
-from rich.console import Console
 
 
 def main() -> None:
+    # Set the precision for Decimal to
+    # 3, which corresponds to X.XX
+    getcontext().prec = 3
+
     cli = args.parse_args()
     console = Console()
-    converter = make_converter()
 
     if cli.debug_mode:
         console.print(cli)
@@ -54,10 +61,8 @@ def main() -> None:
 
     context: Optional[BuildContext] = None
     with open(cli.path, "r") as f:
-        data: Dict[str, Union[str, List[float], Dict[str, Dict[str, str]]]] = (
-            yaml.safe_load(f)
-        )
-        config: Config = converter.structure(data, Config)
+        data: ConfigDict = yaml.safe_load(f)
+        config: Config = build_config(data)
         api: Api = Api(config, cli.path, cli.debug_mode)
         context = BuildContext(cli.path, config, cli, api)
 

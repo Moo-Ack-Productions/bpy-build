@@ -26,6 +26,15 @@ def main(ctx: BabContext) -> None:
 >
 > BpyBuild doesn't run scripts in the traditional sense. Instead, BpyBuild imports scripts as Python modules and runs `main`. As such, global code is executed on import, which is before the actual build process.
 
+> [!IMPORTANT]
+> For security reasons, BpyBuild restricts the characters an action name or file may have. The following is allowed:
+> - All English letters (a-z, A-Z)
+> - Numerical digits (0-9)
+> - Whitespace
+> - Hyphens and underscores
+> 
+> BpyBuild does not count the `.py` extension for files.
+
 # Hooks
 BpyBuild also supports the concept of hooks. Currently, the following hooks are supported:
 - `main`: executed during the build process; directory is set to a copy of the source tree under `build/stage-1`

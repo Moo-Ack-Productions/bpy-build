@@ -1,18 +1,27 @@
-from types import ModuleType
-from typing import Dict, Optional
-from pathlib import Path
-from bpy_addon_build.config import Config
-from dataclasses import dataclass
+from __future__ import annotations
+
 import sys
+from dataclasses import dataclass
+from pathlib import Path
+from types import ModuleType
+from typing import Optional
+
+from bpy_addon_build.config import Config
 
 
 @dataclass
 class BpyError:
+    """Error object for BpyBuild"""
+
+    # Message to print in the console
     msg: str
 
 
 @dataclass
 class BpyWarning:
+    """Warning object for BpyBuild"""
+
+    # Message to print in the console
     msg: str
 
 
@@ -30,19 +39,21 @@ class Api:
 
     Attributes
     ----------
-    build_actions: Dict[str, str]
+    build_actions: dict[str, str]
         Action name to script file
 
-    action_mods: Dict[str, ModuleType]
+    action_mods: dict[str, ModuleType]
         Action name to module
     """
 
     def __init__(self, conf: Config, config_path: Path, debug_mode: bool) -> None:
         if conf.build_actions is not None:
             self.build_actions = conf.build_actions
-            self.action_mods: Dict[str, ModuleType] = {}
+            self.action_mods: dict[str, ModuleType] = {}
 
             for action in self.build_actions:
+                if self.build_actions[action].script is None:
+                    continue
                 mod = self.add_modules(config_path, action, debug_mode)
                 if mod is None:
                     continue
@@ -53,9 +64,10 @@ class Api:
     ) -> Optional[ModuleType]:
         import importlib.util
 
-        path = config_path.parent.resolve().joinpath(
-            Path(self.build_actions[action].script)
-        )
+        script = self.build_actions[action].script
+        if script is None:
+            return None
+        path = config_path.parent.resolve().joinpath(Path(script))
 
         # Add the parent folder of the script to the sys path
         # so that we don't get module errors
