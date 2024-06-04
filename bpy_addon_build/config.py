@@ -202,7 +202,7 @@ def build_config(data: ConfigDict) -> Config:
     return Config(
         addon_folder=data["addon_folder"],
         build_name=data["build_name"],
-        install_versions=sorted(install_versions)
+        install_versions=sorted(install_versions, reverse=True)
         if "install_versions" in data
         else None,
         build_actions=parsed_build_acts if len(parsed_build_acts) else None,
