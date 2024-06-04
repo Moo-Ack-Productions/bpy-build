@@ -17,7 +17,7 @@ The Bpy-Build project does not allow dynamic typing at all, period. The reasons 
 - Reliability: Dynamic typing is an extra source of bugs to deal with
 - Cleanliness: Dynamic typing ends up looking extremely ugly
 
-All functions must be type annotated. It is possible to add `@typing.no_type_check` above functions that need to call untyped code (which is considered dynamic by Mypy, the type checker used here) to prevent Mypy from throwing errors with untyped functions. However, instances of `@typing.no_type_check` in contributions will cause said contributions to be rejected. Thus, for contributions, we creating wrappers for untyped functions and performing casts.
+All functions must be type annotated. Instances of `@typing.no_type_check` or `# type: ignore` that aren't justified with a comment will cause said contributions to be rejected. Thus, for contributions, we creating wrappers for untyped functions and performing casts.
 
 We require every commit pass Mypy checks, which we utilize pre-commit hooks for (see the Pre-Commit Hooks section for more). Alternatively, you can use the following:
 ```sh
@@ -26,6 +26,8 @@ just mypy
 # Or if you don't have just installed
 poetry run mypy --pretty bpy_addon_build
 ```
+
+All commits will be checked for passing tests, and PRs will be rejected if one does not pass the Mypy checks.
 
 ## Typing
 Although BpyBuild supports Python 3.8, we try to use [PEP 585](https://peps.python.org/pep-0585/) types wherever possible, using `annotations` from the `__futures__` module. This means for the most part, `dict`, `list`, `tuple`, etc. can be used with little issue. That being said, the following has to be kept in mind:
@@ -56,7 +58,13 @@ characters long (for reasons related to terminal
 length)
 ```
 
-For a small commit, like say fixing a syntax error or typo, it may be sufficient to have just a summary, but most commits will need justification. Commits should justify the changes made, not repeat them like a parrot (that's what the 50 character summary and Git diffs are for). Failiure to follow proper commit format may prevent a contribution from being accepted into Bpy-Build, so please follow the format.
+In addition, the 50 character summary at the top must follow the [Conventional Commit Format](https://www.conventionalcommits.org/en/v1.0.0/).
+
+Commits that fall under the following **ARE REQUIRED** to give justification:
+- `feat`
+- `refactor`
+
+That being said, it's best to give justification for every commit.
 
 To make meeting this requirement easier, one can make a `.gitmessage` file somewhere with the following :
 ```
@@ -78,6 +86,9 @@ git config --local commit.verbose true
 ```
 
 This will make all commits use that template and perform verbose commits (where commits are opened as their own file, with saving and closing creating the commit itself).
+
+## Commits MUST *fully commit* to a given change
+When a commit is made, the change stated in the commit must be fully committed to. For example, a commit that states `refactor: Use sys.exit method for program exit` **must** implement that change across all files, not just one or two.
 
 # Pre-Commit Hooks
 To make things easier for developers, we define pre-commit hooks that allow developers to commit changes and automatically have Mypy and Black run on said commit. This is not required
