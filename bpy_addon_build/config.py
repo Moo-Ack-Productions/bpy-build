@@ -19,9 +19,10 @@ SCRIPT: Literal["script"] = "script"
 IGNORE_FILTERS: Literal["ignore_filters"] = "ignore_filters"
 
 VERSION_JUMPS = {
-    Decimal(2.83): Decimal(2.9),
-    Decimal(2.93): Decimal(3.0),
-    Decimal(3.6): Decimal(4.0),
+    "2.83": Decimal(2.9),
+    "2.93": Decimal(3.0),
+    "3.6": Decimal(4.0),
+    "3.60": Decimal(4.0), # Include version with 0
 }
 
 
@@ -265,6 +266,9 @@ def version_shorthand_expand(ver: str) -> list[Decimal]:
             versions.append(accumulator)
 
             # Jump versions
-            if accumulator in VERSION_JUMPS:
-                accumulator = VERSION_JUMPS[accumulator]
+            #
+            # Again due to a weird bug, we
+            # use strings for jump keys
+            if str(accumulator) in VERSION_JUMPS:
+                accumulator = VERSION_JUMPS[str(accumulator)]
     return versions
