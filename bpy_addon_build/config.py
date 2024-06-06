@@ -17,6 +17,10 @@ INSTALL_VERSIONS: Literal["install_versions"] = "install_versions"
 BUILD_ACTIONS: Literal["build_actions"] = "build_actions"
 SCRIPT: Literal["script"] = "script"
 IGNORE_FILTERS: Literal["ignore_filters"] = "ignore_filters"
+BUILD_EXTENSION: Literal["build_extension"] = "build_extension"
+EXTENSION_SETTINGS: Literal["extension_settings"] = "extension_settings"
+BLENDER_BINARY: Literal["blender_binary"] = "blender_binary"
+BUILD_LEGACY: Literal["build_legacy"] = "build_legacy"
 
 VERSION_JUMPS = {
     "2.83": Decimal(2.9),
@@ -33,11 +37,20 @@ class BuildActionDict(TypedDict):
     ignore_filters: NotRequired[list[str]]
 
 
+class ExtensionSettingsDict(TypedDict):
+    """TypeDict verson of ExtensionSettings"""
+    
+    blender_binary: str
+    build_legacy: NotRequired[bool]
+    build_name: NotRequired[str]
+
 class ConfigDict(TypedDict):
     """TypeDict version of Config"""
 
     addon_folder: str
     build_name: str
+    build_extension: bool
+    extension_settings: NotRequired[ExtensionSettingsDict]
     install_versions: NotRequired[list[Union[float, str]]]
     build_actions: NotRequired[dict[str, Optional[BuildActionDict]]]
 
@@ -62,6 +75,30 @@ class BuildAction:
     script: Optional[str] = None
     ignore_filters: Optional[List[str]] = None
 
+# Must be ignored to pass Mypy as this has
+# an expression of Any, likely due to how
+# attrs works
+@frozen # type: ignore
+class ExtensionSettings:
+    """Class storing all settings for Blender extensions
+    
+    Attributes
+    ----------
+    blender_binary: str
+        Location of the Blender binary used to build 
+        the extension. Must be Blender 4.2 or greater
+
+    build_legacy: bool
+        Whether to build a legacy addon or not
+
+    build_name: Optional[str]
+        Build name for the built extension. Useful when 
+        building both a legacy addon and Blender extension
+    """
+    
+    blender_binary: str
+    build_legacy: bool
+    build_name: Optional[str]
 
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
@@ -77,6 +114,12 @@ class Config:
 
     build_name: str
         Name of the final build
+    
+    build_extension: bool
+        Whether to build a Blender 4.2+ extension
+
+    extension_settings: Optional[ExtensionSettings]
+        Settings for building an extension
 
     versions: Optional[List[float]]
         List of Blender versions to install the final addon to
@@ -87,6 +130,8 @@ class Config:
 
     addon_folder: str
     build_name: str
+    build_extension: bool = False
+    extension_settings: Optional[ExtensionSettings] = None
     install_versions: Optional[List[Decimal]] = None
     build_actions: Optional[Dict[str, BuildAction]] = None
 
@@ -108,6 +153,7 @@ def build_config(data: ConfigDict) -> Config:
 
     console = Console()
     parsed_build_acts: dict[str, BuildAction] = {}
+    parsed_extension_settings: Optional[ExtensionSettings] = None
     install_versions: list[Decimal] = []
 
     # Set the precision for Decimal to
@@ -144,6 +190,21 @@ def build_config(data: ConfigDict) -> Config:
         elif not check_string(data[BUILD_NAME]):
             print_error("build_name uses unsupported characters!", console)
             sys.exit(EXIT_FAIL)
+
+        if BUILD_EXTENSION in data and data[BUILD_EXTENSION]:
+            if EXTENSION_SETTINGS not in data:
+                print_error("Must provide extension_settings if building an extension!", console)
+                sys.exit(EXIT_FAIL)
+            else:
+                extension_settings_data = data[EXTENSION_SETTINGS]
+                if BLENDER_BINARY not in extension_settings_data:
+                    print_error("Must provide path to a Blender 4.2+ binary to build an extension!", console)
+                    sys.exit(EXIT_FAIL)
+                parsed_extension_settings = ExtensionSettings(
+                        blender_binary=extension_settings_data[BLENDER_BINARY],
+                        build_legacy=extension_settings_data[BUILD_LEGACY] if BUILD_LEGACY in extension_settings_data else False,
+                        build_name=extension_settings_data[BUILD_NAME] if BUILD_NAME in extension_settings_data else None,
+                )
 
         if INSTALL_VERSIONS in data:
             for ver in data[INSTALL_VERSIONS]:
@@ -203,6 +264,8 @@ def build_config(data: ConfigDict) -> Config:
     return Config(
         addon_folder=data["addon_folder"],
         build_name=data["build_name"],
+        build_extension=data[BUILD_EXTENSION] if BUILD_EXTENSION in data else False,
+        extension_settings=parsed_extension_settings,
         install_versions=sorted(install_versions, reverse=True)
         if "install_versions" in data
         else None,
