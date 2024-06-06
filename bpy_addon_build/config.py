@@ -8,7 +8,7 @@ from attrs import frozen
 from rich.console import Console
 from typing_extensions import NotRequired, Union
 
-from .util import exit_fail, check_string, print_error
+from .util import check_string, exit_fail, print_error
 
 # Base settings
 ADDON_FOLDER: Literal["addon_folder"] = "addon_folder"
@@ -31,7 +31,7 @@ VERSION_JUMPS = {
     "2.83": Decimal(2.9),
     "2.93": Decimal(3.0),
     "3.6": Decimal(4.0),
-    "3.60": Decimal(4.0), # Include version with 0
+    "3.60": Decimal(4.0),  # Include version with 0
 }
 
 
@@ -44,11 +44,12 @@ class BuildActionDict(TypedDict):
 
 class ExtensionSettingsDict(TypedDict):
     """TypeDict verson of ExtensionSettings"""
-    
+
     blender_binary: str
     build_legacy: NotRequired[bool]
     build_name: NotRequired[str]
     remove_bl_info: NotRequired[bool]
+
 
 class ConfigDict(TypedDict):
     """TypeDict version of Config"""
@@ -81,24 +82,25 @@ class BuildAction:
     script: Optional[str] = None
     ignore_filters: Optional[List[str]] = None
 
+
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
 # attrs works
-@frozen # type: ignore
+@frozen  # type: ignore
 class ExtensionSettings:
     """Class storing all settings for Blender extensions
-    
+
     Attributes
     ----------
     blender_binary: str
-        Location of the Blender binary used to build 
+        Location of the Blender binary used to build
         the extension. Must be Blender 4.2 or greater
 
     build_legacy: bool
         Whether to build a legacy addon or not
 
     build_name: Optional[str]
-        Build name for the built extension. Useful when 
+        Build name for the built extension. Useful when
         building both a legacy addon and Blender extension
 
     remove_bl_info: bool
@@ -106,11 +108,12 @@ class ExtensionSettings:
 
         Note: this is set True if build_legacy is False
     """
-    
+
     blender_binary: str
     build_legacy: bool
     build_name: Optional[str]
     remove_bl_info: bool
+
 
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
@@ -126,7 +129,7 @@ class Config:
 
     build_name: str
         Name of the final build
-    
+
     build_extension: bool
         Whether to build a Blender 4.2+ extension
 
@@ -205,24 +208,47 @@ def build_config(data: ConfigDict) -> Config:
 
         if BUILD_EXTENSION in data and data[BUILD_EXTENSION]:
             if EXTENSION_SETTINGS not in data:
-                print_error("Must provide extension_settings if building an extension!", console)
+                print_error(
+                    "Must provide extension_settings if building an extension!", console
+                )
                 exit_fail()
             else:
                 extension_settings_data = data[EXTENSION_SETTINGS]
                 if BLENDER_BINARY not in extension_settings_data:
-                    print_error("Must provide path to a Blender 4.2+ binary to build an extension!", console)
+                    print_error(
+                        "Must provide path to a Blender 4.2+ binary to build an extension!",
+                        console,
+                    )
                     exit_fail()
-                if REMOVE_BL_INFO in extension_settings_data and BUILD_LEGACY not in extension_settings_data:
-                    print_error("Cannot set extension_settings::remove_bl_info if legacy builds are not performed!", console)
+                if (
+                    REMOVE_BL_INFO in extension_settings_data
+                    and BUILD_LEGACY not in extension_settings_data
+                ):
+                    print_error(
+                        "Cannot set extension_settings::remove_bl_info if legacy builds are not performed!",
+                        console,
+                    )
                     exit_fail()
-                if BUILD_NAME in extension_settings_data and not check_string(extension_settings_data[BUILD_NAME]):
-                    print_error("extension_settings::build_name uses unsupported characters!", console)
+                if BUILD_NAME in extension_settings_data and not check_string(
+                    extension_settings_data[BUILD_NAME]
+                ):
+                    print_error(
+                        "extension_settings::build_name uses unsupported characters!",
+                        console,
+                    )
                     exit_fail()
                 parsed_extension_settings = ExtensionSettings(
-                        blender_binary=extension_settings_data[BLENDER_BINARY],
-                        build_legacy=extension_settings_data[BUILD_LEGACY] if BUILD_LEGACY in extension_settings_data else False,
-                        build_name=extension_settings_data[BUILD_NAME] if BUILD_NAME in extension_settings_data else None,
-                        remove_bl_info=extension_settings_data[REMOVE_BL_INFO] if REMOVE_BL_INFO in extension_settings_data and extension_settings_data[BUILD_LEGACY] else False
+                    blender_binary=extension_settings_data[BLENDER_BINARY],
+                    build_legacy=extension_settings_data[BUILD_LEGACY]
+                    if BUILD_LEGACY in extension_settings_data
+                    else False,
+                    build_name=extension_settings_data[BUILD_NAME]
+                    if BUILD_NAME in extension_settings_data
+                    else None,
+                    remove_bl_info=extension_settings_data[REMOVE_BL_INFO]
+                    if REMOVE_BL_INFO in extension_settings_data
+                    and extension_settings_data[BUILD_LEGACY]
+                    else False,
                 )
 
         if INSTALL_VERSIONS in data:
@@ -236,6 +262,15 @@ def build_config(data: ConfigDict) -> Config:
                     install_versions += version_shorthand_expand(ver)
                 else:
                     print_error(f"{ver} isn't a valid floating point value", console)
+                    exit_fail()
+
+            if BUILD_EXTENSION in data and data[BUILD_EXTENSION]:
+                greater_4_2 = [x for x in install_versions if x >= Decimal("4.2")]
+                if not len(greater_4_2):
+                    print_error(
+                        "When building extensions, 4.2 must be included in install_versions!",
+                        console,
+                    )
                     exit_fail()
 
         if BUILD_ACTIONS in data:
