@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 import traceback
 from decimal import Decimal, getcontext
 from typing import Dict, List, Literal, Optional, TypedDict
@@ -9,7 +8,7 @@ from attrs import frozen
 from rich.console import Console
 from typing_extensions import NotRequired, Union
 
-from .util import EXIT_FAIL, check_string, print_error
+from .util import exit_fail, check_string, print_error
 
 # Base settings
 ADDON_FOLDER: Literal["addon_folder"] = "addon_folder"
@@ -179,7 +178,7 @@ def build_config(data: ConfigDict) -> Config:
     try:
         if ADDON_FOLDER not in data:
             print_error("addon_folder not defined!", console)
-            sys.exit(EXIT_FAIL)
+            exit_fail()
 
         # Disallow '.' as a folder option
         # as it's been found to cause issues
@@ -192,30 +191,30 @@ def build_config(data: ConfigDict) -> Config:
         # As such, this is simply not allowed.
         elif data[ADDON_FOLDER] == ".":
             print_error("Addon must be in a subfolder!", console)
-            sys.exit(EXIT_FAIL)
+            exit_fail()
         elif not check_string(data[ADDON_FOLDER]):
             print_error("addon_folder uses unsupported characters!", console)
-            sys.exit(EXIT_FAIL)
+            exit_fail()
 
         if BUILD_NAME not in data:
             print_error("build_name must be defined!", console)
-            sys.exit(EXIT_FAIL)
+            exit_fail()
         elif not check_string(data[BUILD_NAME]):
             print_error("build_name uses unsupported characters!", console)
-            sys.exit(EXIT_FAIL)
+            exit_fail()
 
         if BUILD_EXTENSION in data and data[BUILD_EXTENSION]:
             if EXTENSION_SETTINGS not in data:
                 print_error("Must provide extension_settings if building an extension!", console)
-                sys.exit(EXIT_FAIL)
+                exit_fail()
             else:
                 extension_settings_data = data[EXTENSION_SETTINGS]
                 if BLENDER_BINARY not in extension_settings_data:
                     print_error("Must provide path to a Blender 4.2+ binary to build an extension!", console)
-                    sys.exit(EXIT_FAIL)
+                    exit_fail()
                 if REMOVE_BL_INFO in extension_settings_data and BUILD_LEGACY not in extension_settings_data:
                     print_error("Cannot set remove_bl_info if legacy builds are not performed!", console)
-                    sys.exit(EXIT_FAIL)
+                    exit_fail()
                 parsed_extension_settings = ExtensionSettings(
                         blender_binary=extension_settings_data[BLENDER_BINARY],
                         build_legacy=extension_settings_data[BUILD_LEGACY] if BUILD_LEGACY in extension_settings_data else False,
@@ -234,13 +233,13 @@ def build_config(data: ConfigDict) -> Config:
                     install_versions += version_shorthand_expand(ver)
                 else:
                     print_error(f"{ver} isn't a valid floating point value", console)
-                    sys.exit(EXIT_FAIL)
+                    exit_fail()
 
         if BUILD_ACTIONS in data:
             for act in data[BUILD_ACTIONS]:
                 if not check_string(act):
                     print_error(f"{act} uses unsupported characters!", console)
-                    sys.exit(EXIT_FAIL)
+                    exit_fail()
                 action_data = data[BUILD_ACTIONS][act]
                 if action_data is not None:
                     # We need to make sure the script name
@@ -255,7 +254,7 @@ def build_config(data: ConfigDict) -> Config:
                             f"Script defined for {act} uses unsupported characters in file name!",
                             console,
                         )
-                        sys.exit(EXIT_FAIL)
+                        exit_fail()
 
                     # Add the action to parsed_build_acts to
                     # use later in Config construction
@@ -270,13 +269,13 @@ def build_config(data: ConfigDict) -> Config:
                 # If an action has nothing defined, what's the
                 # point of said action?
                 print_error(f"{act} must have something defined!", console)
-                sys.exit(EXIT_FAIL)
+                exit_fail()
 
     except Exception as e:
         console.print(e)
         console.print(traceback.format_exc())
         console.print(data)
-        sys.exit(EXIT_FAIL)
+        exit_fail()
 
     return Config(
         addon_folder=data["addon_folder"],
