@@ -215,6 +215,9 @@ def build_config(data: ConfigDict) -> Config:
                 if REMOVE_BL_INFO in extension_settings_data and BUILD_LEGACY not in extension_settings_data:
                     print_error("Cannot set remove_bl_info if legacy builds are not performed!", console)
                     exit_fail()
+                if BUILD_NAME in extension_settings_data and not check_string(extension_settings_data[BUILD_NAME]):
+                    print_error("extension_settings::build_name uses unsupported characters!", console)
+                    exit_fail()
                 parsed_extension_settings = ExtensionSettings(
                         blender_binary=extension_settings_data[BLENDER_BINARY],
                         build_legacy=extension_settings_data[BUILD_LEGACY] if BUILD_LEGACY in extension_settings_data else False,
