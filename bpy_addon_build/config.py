@@ -11,16 +11,22 @@ from typing_extensions import NotRequired, Union
 
 from .util import EXIT_FAIL, check_string, print_error
 
+# Base settings
 ADDON_FOLDER: Literal["addon_folder"] = "addon_folder"
 BUILD_NAME: Literal["build_name"] = "build_name"
+BUILD_EXTENSION: Literal["build_extension"] = "build_extension"
 INSTALL_VERSIONS: Literal["install_versions"] = "install_versions"
+
+# Actions
 BUILD_ACTIONS: Literal["build_actions"] = "build_actions"
 SCRIPT: Literal["script"] = "script"
 IGNORE_FILTERS: Literal["ignore_filters"] = "ignore_filters"
-BUILD_EXTENSION: Literal["build_extension"] = "build_extension"
+
+# Extension Settings
 EXTENSION_SETTINGS: Literal["extension_settings"] = "extension_settings"
 BLENDER_BINARY: Literal["blender_binary"] = "blender_binary"
 BUILD_LEGACY: Literal["build_legacy"] = "build_legacy"
+REMOVE_BL_INFO: Literal["remove_bl_info"] = "remove_bl_info"
 
 VERSION_JUMPS = {
     "2.83": Decimal(2.9),
@@ -43,6 +49,7 @@ class ExtensionSettingsDict(TypedDict):
     blender_binary: str
     build_legacy: NotRequired[bool]
     build_name: NotRequired[str]
+    remove_bl_info: NotRequired[bool]
 
 class ConfigDict(TypedDict):
     """TypeDict version of Config"""
@@ -94,11 +101,17 @@ class ExtensionSettings:
     build_name: Optional[str]
         Build name for the built extension. Useful when 
         building both a legacy addon and Blender extension
+
+    remove_bl_info: bool
+        Whether to remove bl_info or not from an addon
+
+        Note: this is set True if build_legacy is False
     """
     
     blender_binary: str
     build_legacy: bool
     build_name: Optional[str]
+    remove_bl_info: bool
 
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
@@ -200,10 +213,14 @@ def build_config(data: ConfigDict) -> Config:
                 if BLENDER_BINARY not in extension_settings_data:
                     print_error("Must provide path to a Blender 4.2+ binary to build an extension!", console)
                     sys.exit(EXIT_FAIL)
+                if REMOVE_BL_INFO in extension_settings_data and BUILD_LEGACY not in extension_settings_data:
+                    print_error("Cannot set remove_bl_info if legacy builds are not performed!", console)
+                    sys.exit(EXIT_FAIL)
                 parsed_extension_settings = ExtensionSettings(
                         blender_binary=extension_settings_data[BLENDER_BINARY],
                         build_legacy=extension_settings_data[BUILD_LEGACY] if BUILD_LEGACY in extension_settings_data else False,
                         build_name=extension_settings_data[BUILD_NAME] if BUILD_NAME in extension_settings_data else None,
+                        remove_bl_info=extension_settings_data[REMOVE_BL_INFO] if REMOVE_BL_INFO in extension_settings_data and extension_settings_data[BUILD_LEGACY] else False
                 )
 
         if INSTALL_VERSIONS in data:
