@@ -27,6 +27,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Disclaimer: This is not a product from VLK Architects, nor is this endorsed by VLK Architects
+
 from __future__ import annotations
 
 from decimal import getcontext
