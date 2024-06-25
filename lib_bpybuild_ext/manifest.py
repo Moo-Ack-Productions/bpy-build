@@ -39,11 +39,10 @@ from typing_extensions import NotRequired, TypedDict
 
 # Note: We only support the addon subset of manifest data, and
 # only 1.0.0 of the manifest schema
+#
+# TODO: Implement theme support
 ManifestSchemaLiteral = Literal["1.0.0"]
 ManifestTypeLiteral = Literal["add-on"]
-ManifestPermissionsLiteral = Literal[
-    "files", "network", "clipboard", "camera", "microphone"
-]
 ManifestTagsLiteral = Literal[
     "3D View",
     "Add Curve",
@@ -82,9 +81,21 @@ ManifestPlatformLiteral = Literal[
     "windows-amd64", "macos-arm64", "linux-x86_64", "windows-arm64", "macos-x86_64"
 ]
 
+ManifestPermissionsLiteral = Literal[
+    "files", "network", "clipboard", "camera", "microphone"
+]
+
 
 class ManifestBuildTypedDict(TypedDict):
     paths_exclude_pattern: NotRequired[list[str]]
+
+
+class ManifestPermissionsTypedDict(TypedDict):
+    files: NotRequired[str]
+    network: NotRequired[str]
+    clipboard: NotRequired[str]
+    camera: NotRequired[str]
+    microphone: NotRequired[str]
 
 
 class ManifestTypedDict(TypedDict):
@@ -96,7 +107,7 @@ class ManifestTypedDict(TypedDict):
     maintainer: str
     type: ManifestTypeLiteral
 
-    permissions: NotRequired[list[ManifestPermissionsLiteral]]
+    permissions: NotRequired[ManifestPermissionsTypedDict]
     website: NotRequired[str]
     tags: NotRequired[list[ManifestTagsLiteral]]
 
@@ -121,7 +132,7 @@ class ManifestData:
     maintainer: str = "Developer name <email@address.com>"
     type: ManifestTypeLiteral = "add-on"
 
-    permissions: Optional[list[ManifestPermissionsLiteral]] = None
+    permissions: Optional[ManifestPermissionsTypedDict] = None
     website: Optional[str] = None
     tags: Optional[list[ManifestTagsLiteral]] = None
 

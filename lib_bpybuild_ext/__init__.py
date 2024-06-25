@@ -45,17 +45,44 @@
 # Unlike the rest of BpyBuild, where exceptions aren't really used, this library will
 # use exceptions since that's common in the Python world. All functions that can raise an
 # exception explicitly will say what they can raise in their documentation.
+#
+# Due to the complexity of the Blender Extension builder, which is a 4000 line long script
+# containing code for everything extension related from extension building to the extesion
+# repo, this is based exclusively on information in the Blender manual. If it's not important
+# enough to include in the manual, then it isn't important enough to be in a third-party
+# reimplementation of the extension builder.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import cast
 
 import tomli
 
-from . import manifest
+from . import manifest, verify
 
 BLENDER_MANIFEST = "blender_manifest.toml"
+
+BLACKLISTED_CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f-\x9f]")
+
+
+def validate_string_safety(value: str) -> bool:
+    """Validate a string value. This exists in order to make
+    sure strings don't contain control characters that could be used
+    for malicious purposes.
+
+    Although not documented, this is important for security reasons.
+
+    :param value: The string to check
+    :type value: str
+
+    :return: Boolean representing if the string is secure
+    :rtype: bool
+    """
+    for _ in BLACKLISTED_CONTROL_CHARS.finditer(value):
+        return False
+    return True
 
 
 def get_manifest_data(manifest_path: Path) -> manifest.ManifestData:
@@ -89,6 +116,11 @@ def get_manifest_data(manifest_path: Path) -> manifest.ManifestData:
     # allow us to dynamically check, get, and set an attr
     # on manifest_data based on the string keys in raw_manifest_data.
     for key, val in raw_manifest_data.items():
+        if isinstance(val, str):
+            if not validate_string_safety(val):
+                raise TypeError(
+                    f"{key} contains value that uses blacklisted characters"
+                )
         if hasattr(manifest_data, key):
             if not isinstance(val, getattr(manifest_data, key)):  # type: ignore[misc]
                 # TODO: Implement a way to tell the user what type it should be
@@ -135,3 +167,4 @@ def build_ext(ext_path: Path, output_path: Path) -> None:
     if not manifest_path.exists():
         raise FileNotFoundError(f"Can not find {manifest_path}")
     _manifest_data = get_manifest_data(manifest_path)
+    verify.verify_manifest(_manifest_data)
