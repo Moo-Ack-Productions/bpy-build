@@ -55,6 +55,7 @@
 from __future__ import annotations
 
 import re
+import shutil
 from pathlib import Path
 from typing import cast
 
@@ -131,7 +132,9 @@ def get_manifest_data(manifest_path: Path) -> manifest.ManifestData:
     return manifest_data
 
 
-def build_ext(ext_path: Path, output_path: Path) -> None:
+def build_ext(
+    ext_path: Path, output_path: Path, build_name: str, validate_manifest: bool = True
+) -> None:
     """Build an extension
 
     This takes the extension located at ext_path and builds
@@ -142,6 +145,12 @@ def build_ext(ext_path: Path, output_path: Path) -> None:
 
     :param output_path: The folder where the final build should be outputted
     :type output_path: Path
+
+    :param build_name: The name of the built extension WITHOUT .zip
+    :type build_name: str
+
+    :param validate_manifest: Whether to validate the manifest or not; defaults to True
+    :type validate_manifest: bool optional
 
     :raises NotADirectoryError: If ext_path or output_path is not a directory
     :raises FileExistsError: If ext_path and output_path are the same
@@ -166,5 +175,10 @@ def build_ext(ext_path: Path, output_path: Path) -> None:
     manifest_path = Path(ext_path, BLENDER_MANIFEST)
     if not manifest_path.exists():
         raise FileNotFoundError(f"Can not find {manifest_path}")
-    _manifest_data = get_manifest_data(manifest_path)
-    verify.verify_manifest(_manifest_data)
+    manifest_data = get_manifest_data(manifest_path)
+
+    if validate_manifest:
+        verify.verify_manifest(manifest_data, manifest_path)
+
+    output_archive_path = str(Path(output_path, build_name + ".zip"))
+    _ = shutil.make_archive(output_archive_path, "zip", ext_path)

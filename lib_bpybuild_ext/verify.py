@@ -32,17 +32,30 @@
 
 from __future__ import annotations
 
+import os
+import re
+from pathlib import Path
 from typing import cast, get_args
+
+from packaging.version import InvalidVersion, Version
 
 from . import manifest
 
-COMPATIBLE_SCHEMA_VERSIONS = ["1.0.0"]
+RE_MANIFEST_SEMVER = re.compile(
+    r"^"
+    r"(?P<major>0|[1-9]\d*)\."
+    r"(?P<minor>0|[1-9]\d*)\."
+    r"(?P<patch>0|[1-9]\d*)"
+    r"(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?"
+    r"(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
+)
 
-# TODO: Implement theme support
-EXTENSION_TYPES = ["add-on"]
+RE_MANIFEST_COPYRIGHT = re.compile(
+    r"([\d]+)\s[a-zA-Z\s].*$" r"([\d]+-[\d]+)\s[a-zA-Z\s].*$"
+)
 
 
-def verify_manifest(manifest_data: manifest.ManifestData) -> None:
+def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -> None:
     """Verify a Blender Extension manifest based on the
     criteria given by the Blender manual.
 
@@ -56,14 +69,38 @@ def verify_manifest(manifest_data: manifest.ManifestData) -> None:
     We don't check for missing values because we already assign a
     set of default values anyway.
 
-    :param manifest: The manifest data parsed from blender_manifest.toml
-    :type manifest: ManifestData
+    :param manifest_data: The manifest data parsed from blender_manifest.toml
+    :type manifest_data: ManifestData
+
+    :param manifest_path: the path to the manifest
+    :type manifest_path: Path
 
     :raises TypeError: If a manifest value does not pass manifest verification
     """
 
-    if manifest_data.schema_version not in COMPATIBLE_SCHEMA_VERSIONS:
+    # TODO: Sort this better
+
+    # If it's not in our list of compatible schema versions, we
+    # certainly can't parse or deal with it
+    if manifest_data.schema_version not in cast(
+        tuple[str], get_args(manifest.ManifestSchemaLiteral)
+    ):
         raise TypeError("Schema version incompatible with LibBpyBuildExt")
+
+    if not RE_MANIFEST_SEMVER.match(manifest_data.version):
+        raise TypeError("Version must be in semantic versioning format")
+
+    try:
+        min_version = Version(manifest_data.blender_version_min)
+        v4_2 = Version("4.2.0")
+        if min_version < v4_2:
+            raise TypeError(
+                "Extensions are not supported in versions of Blender prior to 4.2"
+            )
+    except InvalidVersion:
+        raise TypeError(
+            f"{manifest_data.blender_version_min} is not in the correct format that Blender versions follow"
+        )
 
     # Although the Blender Extension builder allows ), }, and ] at the
     # the end of taglines, we will simply not support it as this is not
@@ -72,12 +109,18 @@ def verify_manifest(manifest_data: manifest.ManifestData) -> None:
     if not manifest_data.tagline[-1:].isalnum():
         raise TypeError("Tagline must not end in punctuation")
 
+    # TODO: Check against the SPDX database to validate
+    # that the passed license is indeed a SPDX license
     for license in manifest_data.license:
         if license[:4] != "SPDX":
             raise TypeError(f'License {license} missing "SPDX:" prefix')
 
-    if manifest_data.type not in EXTENSION_TYPES:
-        raise TypeError(f"Invalid extension type; supported types: {EXTENSION_TYPES}")
+    if manifest_data.type not in cast(
+        tuple[str], get_args(manifest.ManifestTypeLiteral)
+    ):
+        raise TypeError(
+            f"Invalid extension type; supported types: {cast(tuple[str], get_args(manifest.ManifestTypeLiteral))}"
+        )
 
     if manifest_data.tags is not None:
         for t in manifest_data.tags:
@@ -86,15 +129,45 @@ def verify_manifest(manifest_data: manifest.ManifestData) -> None:
                     f"{t} is not a compatible tag; supported tags: {cast(tuple[str], get_args(manifest.ManifestTagsLiteral))}"
                 )
 
+    if manifest_data.platforms is not None:
+        for platform in manifest_data.platforms:
+            if platform not in cast(
+                tuple[str], get_args(manifest.ManifestPlatformLiteral)
+            ):
+                raise TypeError(
+                    f"{platform} is not a supported platform; supported platforms: {cast(tuple[str], get_args(manifest.ManifestPlatformLiteral))}"
+                )
+
+    if manifest_data.copyright is not None:
+        for copyright in manifest_data.copyright:
+            if not RE_MANIFEST_COPYRIGHT.match(copyright):
+                raise TypeError(
+                    f'{copyright} is not in the proper format; supported format: ("YEAR First Last", "YEAR-YEAR First Last") '
+                )
+
     if manifest_data.permissions is not None:
         for p in manifest_data.permissions:
             if p not in cast(tuple[str], get_args(manifest.ManifestPermissionsLiteral)):
                 raise TypeError(
                     f"{p} is not a valid permission; supported permissions {manifest.ManifestPermissionsLiteral}"
                 )
+
+            # Not sure why, but Mypy requires we add
+            # this explicit cast for p. Maybe because
+            # TypedDict "only accepts" literals and we
+            # have to tell it that p is a literal?
             if not manifest_data.permissions[
                 cast(manifest.ManifestPermissionsLiteral, p)
             ][-1:].isalnum():
                 raise TypeError(
                     f"Explaination for permission {p} must not end in punctuation"
                 )
+
+    if manifest_data.wheels is not None:
+        for wheel in manifest_data.wheels:
+            if os.path.isabs(wheel):
+                raise TypeError(
+                    f"Wheel path {wheel} is absolute; paths must be relative"
+                )
+            if not Path(manifest_path.parent, wheel).exists():
+                raise TypeError(f"Wheel path {wheel} does not exist!")
