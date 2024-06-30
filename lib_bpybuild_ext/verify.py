@@ -100,6 +100,19 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
             f"{manifest_data.blender_version_min} is not in the correct format that Blender versions follow"
         )
 
+    if manifest_data.blender_version_max is not None:
+        try:
+            min_version = Version(manifest_data.blender_version_min)
+            max_version = Version(manifest_data.blender_version_max)
+            if min_version == max_version:
+                raise TypeError(
+                    "Cannot use the same version for both blender_version_min and blender_version_max"
+                )
+        except InvalidVersion:
+            raise TypeError(
+                f"{manifest_data.blender_version_max} is not in the correct format that Blender versions follow"
+            )
+
     # Although the Blender Extension builder allows ), }, and ] at the
     # the end of taglines, we will simply not support it as this is not
     # not mention in the documentation. If it isn't important enough to be
