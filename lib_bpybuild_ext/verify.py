@@ -50,10 +50,6 @@ RE_MANIFEST_SEMVER = re.compile(
     r"(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
 )
 
-RE_MANIFEST_COPYRIGHT = re.compile(
-    r"([\d]+)\s[a-zA-Z\s].*$" r"([\d]+-[\d]+)\s[a-zA-Z\s].*$"
-)
-
 CHARACTER_LIMIT = 64
 
 
@@ -145,10 +141,13 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
 
     if manifest_data.copyright is not None:
         for copyright in manifest_data.copyright:
-            if not RE_MANIFEST_COPYRIGHT.match(copyright):
+            year, _, name = copyright.partition(" ")
+            if not all(x.isdigit() for x in year.partition("-")[0::2]):
                 raise TypeError(
                     f'{copyright} is not in the proper format; supported format: ("YEAR First Last", "YEAR-YEAR First Last") '
                 )
+            if not name.strip():
+                raise TypeError("Name for copyright must not be empty")
 
     if manifest_data.permissions is not None:
         for p in manifest_data.permissions:
