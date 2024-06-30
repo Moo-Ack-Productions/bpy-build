@@ -54,6 +54,8 @@ RE_MANIFEST_COPYRIGHT = re.compile(
     r"([\d]+)\s[a-zA-Z\s].*$" r"([\d]+-[\d]+)\s[a-zA-Z\s].*$"
 )
 
+CHARACTER_LIMIT = 64
+
 
 def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -> None:
     """Verify a Blender Extension manifest based on the
@@ -109,6 +111,9 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
     if not manifest_data.tagline[-1:].isalnum():
         raise TypeError("Tagline must not end in punctuation")
 
+    if len(manifest_data.tagline) == CHARACTER_LIMIT:
+        raise TypeError("Tagline can not be greater then 64 characters!")
+
     # TODO: Check against the SPDX database to validate
     # that the passed license is indeed a SPDX license
     for license in manifest_data.license:
@@ -161,6 +166,18 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
             ][-1:].isalnum():
                 raise TypeError(
                     f"Explaination for permission {p} must not end in punctuation"
+                )
+
+            if (
+                len(
+                    manifest_data.permissions[
+                        cast(manifest.ManifestPermissionsLiteral, p)
+                    ]
+                )
+                == CHARACTER_LIMIT
+            ):
+                raise TypeError(
+                    f"Explaination for permission {p} may not be greater then 64 characters"
                 )
 
     if manifest_data.wheels is not None:
