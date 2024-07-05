@@ -134,7 +134,7 @@ def get_manifest_data(manifest_path: Path) -> manifest.ManifestData:
 
 def build_ext(
     ext_path: Path, output_path: Path, build_name: str, validate_manifest: bool = True
-) -> None:
+) -> Path:
     """Build an extension
 
     This takes the extension located at ext_path and builds
@@ -151,6 +151,9 @@ def build_ext(
 
     :param validate_manifest: Whether to validate the manifest or not; defaults to True
     :type validate_manifest: bool optional
+
+    :return: Path to built extension
+    :rtype: Path
 
     :raises NotADirectoryError: If ext_path or output_path is not a directory
     :raises FileExistsError: If ext_path and output_path are the same
@@ -180,5 +183,6 @@ def build_ext(
     if validate_manifest:
         verify.verify_manifest(manifest_data, manifest_path)
 
-    output_archive_path = str(Path(output_path, build_name + ".zip"))
+    output_archive_path = str(Path(output_path, build_name))
     _ = shutil.make_archive(output_archive_path, "zip", ext_path)
+    return Path(output_archive_path + ".zip")
