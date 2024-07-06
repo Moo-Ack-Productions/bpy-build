@@ -55,13 +55,12 @@
 from __future__ import annotations
 
 import re
-import shutil
 from pathlib import Path
 from typing import cast
 
 import tomli
 
-from . import manifest, verify
+from . import manifest
 
 BLENDER_MANIFEST = "blender_manifest.toml"
 
@@ -130,59 +129,3 @@ def get_manifest_data(manifest_path: Path) -> manifest.ManifestData:
                 )
             setattr(manifest_data, key, val)  # type: ignore[misc]
     return manifest_data
-
-
-def build_ext(
-    ext_path: Path, output_path: Path, build_name: str, validate_manifest: bool = True
-) -> Path:
-    """Build an extension
-
-    This takes the extension located at ext_path and builds
-    the extension in output_path.
-
-    :param ext_path: The folder where the extension is stored
-    :type ext_path: Path
-
-    :param output_path: The folder where the final build should be outputted
-    :type output_path: Path
-
-    :param build_name: The name of the built extension WITHOUT .zip
-    :type build_name: str
-
-    :param validate_manifest: Whether to validate the manifest or not; defaults to True
-    :type validate_manifest: bool optional
-
-    :return: Path to built extension
-    :rtype: Path
-
-    :raises NotADirectoryError: If ext_path or output_path is not a directory
-    :raises FileExistsError: If ext_path and output_path are the same
-    :raises FileNotFoundError: If ext_path, output_path, or  ext_path/blender_manifest.toml are not found
-    """
-
-    if not ext_path.exists():
-        raise FileNotFoundError("Extension path doesn't exist!")
-
-    if not ext_path.is_dir():
-        raise NotADirectoryError(f"Extension path must a directory, got {ext_path}")
-
-    if not output_path.exists():
-        raise FileNotFoundError("Output path doesn't exist!")
-
-    if not output_path.is_dir():
-        raise NotADirectoryError(f"Output path must be a directory, got {output_path}")
-
-    if ext_path == output_path:
-        raise FileExistsError("Extension path and output path are the same!")
-
-    manifest_path = Path(ext_path, BLENDER_MANIFEST)
-    if not manifest_path.exists():
-        raise FileNotFoundError(f"Can not find {manifest_path}")
-    manifest_data = get_manifest_data(manifest_path)
-
-    if validate_manifest:
-        verify.verify_manifest(manifest_data, manifest_path)
-
-    output_archive_path = str(Path(output_path, build_name))
-    _ = shutil.make_archive(output_archive_path, "zip", ext_path)
-    return Path(output_archive_path + ".zip")
