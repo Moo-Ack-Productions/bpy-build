@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import traceback
+from dataclasses import field
 from decimal import Decimal, getcontext
 from pathlib import Path
 from typing import Dict, List, Literal, Optional, TypedDict
@@ -24,7 +25,6 @@ IGNORE_FILTERS: Literal["ignore_filters"] = "ignore_filters"
 
 # Extension Settings
 EXTENSION_SETTINGS: Literal["extension_settings"] = "extension_settings"
-BLENDER_BINARY: Literal["blender_binary"] = "blender_binary"
 BUILD_LEGACY: Literal["build_legacy"] = "build_legacy"
 REMOVE_BL_INFO: Literal["remove_bl_info"] = "remove_bl_info"
 
@@ -46,7 +46,6 @@ class BuildActionDict(TypedDict):
 class ExtensionSettingsDict(TypedDict):
     """TypeDict verson of ExtensionSettings"""
 
-    blender_binary: str
     build_legacy: NotRequired[bool]
     build_name: NotRequired[str]
     remove_bl_info: NotRequired[bool]
@@ -99,10 +98,6 @@ class ExtensionSettings:
 
     Attributes
     ----------
-    blender_binary: str
-        Location of the Blender binary used to build
-        the extension. Must be Blender 4.2 or greater
-
     build_legacy: bool
         Whether to build a legacy addon or not
 
@@ -116,7 +111,6 @@ class ExtensionSettings:
         Note: this is set True if build_legacy is False
     """
 
-    blender_binary: str
     build_legacy: bool
     build_name: Optional[str]
     remove_bl_info: bool
@@ -156,6 +150,7 @@ class Config:
     extension_settings: Optional[ExtensionSettings] = None
     install_versions: Optional[List[Decimal]] = None
     build_actions: Optional[Dict[str, BuildAction]] = None
+    additional_actions: list[str] = field(default_factory=list)
 
 
 def build_config(data: ConfigDict) -> Config:
@@ -175,6 +170,7 @@ def build_config(data: ConfigDict) -> Config:
 
     console = Console()
     parsed_build_acts: dict[str, BuildAction] = {}
+    additional_actions: list[str] = []
     parsed_extension_settings: Optional[ExtensionSettings] = None
     install_versions: list[Decimal] = []
 
@@ -214,19 +210,10 @@ def build_config(data: ConfigDict) -> Config:
             exit_fail()
 
         if BUILD_EXTENSION in data and data[BUILD_EXTENSION]:
-            if EXTENSION_SETTINGS not in data:
-                print_error(
-                    "Must provide extension_settings if building an extension!", console
-                )
-                exit_fail()
-            else:
+            parsed_build_acts["extension"] = BUILT_IN_ACTS["extension"]
+            additional_actions.append("extension")
+            if EXTENSION_SETTINGS in data:
                 extension_settings_data = data[EXTENSION_SETTINGS]
-                if BLENDER_BINARY not in extension_settings_data:
-                    print_error(
-                        "Must provide path to a Blender 4.2+ binary to build an extension!",
-                        console,
-                    )
-                    exit_fail()
                 if (
                     REMOVE_BL_INFO in extension_settings_data
                     and BUILD_LEGACY not in extension_settings_data
@@ -245,7 +232,6 @@ def build_config(data: ConfigDict) -> Config:
                     )
                     exit_fail()
                 parsed_extension_settings = ExtensionSettings(
-                    blender_binary=extension_settings_data[BLENDER_BINARY],
                     build_legacy=extension_settings_data[BUILD_LEGACY]
                     if BUILD_LEGACY in extension_settings_data
                     else False,
@@ -257,7 +243,6 @@ def build_config(data: ConfigDict) -> Config:
                     and extension_settings_data[BUILD_LEGACY]
                     else False,
                 )
-                parsed_build_acts["extension"] = BUILT_IN_ACTS["extension"]
 
         if INSTALL_VERSIONS in data:
             for ver in data[INSTALL_VERSIONS]:
@@ -332,6 +317,7 @@ def build_config(data: ConfigDict) -> Config:
         if "install_versions" in data
         else None,
         build_actions=parsed_build_acts if len(parsed_build_acts) else None,
+        additional_actions=additional_actions,
     )
 
 

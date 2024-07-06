@@ -66,11 +66,11 @@ def main() -> None:
     with open(cli.path, "r") as f:
         data: ConfigDict = yaml.safe_load(f)
         config: Config = build_config(data)
-        api: Api = Api(config, cli.path, cli.debug_mode)
+        api: Api = Api(config, cli, cli.debug_mode)
         context = BuildContext(cli.path, config, cli, api)
 
-    if cli.debug_mode:
-        console.print(context)
+        if cli.debug_mode:
+            console.print(context)
     if not cli.path.parent.joinpath(config.addon_folder).exists():
         print("Addon folder does not exist!")
         return

@@ -6,6 +6,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Optional
 
+from bpy_addon_build.args import Args
 from bpy_addon_build.config import Config
 
 
@@ -46,15 +47,16 @@ class Api:
         Action name to module
     """
 
-    def __init__(self, conf: Config, config_path: Path, debug_mode: bool) -> None:
+    def __init__(self, conf: Config, cli: Args, debug_mode: bool) -> None:
         if conf.build_actions is not None:
             self.build_actions = conf.build_actions
             self.action_mods: dict[str, ModuleType] = {}
+            self.actions_to_execute: list[str] = cli.actions + conf.additional_actions
 
             for action in self.build_actions:
                 if self.build_actions[action].script is None:
                     continue
-                mod = self.add_modules(config_path, action, debug_mode)
+                mod = self.add_modules(cli.path, action, debug_mode)
                 if mod is None:
                     continue
                 self.action_mods[action] = mod

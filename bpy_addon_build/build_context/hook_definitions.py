@@ -88,10 +88,10 @@ def check_action(ctx: BuildContext, action: str, console: Console) -> bool:
         True if all checks pass,
         False otherwise
     """
-    if ctx.config.build_actions is None and len(ctx.cli.actions):
+    if ctx.config.build_actions is None and len(ctx.api.actions_to_execute):
         print("Actions must be defined to use them!")
         return False
-    if action not in ctx.cli.actions:
+    if action not in ctx.api.actions_to_execute:
         return False
     if action not in ctx.api.action_mods:
         if ctx.cli.debug_mode:
