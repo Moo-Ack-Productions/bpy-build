@@ -80,9 +80,9 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
 
     # If it's not in our list of compatible schema versions, we
     # certainly can't parse or deal with it
-    if manifest_data.schema_version not in cast(
-        tuple[str], get_args(manifest.ManifestSchemaLiteral)
-    ):
+
+    # Python 3.8 typing woes requires us to ignore these get_args calls
+    if manifest_data.schema_version not in get_args(manifest.ManifestSchemaLiteral):  # type: ignore[misc]
         raise TypeError("Schema version incompatible with LibBpyBuildExt")
 
     if not RE_MANIFEST_SEMVER.match(manifest_data.version):
@@ -129,16 +129,16 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
         if license[:4] != "SPDX":
             raise TypeError(f'License {license} missing "SPDX:" prefix')
 
-    if manifest_data.type not in cast(
-        tuple[str], get_args(manifest.ManifestTypeLiteral)
-    ):
+    # Python 3.8 typing woes requires us to ignore these get_args calls
+    if manifest_data.type not in get_args(manifest.ManifestTypeLiteral):  # type: ignore[misc]
         raise TypeError(
-            f"Invalid extension type; supported types: {cast(tuple[str], get_args(manifest.ManifestTypeLiteral))}"
+            f"Invalid extension type; supported types: {get_args(manifest.ManifestTypeLiteral)}"  # type: ignore[misc]
         )
 
     if manifest_data.tags is not None:
         for t in manifest_data.tags:
-            if t not in cast(tuple[str], get_args(manifest.ManifestTagsLiteral)):
+            # Python 3.8 typing woes requires us to ignore these get_args calls
+            if t not in get_args(manifest.ManifestTagsLiteral):  # type: ignore[misc]
                 raise TypeError(
                     f"{t} is not a compatible tag; supported tags: {cast(tuple[str], get_args(manifest.ManifestTagsLiteral))}"
                 )
