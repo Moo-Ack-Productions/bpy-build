@@ -32,7 +32,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal, Optional
 
 from typing_extensions import NotRequired, TypedDict
@@ -139,7 +139,7 @@ class ManifestData:
     blender_version_min: str = "4.2.0"
     blender_version_max: Optional[str] = None
 
-    license: list[str] = ["SPDX:GPL-2.0-or-later"]
+    license: list[str] = field(default_factory=lambda: ["SPDX:GPL-2.0-or-later"])
     copyright: Optional[list[str]] = None
 
     platforms: Optional[list[ManifestPlatformLiteral]] = None
