@@ -3,7 +3,6 @@ from pathlib import Path
 
 from bpy_addon_build.build_context import hooks
 from bpy_addon_build.build_context.core import BuildContext
-from lib_bpybuild_ext import build_ext
 
 
 def combine_with_build(ctx: BuildContext, path: Path) -> Path:
@@ -70,15 +69,6 @@ def build(ctx: BuildContext) -> Path:
 
     hooks.run_main_hooks(ctx, STAGE_ONE, Path(ctx.config.build_name))
 
-    if ctx.config.build_extension and ctx.config.extension_settings is not None:
-        return build_ext(
-            STAGE_ONE,
-            BUILD_DIR,
-            ctx.config.extension_settings.build_name
-            if ctx.config.extension_settings.build_name is not None
-            else ctx.config.build_name,
-        )
-    else:
-        combined_str = str(combine_with_build(ctx, BUILD_DIR))
-        shutil.make_archive(combined_str, "zip", STAGE_ONE)
-        return Path(combined_str + ".zip")
+    combined_str = str(combine_with_build(ctx, BUILD_DIR))
+    _ = shutil.make_archive(combined_str, "zip", STAGE_ONE)
+    return Path(combined_str + ".zip")

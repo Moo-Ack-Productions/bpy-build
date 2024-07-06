@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import traceback
 from decimal import Decimal, getcontext
+from pathlib import Path
 from typing import Dict, List, Literal, Optional, TypedDict
 
 from attrs import frozen
@@ -81,6 +82,12 @@ class BuildAction:
 
     script: Optional[str] = None
     ignore_filters: Optional[List[str]] = None
+
+
+BUILT_IN_ACTIONS_FOLDER = Path(__file__).parent.joinpath("built_in_actions")
+BUILT_IN_ACTS = {
+    "extension": BuildAction(str(BUILT_IN_ACTIONS_FOLDER.joinpath("extension.py")))
+}
 
 
 # Must be ignored to pass Mypy as this has
@@ -250,6 +257,7 @@ def build_config(data: ConfigDict) -> Config:
                     and extension_settings_data[BUILD_LEGACY]
                     else False,
                 )
+                parsed_build_acts["extension"] = BUILT_IN_ACTS["extension"]
 
         if INSTALL_VERSIONS in data:
             for ver in data[INSTALL_VERSIONS]:
