@@ -146,7 +146,7 @@ class Config:
 
     addon_folder: str
     build_name: str
-    build_extension: bool = False
+    build_extension: bool = True
     extension_settings: Optional[ExtensionSettings] = None
     install_versions: Optional[List[Decimal]] = None
     build_actions: Optional[Dict[str, BuildAction]] = None
