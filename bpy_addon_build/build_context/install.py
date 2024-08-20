@@ -31,11 +31,15 @@ def get_paths(
                     path = Path(p, str(format(v, ".1f"))).expanduser()
                     if not path.exists():
                         continue
-            if is_extension:
+            if is_extension and v >= +Decimal(4.2):
                 path = Path(path, "extensions/user_default")
+                paths.append(path)
+            elif is_extension and v < +Decimal(4.2):
+                # Don't install in earlier versions
+                pass
             else:
                 path = Path(path, "scripts/addons")
-            paths.append(path)
+                paths.append(path)
     return paths
 
 
