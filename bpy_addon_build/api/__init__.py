@@ -33,6 +33,14 @@ class BabContext:
     # the intended cwd
     current_path: Path
 
+    # Is the addon currently being
+    # build an extension?
+    is_extension: bool
+
+    # BpyBuild Config; For built-in
+    # actions to use
+    builtin_config: Config
+
 
 class Api:
     """
