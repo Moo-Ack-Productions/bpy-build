@@ -64,6 +64,8 @@ class Api:
             for action in self.build_actions:
                 if self.build_actions[action].script is None:
                     continue
+                if action not in cli.actions:
+                    continue
                 mod = self.add_modules(cli.path, action, debug_mode)
                 if mod is None:
                     continue
