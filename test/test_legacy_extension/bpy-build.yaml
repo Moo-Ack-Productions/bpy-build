@@ -1,0 +1,24 @@
+addon_folder: MCprep_addon
+build_name: MCprep_addon
+
+build_extension: true
+extension_settings:
+  build_legacy: true
+
+install_versions:
+  - 3.5+
+  - 3.0..3.5
+  - 2.8
+
+build_actions:
+  default: 
+    script: "default.py"
+  dev: 
+    script: "dev.py"
+    ignore_filters: 
+      - "*.blend"
+  old:
+    script: "old.py"
+  no-script:
+    ignore_filters:
+      - "*.blend"
