@@ -61,10 +61,13 @@ class Api:
             self.action_mods: dict[str, ModuleType] = {}
             self.actions_to_execute: list[str] = cli.actions + conf.additional_actions
 
+            if cli.debug_mode:
+                print(self.actions_to_execute)
+
             for action in self.build_actions:
                 if self.build_actions[action].script is None:
                     continue
-                if action not in cli.actions:
+                if action not in self.actions_to_execute:
                     continue
                 mod = self.add_modules(cli.path, action, debug_mode)
                 if mod is None:
