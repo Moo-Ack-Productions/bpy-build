@@ -28,11 +28,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import unittest
-from unittest import mock
 from io import StringIO
+from pathlib import Path
+from unittest import mock
+
 import bpy_addon_build as bab
 from bpy_addon_build.build_context.install import get_paths
-from pathlib import Path
 
 # parent folder of the tests
 TEST_FOLDER = Path(__file__).parent
@@ -266,6 +267,40 @@ class TestBpyBuild(unittest.TestCase):
             .read_text()
             .strip(),
             "hi guys c:",
+        )
+
+    @mock.patch("sys.stdout", new_callable=StringIO)
+    def test_extension_build(self, mock_stdout: StringIO) -> None:
+        """Perform a test build using the
+        project in test_extension
+
+        This test will check for:
+        - Build folder
+        - MCprep_addon.zip
+        - stage-1_extension folder
+        - blender_manifest.toml in extension build
+        """
+        with mock.patch(
+            "sys.argv",
+            [
+                "bab",
+                "-c",
+                f"{TEST_FOLDER}/test_extension/bpy-build.yaml",
+            ],
+        ):
+            bab.main()
+        build = Path(f"{TEST_FOLDER}/test_extension/build")
+
+        # This could be consolidated into a single call,
+        # but I feel this is more readable as it's calling
+        # for each individual condition, and reduces complexity.
+        self.assertTrue(build.exists() and build.is_dir())
+        self.assertTrue((build / "MCprep_addon.zip").exists())
+        self.assertTrue((build / "stage-1_extension").exists())
+        self.assertTrue(
+            (
+                build / "stage-1_extension" / "MCprep_addon" / "blender_manifest.toml"
+            ).exists()
         )
 
 

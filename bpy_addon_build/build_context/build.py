@@ -33,7 +33,9 @@ def build(ctx: BuildContext) -> Path:
 
     # Create some constants
     BUILD_DIR = ctx.config_path.parent / Path("build")
-    STAGE_ONE = BUILD_DIR.joinpath(Path("stage-1"))
+    STAGE_ONE = BUILD_DIR.joinpath(
+        Path("stage-1_extension" if ctx.config.build_extension else "stage-1")
+    )
     FILTERS = []
 
     # Get all filters from currently used actions
