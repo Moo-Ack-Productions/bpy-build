@@ -87,8 +87,10 @@ def main() -> None:
     # treat this as if it were a separate call
     # of BpyBuild but with an altered config
     if (
-        config.build_extension and config.extension_settings is not None
-    ) and config.extension_settings.build_legacy:
+        (config.build_extension and config.extension_settings is not None)
+        and config.extension_settings.build_legacy
+        and not cli.build_extension_only
+    ):
         # Remove extension action in a copy
         # of additional_actions
         additional_actions = copy.deepcopy(config.additional_actions)

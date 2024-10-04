@@ -39,6 +39,7 @@ class Args:
     actions: List[str] = field(default=["default"])
     debug_mode: bool = field(default=False)
     supress_messages: bool = field(default=False)
+    build_extension_only: bool = field(default=False)
 
     @path.validator
     def path_validate(self, _: Attribute, value: Optional[Path]) -> None:
@@ -123,6 +124,13 @@ def parse_args() -> Args:
         default=False,
         action="store_true",
     )
+    parser.add_argument(
+        "-be",
+        "--build-extension-only",
+        help="Only build an extension, if legacy building is enabled",
+        default=False,
+        action="store_true",
+    )
 
     args: Namespace = parser.parse_args()
     config: str = "bpy-build.yaml"
@@ -145,4 +153,5 @@ def parse_args() -> Args:
         cast(List[str], actions),
         cast(bool, args.debug_mode),
         cast(bool, args.supress_output),
+        cast(bool, args.build_extension_only),
     )
