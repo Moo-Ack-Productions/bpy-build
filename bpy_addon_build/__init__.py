@@ -32,9 +32,11 @@
 
 from __future__ import annotations
 
+import copy
 from decimal import getcontext
 from typing import Optional
 
+import attrs
 import yaml
 from rich.console import Console
 
@@ -74,9 +76,40 @@ def main() -> None:
     if not cli.path.parent.joinpath(config.addon_folder).exists():
         print("Addon folder does not exist!")
         return
+
     build_path = build(context)
     install(context, build_path)
     hooks.run_cleanup_hooks(context)
+
+    # Build legacy addon alongside extension
+    #
+    # To reduce as many issues as possible, we
+    # treat this as if it were a separate call
+    # of BpyBuild but with an altered config
+    if (
+        config.build_extension and config.extension_settings is not None
+    ) and config.extension_settings.build_legacy:
+        # Remove extension action in a copy
+        # of additional_actions
+        additional_actions = copy.deepcopy(config.additional_actions)
+        if "extension" in additional_actions:
+            additional_actions.remove("extension")
+
+        override_config = attrs.evolve(
+            config,
+            build_name=config.build_name + "_legacy",
+            build_extension=False,
+            extension_settings=None,
+            additional_actions=additional_actions,
+        )
+
+        # Change the context object. This is fine
+        # since this is ran last
+        context.config = override_config
+
+        build_path = build(context)
+        install(context, build_path)
+        hooks.run_cleanup_hooks(context)
 
 
 if __name__ == "__main__":
