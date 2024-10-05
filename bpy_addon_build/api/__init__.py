@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import importlib
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
 from typing import Optional
 
+from rich.console import Console
+
+from bpy_addon_build import util
 from bpy_addon_build.args import Args
 from bpy_addon_build.config import Config
 
@@ -77,11 +81,26 @@ class Api:
     def add_modules(
         self, config_path: Path, action: str, debug_mode: bool
     ) -> Optional[ModuleType]:
-        import importlib.util
-
+        console = Console()
         script = self.build_actions[action].script
+        depends = self.build_actions[action].depends_on
         if script is None:
             return None
+        if depends is not None:
+            if debug_mode:
+                print(action, "depends on", depends)
+            for dep in depends:
+                if dep in self.actions_to_execute:
+                    continue
+
+                # Dependencies must execute before their dependents
+                if self.actions_to_execute.index(dep) < self.actions_to_execute.index(
+                    action
+                ):
+                    continue
+                util.print_error(f"{dep} required to run {action}", console)
+                util.exit_fail()
+
         path = config_path.parent.resolve().joinpath(Path(script))
 
         # Add the parent folder of the script to the sys path

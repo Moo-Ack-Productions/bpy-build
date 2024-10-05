@@ -22,6 +22,7 @@ INSTALL_VERSIONS: Literal["install_versions"] = "install_versions"
 BUILD_ACTIONS: Literal["build_actions"] = "build_actions"
 SCRIPT: Literal["script"] = "script"
 IGNORE_FILTERS: Literal["ignore_filters"] = "ignore_filters"
+DEPENDS_ON: Literal["depends_on"] = "depends_on"
 
 # Extension Settings
 EXTENSION_SETTINGS: Literal["extension_settings"] = "extension_settings"
@@ -41,6 +42,7 @@ class BuildActionDict(TypedDict):
 
     script: NotRequired[str]
     ignore_filters: NotRequired[list[str]]
+    depends_on: NotRequired[list[str]]
 
 
 class ExtensionSettingsDict(TypedDict):
@@ -81,6 +83,7 @@ class BuildAction:
 
     script: Optional[str] = None
     ignore_filters: Optional[List[str]] = None
+    depends_on: Optional[list[str]] = None
 
 
 BUILT_IN_ACTIONS_FOLDER = Path(__file__).parent.joinpath("built_in_actions")
@@ -293,6 +296,9 @@ def build_config(data: ConfigDict) -> Config:
                         script=action_data[SCRIPT] if SCRIPT in action_data else None,
                         ignore_filters=action_data[IGNORE_FILTERS]
                         if IGNORE_FILTERS in action_data
+                        else None,
+                        depends_on=action_data[DEPENDS_ON]
+                        if DEPENDS_ON in action_data
                         else None,
                     )
                     continue

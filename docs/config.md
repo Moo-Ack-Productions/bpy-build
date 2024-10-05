@@ -22,3 +22,5 @@
     - `action_name`
         - `script` (`str`): Path to the script containing the action code
         - `ignore_filters (`str`): Glob patterns of files to ignore when copying
+        - `depends_on` (`list[str]`): List of actions that the current actions depends on
+            - Node: These actions must be executed *before* the dependent action. Actions order is based on the order provided in the command line
