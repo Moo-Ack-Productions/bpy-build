@@ -1,6 +1,238 @@
 # Changelog
 
 
+# Changelog
+
+## [0.5] - 2024-10-05
+
+
+### Fix: Make depends_on check occur before module loading
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Fix: Change action loading to account for additional actions
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Fix: Make extensions only install in 4.2+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Fix: Resolve verification type checks caused by Python 3.8
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Fix: Fix error with dataclass initialization
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Fix: Use language-agnostic method for copyright validation
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+
+
+### Docs: Add documentation on config options
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+
+
+### Feat: Add depends_on for actions
+
+This allows defining actions that require previous actions to execute
+beforehand, like debug actions for specific build configurations.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Add --build-extension-only flag
+
+This allows building only an extension. We don't have one for legacy
+builds as we can't easily do that.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Add legacy building to BpyBuild
+
+This allows addons that need to support both extensions and legacy
+builds to create both in one go, thus reducing the amount of work
+needed to support both older and newer versions of Blender.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Only load modules that are passed in the CLI
+
+This is mostly to make debugging BpyBuild with MCprep slightly
+easier, and make it slightly faster overall
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Add is_extension to BabContext and compatibility checks
+
+This wires the new compatibility checks in lib_bpybuild_ext to BpyBuild
+itself. In addition, this also adds the new is_extension variable to
+BabContext in order to make it easier for actions to determine when an
+extension is being build
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat(ext): Add the ability to check for compatibility issues
+
+This is to make it easier for developers transitioning from legacy
+addons to extensions to find and fix known compatibility issues with
+extensions in legacy codebases.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Make extension building the default
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Add basic extension building to BpyBuild
+
+This adds the ability to build extensions in BpyBuild, if
+build_extension is enabled in the config. At the moment, this does not
+handle legacy building.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Return Path in build_ext
+
+Since we need the path in BpyBuild in order to do operations such as
+installation, we'll return the path in build_ext
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Add validation for blender_version_max
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Finished manifest verification and added build generation
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Add basic manifest verification
+
+This implements manifest verification solely based on the Blender
+documentation, so that my sanity doesn't dip -10. This means that
+LibBpyBuildExt will no longer have 100% parity with the Blender
+extension builder, at the cost that we can develop this much faster.
+
+The exception to this is for security related checks, such as
+blacklisting certain control characters.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Add beginnings of lib_bpybuild_ext
+
+lib_bpybuild_ext (otherwise known as LibBpyBuildExt) aims to be a BSD
+implementation of the Blender Extension builder in order to allow
+BpyBuild to implement extension building. The goal is to implement 100%
+feature parity with the Blender Extension builder, down to verification
+checks.
+
+Although ideally we should get this done soon, we're not really in any
+rush since MCprep won't move to extensions for a good while. However,
+without this, BpyBuild can't implement extensions, so we should try and
+move as fast as possible.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Add 4.2+ check when building extensions
+
+Extensions are a 4.2+ feature, so obviously addons that build extensions
+should include 4.2 or above in the range of supported versions.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Enforce string restrictions on extension_settings::build_name
+
+`build_name` has string restrictions enforced on it, so for
+consistency, `extension_settings::build_name` also has string restrictions
+enforced on it.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Add extension_settings::remove_bl_info
+
+This is intended for developers building both an extension and legacy
+addon. The idea is that BpyBuild will be able to remove the `bl_info`
+dictionary when building an addon as an extension, if and only if the
+developer also has extension_settings::build_legacy enabled (otherwise
+what's the point?).
+
+This feature is planned to be opt-in, as it involves modifying an
+addon's source code. However, perhaps at some point we could possibly
+make it the default for building extensions with
+extension_settings::build_legacy enabled
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Feat: Add config options for Extensions
+
+Blender 4.2 recently introduced Extensions to replace the old legacy
+addons. As a starting point to support Extensions, this patch adds the
+needed config options to support Extensions. These new config options
+are:
+- build_extension [bool]: the switch to enable extension building
+- extension_settings::blender_binary [str]: the path to the Blender
+  binary needed to build extensions (4.2+)
+- extension_settings::build_legacy [bool]: the switch to build a legacy
+  addon alongside the extension
+- extension_settings::build_name [str]: an optional alternative name for
+  extensions. By default however, we plan to do[build_name]-extension
+
+It should be noted that this patch exclusively adds new config options,
+the actual building of extensions is not supported yet. In addition, the
+current roadmap for extension support involves the developer passing in
+the direct path to the Blender binary, which isn't ideal for versions of
+Blender from the Microsoft Store, Snap repo, and Flathub. Perhaps we may
+implement our own extension builder.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+
+
+### Python: Update minimum support to Python 3.9
+
+The update to Python 3.9 is for several reasons:
+- Python 3.8 will be EOL in October
+- Python 3.9 introduces better type annotations
+- We don't want to be behind with dependencies
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Chore: Update employment disclaimer
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Chore: Add disclaimer regarding my employment
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+
+
+### Refactor: Move list of actions to execute to Api object
+
+By doing this, we can add our own built-in actions at runtime trivially,
+without much extra effort
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Refactor: Move manifest verification to built-in action
+
+With the actions system we have in BpyBuild, it's actually easier to
+make an action that performs manifest verification in the main hook.
+This way, we get pre-build checks for free.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Refactor: Remove build_ext
+
+Building extensions is simple enough, the more important part is
+validating the manifest and performing extension checks.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Refactor: Replace sys.exit calls with exit_fail
+
+To avoid typing so many characters and repeating ourselves, this patch
+adds util.exit_fail, which is equal to sys.exit(EXIT_FAIL), but in an
+easier to type fashion.
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+
+
+### Style: Add proper name-spacing to extension errors
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+
+
+### Tests: Add test for depends_on
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Tests: Add legacy building test
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Tests: Add test for regular extension building
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Tests: Add manifest files to tests
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Tests: Add new test dirs for extensions and legacy building
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+
+
 ## [0.4.1] - 2024-06-01
 
 
