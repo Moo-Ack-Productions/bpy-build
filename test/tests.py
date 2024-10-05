@@ -189,6 +189,81 @@ class TestBpyBuild(unittest.TestCase):
         self.assertRegex(mock_stdout.getvalue(), r"MAIN")  # default action
 
     @mock.patch("sys.stdout", new_callable=StringIO)
+    def test_depend_on(self, mock_stdout: StringIO) -> None:
+        """Perform a test build using the
+        project in test_addon, using the depend_dev action
+        with dev
+
+        This test will check for:
+        - Build folder
+        - MCprep_addon.zip
+        - stage-1 folder
+        - stage-1/MCprep_addon/mcprep_dev.txt
+        - Lack of stage-1/MCprep_addon/ignore.blend
+        - "DEV MAIN" in mock_stdout
+        - "MAIN" in mock_stdout
+        - "hi guys c:" in stage-1/MCprep_addon/mcprep_dev.txt
+        """
+        with mock.patch(
+            "sys.argv",
+            [
+                "bab",
+                "-c",
+                f"{TEST_FOLDER}/test_addon/bpy-build.yaml",
+                "-b",
+                "dev",
+                "depend_dev",
+            ],
+        ):
+            bab.main()
+        build = Path(f"{TEST_FOLDER}/test_addon/build")
+
+        # This could be consolidated into a single call,
+        # but I feel this is more readable as it's calling
+        # for each individual condition, and reduces complexity.
+        self.assertTrue(build.exists() and build.is_dir())
+        self.assertTrue((build / "MCprep_addon.zip").exists())
+        self.assertTrue((build / "stage-1").exists())
+        self.assertTrue((build / "stage-1/MCprep_addon/mcprep_dev.txt").exists())
+        self.assertFalse((build / "stage-1/MCprep_addon/ignore.blend").exists())
+
+        # Check mock_stdout and mcprep_dev.txt for some
+        # expected strings.
+        self.assertRegex(mock_stdout.getvalue(), r"DEV MAIN")  # dev action
+        self.assertRegex(mock_stdout.getvalue(), r"MAIN")  # default action
+
+        with open(build / "stage-1/MCprep_addon/mcprep_dev.txt", "r") as f:
+            self.assertEqual(f.read().strip(), "hi guys c:")
+
+    @mock.patch("sys.stdout", new_callable=StringIO)
+    def test_depend_on_fail(self, mock_stdout: StringIO) -> None:
+        """Perform a test build using the
+        project in test_addon, using the depend_dev action
+        without dev
+
+        This test will check for:
+            - bab.main() exits with SystemExit
+            - "dev required to run depend_dev" in console output
+        """
+        with mock.patch(
+            "sys.argv",
+            [
+                "bab",
+                "-c",
+                f"{TEST_FOLDER}/test_addon/bpy-build.yaml",
+                "-b",
+                "depend_dev",
+            ],
+        ):
+            with self.assertRaises(SystemExit):
+                bab.main()
+
+        # Check for error
+        self.assertRegex(
+            mock_stdout.getvalue(), r"dev required to run depend_dev"
+        )  # Error
+
+    @mock.patch("sys.stdout", new_callable=StringIO)
     def test_hooks(self, mock_stdout: StringIO) -> None:
         """Perform a test build using the
         project in test_addon.
