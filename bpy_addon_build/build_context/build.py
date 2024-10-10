@@ -33,7 +33,9 @@ def build(ctx: BuildContext) -> Path:
 
     # Create some constants
     BUILD_DIR = ctx.config_path.parent / Path("build")
-    STAGE_ONE = BUILD_DIR.joinpath(Path("stage-1"))
+    STAGE_ONE = BUILD_DIR.joinpath(
+        Path("stage-1_extension" if ctx.config.build_extension else "stage-1")
+    )
     FILTERS = []
 
     # Get all filters from currently used actions
@@ -70,5 +72,5 @@ def build(ctx: BuildContext) -> Path:
     hooks.run_main_hooks(ctx, STAGE_ONE, Path(ctx.config.build_name))
 
     combined_str = str(combine_with_build(ctx, BUILD_DIR))
-    shutil.make_archive(combined_str, "zip", STAGE_ONE)
+    _ = shutil.make_archive(combined_str, "zip", STAGE_ONE)
     return Path(combined_str + ".zip")

@@ -1,4 +1,5 @@
 import string
+import sys
 
 from rich.console import Console
 
@@ -15,6 +16,11 @@ EXIT_FAIL: int = 1
 # - Backslash (NOTE: Temporary)
 # TODO: Handle backslash in the importing of scripts itself
 ALLOWED_CHARS = set(string.ascii_letters + string.digits + string.whitespace + "-_/")
+
+
+def exit_fail() -> None:
+    """Exit the program. This is equal to sys.exit(EXIT_FAIL)"""
+    sys.exit(EXIT_FAIL)
 
 
 def check_string(string: str) -> bool:

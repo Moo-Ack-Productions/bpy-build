@@ -1,7 +1,7 @@
 default: format mypy
   poetry build
   pipx uninstall bpy-addon-build
-  pipx install $(ls -t dist/bpy_addon_build-0.3.*-py3-none-any.whl | head -1)
+  pipx install $(ls -t dist/bpy_addon_build-*-py3-none-any.whl | head -1)
 
 mypy:
   poetry run mypy --pretty bpy_addon_build

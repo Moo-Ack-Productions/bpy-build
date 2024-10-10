@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import importlib
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
 from typing import Optional
 
+from rich.console import Console
+
+from bpy_addon_build import util
+from bpy_addon_build.args import Args
 from bpy_addon_build.config import Config
 
 
@@ -32,6 +37,14 @@ class BabContext:
     # the intended cwd
     current_path: Path
 
+    # Is the addon currently being
+    # build an extension?
+    is_extension: bool
+
+    # BpyBuild Config; For built-in
+    # actions to use
+    builtin_config: Config
+
 
 class Api:
     """
@@ -46,15 +59,38 @@ class Api:
         Action name to module
     """
 
-    def __init__(self, conf: Config, config_path: Path, debug_mode: bool) -> None:
+    def __init__(self, conf: Config, cli: Args, debug_mode: bool) -> None:
+        console = Console()
         if conf.build_actions is not None:
             self.build_actions = conf.build_actions
             self.action_mods: dict[str, ModuleType] = {}
+            self.actions_to_execute: list[str] = cli.actions + conf.additional_actions
+
+            if cli.debug_mode:
+                print(self.actions_to_execute)
 
             for action in self.build_actions:
+                if action not in self.actions_to_execute:
+                    continue
+
+                depends = self.build_actions[action].depends_on
+                if depends is not None:
+                    if debug_mode:
+                        print(action, "depends on", depends)
+                    for dep in depends:
+                        if (
+                            dep in self.actions_to_execute
+                            and self.actions_to_execute.index(dep)
+                            < self.actions_to_execute.index(action)
+                        ):
+                            continue
+                        util.print_error(f"{dep} required to run {action}", console)
+                        util.exit_fail()
+
                 if self.build_actions[action].script is None:
                     continue
-                mod = self.add_modules(config_path, action, debug_mode)
+
+                mod = self.add_modules(cli.path, action, debug_mode)
                 if mod is None:
                     continue
                 self.action_mods[action] = mod
@@ -62,11 +98,10 @@ class Api:
     def add_modules(
         self, config_path: Path, action: str, debug_mode: bool
     ) -> Optional[ModuleType]:
-        import importlib.util
-
         script = self.build_actions[action].script
         if script is None:
             return None
+
         path = config_path.parent.resolve().joinpath(Path(script))
 
         # Add the parent folder of the script to the sys path

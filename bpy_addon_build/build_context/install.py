@@ -9,10 +9,10 @@ from bpy_addon_build.build_context import hooks
 from bpy_addon_build.build_context.core import INSTALL_PATHS, BuildContext, console
 
 
-def get_paths(versions: Union[list[float], list[Decimal]]) -> list[Path]:
-    """Given a list of versions, return paths
-    that exist to the corresponding addon folders
-    on the system.
+def get_paths(
+    versions: Union[list[float], list[Decimal]], is_extension: bool = False
+) -> list[Path]:
+    """Given a list of versions, return paths that exist to the corresponding addon folders on the system.
 
     Returns:
         - List[Path]: List of paths that exist
@@ -20,18 +20,26 @@ def get_paths(versions: Union[list[float], list[Decimal]]) -> list[Path]:
     paths: list[Path] = []
     for v in versions:
         for p in INSTALL_PATHS:
-            path = Path(p.format(str(v))).expanduser()
+            path = Path(p, str(v)).expanduser()
 
             # TODO: Figure out a way to clean up this logic
             if not path.exists():
                 # For cases like 2.8, 2.9, etc, check with this method
-                path = Path(p.format(str(format(v, ".2f")))).expanduser()
+                path = Path(p, str(format(v, ".2f"))).expanduser()
                 if not path.exists():
                     # For versions made by ranges
-                    path = Path(p.format(str(format(v, ".1f")))).expanduser()
+                    path = Path(p, str(format(v, ".1f"))).expanduser()
                     if not path.exists():
                         continue
-            paths.append(path)
+            if is_extension and v >= +Decimal(4.2):
+                path = Path(path, "extensions/user_default")
+                paths.append(path)
+            elif is_extension and v < +Decimal(4.2):
+                # Don't install in earlier versions
+                pass
+            else:
+                path = Path(path, "scripts/addons")
+                paths.append(path)
     return paths
 
 
@@ -55,7 +63,7 @@ def install(ctx: BuildContext, build_path: Path) -> None:
     # For some weird reason, Mypy is complaining about
     # passing some argument of type object, but the versions
     # argument is correct...
-    for path in get_paths(versions):  # type: ignore[arg-type]
+    for path in get_paths(versions, ctx.config.build_extension):  # type: ignore[arg-type]
         addon_path = path.joinpath(Path(ctx.config.build_name))
 
         # Remove previous install

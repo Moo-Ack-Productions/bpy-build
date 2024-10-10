@@ -27,11 +27,16 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Disclaimer: This is not a product from VLK Architects or VLK Experience Design,
+# nor is this endorsed by VLK Architects or VLK Experience Design
+
 from __future__ import annotations
 
+import copy
 from decimal import getcontext
 from typing import Optional
 
+import attrs
 import yaml
 from rich.console import Console
 
@@ -63,17 +68,50 @@ def main() -> None:
     with open(cli.path, "r") as f:
         data: ConfigDict = yaml.safe_load(f)
         config: Config = build_config(data)
-        api: Api = Api(config, cli.path, cli.debug_mode)
+        api: Api = Api(config, cli, cli.debug_mode)
         context = BuildContext(cli.path, config, cli, api)
 
-    if cli.debug_mode:
-        console.print(context)
+        if cli.debug_mode:
+            console.print(context)
     if not cli.path.parent.joinpath(config.addon_folder).exists():
         print("Addon folder does not exist!")
         return
+
     build_path = build(context)
     install(context, build_path)
     hooks.run_cleanup_hooks(context)
+
+    # Build legacy addon alongside extension
+    #
+    # To reduce as many issues as possible, we
+    # treat this as if it were a separate call
+    # of BpyBuild but with an altered config
+    if (
+        (config.build_extension and config.extension_settings is not None)
+        and config.extension_settings.build_legacy
+        and not cli.build_extension_only
+    ):
+        # Remove extension action in a copy
+        # of additional_actions
+        additional_actions = copy.deepcopy(config.additional_actions)
+        if "extension" in additional_actions:
+            additional_actions.remove("extension")
+
+        override_config = attrs.evolve(
+            config,
+            build_name=config.build_name + "_legacy",
+            build_extension=False,
+            extension_settings=None,
+            additional_actions=additional_actions,
+        )
+
+        # Change the context object. This is fine
+        # since this is ran last
+        context.config = override_config
+
+        build_path = build(context)
+        install(context, build_path)
+        hooks.run_cleanup_hooks(context)
 
 
 if __name__ == "__main__":
