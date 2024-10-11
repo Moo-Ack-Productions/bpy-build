@@ -1,7 +1,21 @@
 # Changelog
 
 
-# Changelog
+## [0.5.1] - 2024-10-11
+
+
+### Fix: Make built-in extension action exit early when building legacy
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+### Fix: Rebuild Api object when legacy building to avoid extension action
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+
+
+### Chore: Update CHANGELOG.txt
+
+Signed-off-by: Mahid Sheikh <mahid@standingpad.org>
+
 
 ## [0.5] - 2024-10-05
 
