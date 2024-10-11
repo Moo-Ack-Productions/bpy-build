@@ -105,9 +105,17 @@ def main() -> None:
             additional_actions=additional_actions,
         )
 
+        override_api: Api = Api(override_config, cli, cli.debug_mode)
+
         # Change the context object. This is fine
         # since this is ran last
         context.config = override_config
+        context.api = override_api
+
+        if cli.debug_mode:
+            console.print(override_config)
+            console.print(context)
+            console.print(context.api.actions_to_execute)
 
         build_path = build(context)
         install(context, build_path)
