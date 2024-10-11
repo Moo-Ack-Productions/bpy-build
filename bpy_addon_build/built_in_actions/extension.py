@@ -37,6 +37,8 @@ from lib_bpybuild_ext import BLENDER_MANIFEST, compat, get_manifest_data, verify
 
 
 def main(ctx: BabContext) -> None:
+    if not ctx.is_extension:
+        return
     manifest_path = Path(ctx.current_path, BLENDER_MANIFEST)
     manifest_data = get_manifest_data(manifest_path)
     verify.verify_manifest(manifest_data, manifest_path)
