@@ -10,13 +10,43 @@ from attrs import frozen
 from rich.console import Console
 from typing_extensions import NotRequired, Union
 
-from .util import check_string, exit_fail, print_error
+from .util import (
+    check_string,
+    check_string_output_name,
+    exit_fail,
+    print_error,
+    print_warning,
+)
 
 # Base settings
 ADDON_FOLDER: Literal["addon_folder"] = "addon_folder"
-BUILD_NAME: Literal["build_name"] = "build_name"
+BUILD_NAME: Literal["build_name"] = "build_name"  # WARNING: Deprecated
 BUILD_EXTENSION: Literal["build_extension"] = "build_extension"
 INSTALL_VERSIONS: Literal["install_versions"] = "install_versions"
+
+# Build names
+OUTPUT_NAME: Literal["output_name"] = "output_name"
+OUTPUT_SETTINGS: Literal["output_settings"] = "output_settings"
+
+## Extensions and legacy addons
+EXTENSION_BUILD_NAME: Literal["extension"] = "extension"
+LEGACY_BUILD_NAME: Literal["legacy"] = "legacy"
+
+## Platforms
+## NOTE: Linux and POSIX are marked as separate
+## because Linux deviates from other POSIX systems
+## like the BSD family
+##
+## NOTE: OSX will be treated as one OS, and architecture
+## will be handled separately
+WINDOWS_BUILD_NAME: Literal["windows"] = "windows"
+OSX_BUILD_NAME: Literal["osx"] = "osx"
+LINUX_BUILD_NAME: Literal["linux"] = "linux"
+POSIX_BUILD_NAME: Literal["posix"] = "posix"
+
+## TODO: Make this more general
+X86_BUILD_NAME: Literal["x86"] = "x86"
+ARM_BUILD_NAME: Literal["arm"] = "arm"
 
 # Actions
 BUILD_ACTIONS: Literal["build_actions"] = "build_actions"
@@ -34,6 +64,14 @@ VERSION_JUMPS = {
     "2.93": Decimal(3.0),
     "3.6": Decimal(4.0),
     "3.60": Decimal(4.0),  # Include version with 0
+    # NOTE: These are based on the
+    # upcoming releases page as of
+    # October 17th, 2024 CE, and
+    # is subject to change.
+    #
+    # https://developer.blender.org/docs/release_notes/compatibility/#upcoming-releases
+    "4.5": Decimal(5.0),
+    "4.50": Decimal(5.0),  # Include version with 0
 }
 
 
@@ -53,11 +91,24 @@ class ExtensionSettingsDict(TypedDict):
     remove_bl_info: NotRequired[bool]
 
 
+class OutputSettingsDict(TypedDict):
+    extension: NotRequired[str]
+    legacy: NotRequired[str]
+    windows: NotRequired[str]
+    osx: NotRequired[str]
+    linux: NotRequired[str]
+    posix: NotRequired[str]
+    x86: NotRequired[str]
+    arm: NotRequired[str]
+
+
 class ConfigDict(TypedDict):
     """TypeDict version of Config"""
 
     addon_folder: str
-    build_name: str
+    build_name: str  # WARNING: Deprecated
+    output_name: NotRequired[str]
+    output_settings: NotRequired[OutputSettingsDict]
     build_extension: bool
     extension_settings: NotRequired[ExtensionSettingsDict]
     install_versions: NotRequired[list[Union[float, str]]]
@@ -123,6 +174,56 @@ class ExtensionSettings:
 # an expression of Any, likely due to how
 # attrs works
 @frozen  # type: ignore
+class OutputSettings:
+    """Class storing configuration for the build
+    output name
+
+    Attributes
+    ----------
+    extension: Optional[str]
+        String for extension builds
+
+    legacy: Optional[str]
+        String for legacy builds
+
+    windows: Optional[str]
+        String for Windows builds
+
+    osx: Optional[str]
+        String for OSX builds
+
+    linux: Optional[str]
+        String for Linux builds
+
+    posix: Optional[str]
+        String for general POSIX builds
+
+        Separate because many Linux
+        programs won't work on BSD
+        and similar platforms
+
+    x86: Optional[str]
+        String for x86 builds
+
+    arm: Optional[str]
+        String for ARM builds
+
+    """
+
+    extension: Optional[str]
+    legacy: Optional[str]
+    windows: Optional[str]
+    osx: Optional[str]
+    linux: Optional[str]
+    posix: Optional[str]
+    x86: Optional[str]
+    arm: Optional[str]
+
+
+# Must be ignored to pass Mypy as this has
+# an expression of Any, likely due to how
+# attrs works
+@frozen  # type: ignore
 class Config:
     """Class to better handle config parsing, especially with more complex arguments
 
@@ -133,6 +234,17 @@ class Config:
 
     build_name: str
         Name of the final build
+
+        DEPRECATED WILL BE REMOVED IN 0.6
+
+    output_name: Optional[str]
+        Base string for the output with
+        formatting options.
+
+        Replacement for the now deprecated build_name
+
+    output_settings: Optional[OutputSettings]
+        Configuration for the final build
 
     build_extension: bool
         Whether to build a Blender 4.2+ extension
@@ -149,6 +261,8 @@ class Config:
 
     addon_folder: str
     build_name: str
+    output_name: Optional[str] = None
+    output_settings: Optional[OutputSettings] = None
     build_extension: bool = True
     extension_settings: Optional[ExtensionSettings] = None
     install_versions: Optional[List[Decimal]] = None
@@ -205,12 +319,27 @@ def build_config(data: ConfigDict) -> Config:
             print_error("addon_folder uses unsupported characters!", console)
             exit_fail()
 
-        if BUILD_NAME not in data:
-            print_error("build_name must be defined!", console)
+        if BUILD_NAME not in data and OUTPUT_NAME not in data:
+            # Don't mention the deprecated build_name
+            print_error("output_name and output_settings must be defined!", console)
             exit_fail()
-        elif not check_string(data[BUILD_NAME]):
-            print_error("build_name uses unsupported characters!", console)
-            exit_fail()
+        if BUILD_NAME in data:
+            print_warning(
+                "build_name is deprecated and will be removed in 0.6, use output_name and output_settings",
+                console,
+            )
+            if not check_string(data[BUILD_NAME]):
+                print_error("build_name uses unsupported characters!", console)
+                exit_fail()
+        elif OUTPUT_NAME in data:
+            if not check_string_output_name(data[BUILD_NAME]):
+                print_error("output_name uses unsupported characters!", console)
+                exit_fail()
+            if OUTPUT_SETTINGS not in data:
+                print_error(
+                    "output_settings must be defined to use output_name!", console
+                )
+                exit_fail()
 
         if BUILD_EXTENSION in data and data[BUILD_EXTENSION]:
             parsed_build_acts["extension"] = BUILT_IN_ACTS["extension"]
