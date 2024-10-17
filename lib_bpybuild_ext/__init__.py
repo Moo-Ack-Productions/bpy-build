@@ -122,12 +122,11 @@ def get_manifest_data(manifest_path: Path) -> manifest.ManifestData:
                     f"{key} contains value that uses blacklisted characters"
                 )
         if hasattr(manifest_data, key):
-            # TODO: Enable when we move to Python 3.9
-            # if not isinstance(val, manifest.ManifestData.__annotations__[key]):  # type: ignore[misc]
-            #    # TODO: Implement a way to tell the user what type it should be
-            #    raise TypeError(
-            #        f"{key} is not the correct type! See the Blender docs for more info"
-            #    )
+            if not isinstance(val, manifest.ManifestData.__annotations__[key]):  # type: ignore[misc]
+                # TODO: Implement a way to tell the user what type it should be
+                raise TypeError(
+                    f"{key} is not the correct type! See the Blender docs for more info"
+                )
             setattr(manifest_data, key, val)  # type: ignore[misc]
 
     return manifest_data
