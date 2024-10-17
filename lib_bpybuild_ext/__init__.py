@@ -52,8 +52,6 @@
 # enough to include in the manual, then it isn't important enough to be in a third-party
 # reimplementation of the extension builder.
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 from typing import cast
