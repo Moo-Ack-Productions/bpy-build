@@ -129,4 +129,5 @@ def get_manifest_data(manifest_path: Path) -> manifest.ManifestData:
             #        f"{key} is not the correct type! See the Blender docs for more info"
             #    )
             setattr(manifest_data, key, val)  # type: ignore[misc]
+
     return manifest_data

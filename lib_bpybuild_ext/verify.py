@@ -88,6 +88,19 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
     if not RE_MANIFEST_SEMVER.match(manifest_data.version):
         raise TypeError("Version must be in semantic versioning format")
 
+    # We have to get Mypy to ignore some stuff because
+    # it doesn't seem to work well with typing.get_args
+    if manifest_data.tags:
+        for tag in manifest_data.tags:
+            if manifest_data.type == "add-on" and tag not in get_args(
+                manifest.AddonManifestTagsLiteral
+            ):  # type: ignore[misc]
+                raise TypeError(f"{tag} not allowed for add-on")
+            elif manifest_data.type == "theme" and tag not in get_args(
+                manifest.ThemeManifestTagsLiteral
+            ):  # type: ignore[misc]
+                raise TypeError(f"{tag} not allowed for theme")
+
     try:
         min_version = Version(manifest_data.blender_version_min)
         v4_2 = Version("4.2.0")
@@ -138,9 +151,11 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
     if manifest_data.tags is not None:
         for t in manifest_data.tags:
             # Python 3.8 typing woes requires us to ignore these get_args calls
-            if t not in get_args(manifest.ManifestTagsLiteral):  # type: ignore[misc]
+            if t not in get_args(
+                manifest.AddonManifestTagsLiteral
+            ) or t not in get_args(manifest.ThemeManifestTagsLiteral):  # type: ignore[misc]
                 raise TypeError(
-                    f"{t} is not a compatible tag; supported tags: {cast(tuple[str], get_args(manifest.ManifestTagsLiteral))}"
+                    f"{t} is not a compatible tag; supported tags: {cast(tuple[str], get_args(manifest.AddonManifestTagsLiteral) + get_args(manifest.ThemeManifestTagsLiteral))}"  # type: ignore[misc]
                 )
 
     if manifest_data.platforms is not None:

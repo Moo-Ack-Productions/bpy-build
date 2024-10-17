@@ -33,7 +33,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 from typing_extensions import NotRequired, TypedDict
 
@@ -42,8 +42,8 @@ from typing_extensions import NotRequired, TypedDict
 #
 # TODO: Implement theme support
 ManifestSchemaLiteral = Literal["1.0.0"]
-ManifestTypeLiteral = Literal["add-on"]
-ManifestTagsLiteral = Literal[
+ManifestTypeLiteral = Literal["add-on", "theme"]
+AddonManifestTagsLiteral = Literal[
     "3D View",
     "Add Curve",
     "Add Mesh",
@@ -75,6 +75,16 @@ ManifestTagsLiteral = Literal[
     "Tracking",
     "User Interface",
     "UV",
+]
+
+ThemeManifestTagsLiteral = Literal[
+    "Dark",
+    "Light",
+    "Colorful",
+    "Inspired By",
+    "Print",
+    "Accessibility",
+    "High Contrast",
 ]
 
 ManifestPlatformLiteral = Literal[
@@ -109,7 +119,7 @@ class ManifestTypedDict(TypedDict):
 
     permissions: NotRequired[ManifestPermissionsTypedDict]
     website: NotRequired[str]
-    tags: NotRequired[list[ManifestTagsLiteral]]
+    tags: NotRequired[list[Union[AddonManifestTagsLiteral, ThemeManifestTagsLiteral]]]
 
     blender_version_min: str
     blender_version_max: NotRequired[str]
@@ -134,7 +144,9 @@ class ManifestData:
 
     permissions: Optional[ManifestPermissionsTypedDict] = None
     website: Optional[str] = None
-    tags: Optional[list[ManifestTagsLiteral]] = None
+    tags: Optional[list[Union[AddonManifestTagsLiteral | ThemeManifestTagsLiteral]]] = (
+        None
+    )
 
     blender_version_min: str = "4.2.0"
     blender_version_max: Optional[str] = None
