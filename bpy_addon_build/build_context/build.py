@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 
 from bpy_addon_build.build_context import hooks
-from bpy_addon_build.build_context.core import BuildContext
+from bpy_addon_build.build_context.core import BuildContext, create_output_name
 
 
 def combine_with_build(ctx: BuildContext, path: Path) -> Path:
@@ -18,7 +18,7 @@ def combine_with_build(ctx: BuildContext, path: Path) -> Path:
     Returns:
         New path pointing to path/ctx.build_name
     """
-    return path.joinpath(Path(ctx.config.build_name))
+    return path.joinpath(Path(create_output_name(ctx)))
 
 
 def build(ctx: BuildContext) -> Path:
@@ -69,7 +69,7 @@ def build(ctx: BuildContext) -> Path:
         ignore=shutil.ignore_patterns(*FILTERS),  # type: ignore
     )
 
-    hooks.run_main_hooks(ctx, STAGE_ONE, Path(ctx.config.build_name))
+    hooks.run_main_hooks(ctx, STAGE_ONE, Path(create_output_name(ctx)))
 
     combined_str = str(combine_with_build(ctx, BUILD_DIR))
     _ = shutil.make_archive(combined_str, "zip", STAGE_ONE)

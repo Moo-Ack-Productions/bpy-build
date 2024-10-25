@@ -99,7 +99,9 @@ def main() -> None:
 
         override_config = attrs.evolve(
             config,
-            build_name=config.build_name + "_legacy",
+            build_name=config.build_name + "_legacy"
+            if config.build_name is not None
+            else None,
             build_extension=False,
             extension_settings=None,
             additional_actions=additional_actions,

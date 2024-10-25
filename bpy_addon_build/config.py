@@ -4,7 +4,7 @@ import traceback
 from dataclasses import field
 from decimal import Decimal, getcontext
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, TypedDict
+from typing import Dict, List, Literal, Optional, TypedDict, cast
 
 from attrs import frozen
 from rich.console import Console
@@ -260,7 +260,7 @@ class Config:
     """
 
     addon_folder: str
-    build_name: str
+    build_name: Optional[str] = None
     output_name: Optional[str] = None
     output_settings: Optional[OutputSettings] = None
     build_extension: bool = True
@@ -289,6 +289,7 @@ def build_config(data: ConfigDict) -> Config:
     parsed_build_acts: dict[str, BuildAction] = {}
     additional_actions: list[str] = []
     parsed_extension_settings: Optional[ExtensionSettings] = None
+    parsed_output_settings: Optional[OutputSettings] = None
     install_versions: list[Decimal] = []
 
     # Set the precision for Decimal to
@@ -340,6 +341,54 @@ def build_config(data: ConfigDict) -> Config:
                     "output_settings must be defined to use output_name!", console
                 )
                 exit_fail()
+
+            for option in cast(OutputSettingsDict, data[OUTPUT_SETTINGS]):
+                extension_name = None
+                legacy_build_name = None
+                windows_build_name = None
+                osx_build_name = None
+                linux_build_name = None
+                posix_build_name = None
+                x86_build_name = None
+                arm_build_name = None
+                if option == EXTENSION_BUILD_NAME:
+                    extension_name = data[option]
+                elif option == LEGACY_BUILD_NAME:
+                    legacy_build_name = data[option]
+                elif option == WINDOWS_BUILD_NAME:
+                    windows_build_name = data[option]
+                elif option == OSX_BUILD_NAME:
+                    osx_build_name = data[option]
+                elif option == LINUX_BUILD_NAME:
+                    linux_build_name = data[option]
+                elif option == POSIX_BUILD_NAME:
+                    posix_build_name = data[option]
+                elif option == X86_BUILD_NAME:
+                    print_warning(
+                        console,
+                        "CPU architecture for build names is not yet implemented",
+                    )
+                    x86_build_name = data[option]
+                elif option == ARM_BUILD_NAME:
+                    print_warning(
+                        console,
+                        "CPU architecture for build names is not yet implemented",
+                    )
+                    arm_build_name = data[option]
+                else:
+                    print_error(console, f"{option} is not a valid output setting!")
+                    exit_fail()
+
+                parsed_output_settings = OutputSettings(
+                    extension_name,
+                    legacy_build_name,
+                    windows_build_name,
+                    osx_build_name,
+                    linux_build_name,
+                    posix_build_name,
+                    x86_build_name,
+                    arm_build_name,
+                )
 
         if BUILD_EXTENSION in data and data[BUILD_EXTENSION]:
             parsed_build_acts["extension"] = BUILT_IN_ACTS["extension"]
@@ -444,8 +493,10 @@ def build_config(data: ConfigDict) -> Config:
         exit_fail()
 
     return Config(
-        addon_folder=data["addon_folder"],
-        build_name=data["build_name"],
+        addon_folder=data[ADDON_FOLDER],
+        build_name=data[BUILD_NAME] if BUILD_NAME in data else None,
+        output_name=data[OUTPUT_NAME] if OUTPUT_NAME in data else None,
+        output_settings=parsed_output_settings if OUTPUT_SETTINGS in data else None,
         build_extension=data[BUILD_EXTENSION] if BUILD_EXTENSION in data else False,
         extension_settings=parsed_extension_settings,
         install_versions=sorted(install_versions, reverse=True)
