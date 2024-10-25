@@ -235,7 +235,7 @@ class Config:
     build_name: str
         Name of the final build
 
-        DEPRECATED WILL BE REMOVED IN 0.6
+        DEPRECATED WILL BE REMOVED IN 0.7
 
     output_name: Optional[str]
         Base string for the output with
@@ -325,7 +325,7 @@ def build_config(data: ConfigDict) -> Config:
             exit_fail()
         if BUILD_NAME in data:
             print_warning(
-                "build_name is deprecated and will be removed in 0.6, use output_name and output_settings",
+                "build_name is deprecated and will be removed in 0.7, use output_name and output_settings",
                 console,
             )
             if not check_string(data[BUILD_NAME]):
