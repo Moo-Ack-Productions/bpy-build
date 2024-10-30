@@ -149,13 +149,14 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
         )
 
     if manifest_data.tags is not None:
+        all_tags = cast(tuple[str], get_args(manifest.AddonManifestTagsLiteral)) + cast(
+            tuple[str], get_args(manifest.ThemeManifestTagsLiteral)
+        )
         for t in manifest_data.tags:
             # Python 3.8 typing woes requires us to ignore these get_args calls
-            if t not in get_args(
-                manifest.AddonManifestTagsLiteral
-            ) or t not in get_args(manifest.ThemeManifestTagsLiteral):  # type: ignore[misc]
+            if t not in all_tags:  # type: ignore[misc]
                 raise TypeError(
-                    f"{t} is not a compatible tag; supported tags: {cast(tuple[str], get_args(manifest.AddonManifestTagsLiteral) + get_args(manifest.ThemeManifestTagsLiteral))}"  # type: ignore[misc]
+                    f"{t} is not a compatible tag; supported tags: {all_tags}"  # type: ignore[misc]
                 )
 
     if manifest_data.platforms is not None:
