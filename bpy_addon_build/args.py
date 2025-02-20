@@ -3,6 +3,22 @@ from typing import List, Optional, cast
 
 from attrs import Attribute, define, field
 
+# I am a Lord of the Rings fan, so we'll use ASCII
+# art designed to look like the Tegwar script from
+# the Elvish languages
+BPYBUILD_ASCII_ART = """
+                                                    dP"Yb.                                  
+                                                     `b   'Yb  db                            
+                                                                                             
+`Yb d88b d88b   `Yb.d888b   .dP""Yb  `Yb d88b d88b      'Yb   'Yb `Y8888888b. `Yb.d88b d88b  
+ 88P   8Y   8b   88'    8Y        Yb  88P   8Y   8b      88    88    .dP'      88'   8Y   8b 
+ 88    8P   88   88     8P        dP  88    8P   88      88    88  ,dP         88    8P   88 
+ 88  .dP' .dP'   88   ,dP   `YbwwdP   88  .dP' .dP'     .8P   .8P  88     .    88  ,dP  ,dP  
+ 888888888888b.  88888888b.           888888888888b.               `Yb...dP    88            
+ 88              88                   88                             `\"""'     88            
+.8P             .8P                  .8P                                      .8P
+"""
+
 
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
@@ -92,10 +108,18 @@ def parse_args() -> Args:
         Args
     """
 
-    from argparse import ArgumentParser, Namespace
+    from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
+    from importlib.metadata import version
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(
+        description=BPYBUILD_ASCII_ART, formatter_class=RawDescriptionHelpFormatter
+    )
     parser.add_argument("-c", "--config", help="Defines the config file to use")
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"{BPYBUILD_ASCII_ART}\nBpyBuild Version {version('bpy-addon-build')}",
+    )
     parser.add_argument(
         "-v",
         "--versions",
