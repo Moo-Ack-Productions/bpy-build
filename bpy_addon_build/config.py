@@ -64,12 +64,6 @@ VERSION_JUMPS = {
     "2.93": Decimal(3.0),
     "3.6": Decimal(4.0),
     "3.60": Decimal(4.0),  # Include version with 0
-    # NOTE: These are based on the
-    # upcoming releases page as of
-    # October 17th, 2024 CE, and
-    # is subject to change.
-    #
-    # https://developer.blender.org/docs/release_notes/compatibility/#upcoming-releases
     "4.5": Decimal(5.0),
     "4.50": Decimal(5.0),  # Include version with 0
 }
