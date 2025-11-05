@@ -53,6 +53,7 @@ BUILD_ACTIONS: Literal["build_actions"] = "build_actions"
 SCRIPT: Literal["script"] = "script"
 IGNORE_FILTERS: Literal["ignore_filters"] = "ignore_filters"
 DEPENDS_ON: Literal["depends_on"] = "depends_on"
+SUBACTIONS: Literal["subactions"] = "subactions"
 
 # Extension Settings
 EXTENSION_SETTINGS: Literal["extension_settings"] = "extension_settings"
@@ -75,6 +76,7 @@ class BuildActionDict(TypedDict):
     script: NotRequired[str]
     ignore_filters: NotRequired[list[str]]
     depends_on: NotRequired[list[str]]
+    subactions: NotRequired[list[str]]
 
 
 class ExtensionSettingsDict(TypedDict):
@@ -121,14 +123,21 @@ class BuildAction:
     script: Optional[str]
         The Python script associated with the action
 
-    ignore_filters: Optional[List[str]]
+    ignore_filters: Optional[list[str]]
         Glob filters to ignore when copying the addon
         folder with this action
+
+    depends_on: Optional[list[str]]
+        Actions that must be ran before
+
+    subactions: Optional[list[str]]
+        Actions to run afterwards
     """
 
     script: Optional[str] = None
-    ignore_filters: Optional[List[str]] = None
+    ignore_filters: Optional[list[str]] = None
     depends_on: Optional[list[str]] = None
+    subactions: Optional[list[str]] = None
 
 
 BUILT_IN_ACTIONS_FOLDER = Path(__file__).parent.joinpath("built_in_actions")
@@ -472,6 +481,9 @@ def build_config(data: ConfigDict) -> Config:
                         depends_on=action_data[DEPENDS_ON]
                         if DEPENDS_ON in action_data
                         else None,
+                        subactions=action_data[SUBACTIONS]
+                        if SUBACTIONS in action_data
+                        else None,
                     )
                     continue
 
@@ -485,6 +497,23 @@ def build_config(data: ConfigDict) -> Config:
         console.print(traceback.format_exc())
         console.print(data)
         exit_fail()
+
+    # Validate that the actions defined in subactions
+    # and depends_on actually exist
+    for action in parsed_build_acts.values():
+        if not action.subactions:
+            continue
+        for sub_act in action.subactions:
+            if sub_act not in parsed_build_acts:
+                print_error(f"{sub_act} is not a defined action!", console)
+                exit_fail()
+
+        if not action.depends_on:
+            continue
+        for dep_act in action.depends_on:
+            if dep_act not in parsed_build_acts:
+                print_error(f"{dep_act} is not a defined action!", console)
+                exit_fail()
 
     return Config(
         addon_folder=data[ADDON_FOLDER],
