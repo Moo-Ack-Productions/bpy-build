@@ -1,6 +1,6 @@
 # Contributing Guide
 
-Hey there, looks like you're interested in contributing to Bpy-Build! To get
+Hey there, looks like you're interested in contributing to BpyBuild! To get
 started, read this guide which has a lot of important information regarding
 contributions.
 
@@ -11,7 +11,7 @@ contributions.
 This guide will assume you already know how to use Git and understand enough
 Python to know how to use type annotations.
 
-# Building Bpy-Build
+# Building BpyBuild
 
 To make building the final package easier, we use [Poetry](https://python-poetry.org/).
 To build, you can use the following command:
@@ -28,7 +28,7 @@ can ignore errors related to PipX not being found.
 
 # Dynamic typing and Mypy 
 
-The Bpy-Build project does not allow dynamic typing at all, period. The reasons are:
+The BpyBuild project does not allow dynamic typing at all, period. The reasons are:
 
 - Reliability: Dynamic typing is an extra source of bugs to deal with
 - Cleanliness: Dynamic typing ends up looking extremely ugly
@@ -51,19 +51,16 @@ All commits will be checked for passing tests, and PRs will be rejected if one d
 
 ## Typing
 
-Although BpyBuild supports Python 3.8, we try to use [PEP 585](https://peps.python.org/pep-0585/) types
-wherever possible, using `annotations` from the `__futures__` module. This means for the most part, `dict`,
-`list`, `tuple`, etc. can be used with little issue. That being said, the following has to be kept in mind:
+BpyBuild is built around Python 3.10, so we prefer using Python's native typing options (such as `list`, `dict`,
+`tuple`, as well as `X | Y` over `Union[X, Y]` and `X | None` over `Optional[X]`. Older sections of the BpyBuild
+codebase may use legacy types (such as `typing.List`, `typing.Dict`, `typing.Union`, etc.); thus when writing
+code that interacts with older sections, two options may be pursued:
 
-- These annotations are hackish in the CPython interpreter, so these can't be used for `attrs`/`cattrs` classes,
-  or if `cast` needs to be performed. In those cases, their `typing` counterparts will have to be used
-- New files that use PEP 585 annotations will need to have `from __future__ import annotations` as the first
-  import in the file
-- Although it would be nice, [PEP 604](https://peps.python.org/pep-0604/) syntax for Unions is not an option with
-  `__futures__` in Python 3.8
-
-Despite some of the headaches with using annotations from `__futures__`, we encourage their use so that migrating
-becomes less of a burden in the future.
+1. Update the older sections to use native typing
+  - This is preferred, but may result in a larger amount of work, so if this route is pursued it's desired to make
+    the refactoring work a separate commit
+2. Use the legacy types in new code
+  - This is not recommended other than as a temporary measure
 
 # Formatting
 
@@ -163,14 +160,16 @@ of the commit:
 Signed-off-by: Random J Developer <random@developer.example.org>
 ```
 
-**This much be your real name and a working email address.**
+**This much be your real name\* and a working email address.**
+
+\*See the `Regarding Personal Names` section below for details regarding preferred names.
 
 If the change was given to you by someone else, and you have permission to contribute it here, that change must
 be signed off by the person who gave the change to you, and anyone before that (basically a chain of sign offs).
 Example:
 
 ```
-<commit message and summery by John Doe, who recieved the change from Jane Doe>
+<commit message and summary by John Doe, who recieved the change from Jane Doe>
 
 Signed-off-by: John Doe <johndoe@email.com>
 Signed-off-by: Jane Doe <janedoe@email.com>
@@ -180,7 +179,7 @@ If multiple authors were involved in writing the change, then `Co-developed-by` 
 other authors involved in the change. As an example with 2 authors:
 
 ```
-<commit message and summery>
+<commit message and summary>
 
 Co-developed-by: John Doe <johndoe@email.com>
 Signed-off-by: John Doe <johndoe@email.com>
@@ -196,6 +195,19 @@ Signed-off-by: Jane Doe <janedoe@email.com>
   of UNIX. Although this turned out to be false, the Linux Kernel project soon required
   developers to certify that their commits were allowed to be part of the Linux Kernel
   with signing off.
+
+### Regarding Preferred Names
+
+If an author or co-developer of a commit has a preferred name that does not match their legal name,
+then the preferred name may be used instead. Since a working email address is included in the sign-off,
+enough of a link in identity should be established.
+
+For copyright headers (should they be modified), it is recommended (*but not required*) to include both the
+preferred name and legal name, so that a link is established. For example:
+
+```
+Copyright (c) 20XX-20XY, Jane Doe (John Doe)
+```
 
 # Pre-Commit Hooks
 
