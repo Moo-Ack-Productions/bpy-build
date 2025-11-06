@@ -141,6 +141,10 @@ Set up [pre-commit](https://pre-commit.com/). This must be installed separately 
 - Linting with Ruff
 - Code formatting with Ruff
 
+Alternatively, we also have `prek` as an option in the project
+configuration. If using that, one can simply run `poetry run prek`
+and all pre-commit checks will be performed.
+
 # Tests
 BpyBuild has 2 sets of unittests, `test/tests.py` and `test/mcprep_tests.py`. The former tests every feature in BpyBuild, but isn't sophisticated. The latter clones the MCprep repo, which means less features are used, but the tests are more sophisticated and test for backwards compatibility (as required under [MCprep-first development](/docs/mcprep-first.md)).
 
