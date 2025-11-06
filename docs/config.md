@@ -11,7 +11,15 @@
 > BpyBuild does not count the `.py` extension for files.
 
 - `addon_folder` (`str`): The source folder containing the addon code (`.` is not allowed)
-- `build_name` (`str`): The name of the outputted build (***without .zip***)
+- `build_name` (`str`): The name of the outputted build (without .zip) (***DEPRECATED, use `output_name`***)
+- `output_name` (`str`): The name of the outputted build (without .zip), with templating variables
+- `output_settings` (`dict`): Variable definitions for `output_name`
+    - `extension` (`str`): Defined if addon is being built as an extension
+    - `legacy` (`str`): Defined if addon is being built as a legacy addon
+    - `windows` (`str`): Defined if addon is being built on Windows
+    - `osx` (`str`): Defined if addon is being built on OSX
+    - `linux` (`str`): Defined if addon is being built on Linux
+    - `posix` (`str`): Defined if addon is being ran on FreeBSD, NetBSD, or OpenBSD
 - `build_extension` (`bool, default `True`): Build an extension
 - `extension_settings` (`dict`): Settings for extension building with the following options:
     - `build_legacy` (`bool`, default `False`): Build a legacy addon alongside an extension
