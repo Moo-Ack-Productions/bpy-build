@@ -1,6 +1,6 @@
 # Getting Started: Building your own addoon
 
-To get started using bpy-build to manage building and reloading your own blender
+To get started using BpyBuild to manage building and reloading your own blender
 addon project, follow the steps below.
 
 Install from PyPi:
@@ -13,7 +13,7 @@ First create a file called `bpy-build.yaml` and add the following contents:
 
 ```yaml
 addon_folder: my_addon # the folder with the addon source code
-build_name: my_addon
+output_name: my_addon
 ```
 
 > [!IMPORTANT]
@@ -34,7 +34,7 @@ Now let's automatically install our addon:
 
 ```yaml
 addon_folder: my_addon # the folder with the addon source code
-build_name: my_addon
+output_name: my_addon
 
 install_versions:
   - 3.5
@@ -75,8 +75,8 @@ during_build:
       - "*.blend"
 ```
 
-To run the `dev` case, we pass the `-b` argument, like `bpy-addon-build -b dev`. Note that
+To run the `dev` case, we pass the `-b` argument, like `bab -b dev`. Note that
 when making an action, the action is ran at the root of your addon folder.
 
-Our addon will now automatically be installed in Blender 3.5! If it doesn't exist, `bpy-build`
+Our addon will now automatically be installed in Blender 3.5! If it doesn't exist, BpyBuild
 will just ignore it.
