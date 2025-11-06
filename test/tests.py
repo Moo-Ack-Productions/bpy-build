@@ -218,6 +218,57 @@ class TestBpyBuild(unittest.TestCase):
         )  # default action
 
     @mock.patch("sys.stdout", new_callable=StringIO)
+    def test_subactions(self, mock_stdout: StringIO) -> None:
+        """Performs a test build using the
+        project in test_addon.
+
+        This will test subactions, with
+        dev_subaction having dev as a subaction
+
+        This test will check for:
+        - "OLD MAIN" in mock_stdout
+        - mcprep_dev.txt in stage-1/MCprep_addon
+        - "hi guys c:" in mcprep_dev.txt
+        - Lack of stage-1/MCprep_addon/ignore.blend
+        - "DEV MAIN" in mock_stdout
+        """
+        with mock.patch(
+            "sys.argv",
+            [
+                "bab",
+                "-c",
+                f"{TEST_FOLDER}/test_addon/bpy-build.yaml",
+                "-b",
+                "dev_subaction",
+            ],
+        ):
+            bab.main()
+
+        build = Path(f"{TEST_FOLDER}/test_addon/build")
+
+        # Check mock_stdout for expected string.
+        self.assertRegex(mock_stdout.getvalue(), r"OLD MAIN")
+        self.assertRegex(mock_stdout.getvalue(), r"DEV MAIN")  # dev action
+        self.assertTrue(
+            (
+                Path(
+                    f"{TEST_FOLDER}/test_addon/build/stage-1/MCprep_addon/mcprep_dev.txt"
+                )
+            ).exists()
+        )
+        self.assertEqual(
+            (
+                Path(
+                    f"{TEST_FOLDER}/test_addon/build/stage-1/MCprep_addon/mcprep_dev.txt"
+                )
+            )
+            .read_text()
+            .strip(),
+            "hi guys c:",
+        )
+        self.assertFalse((build / "stage-1/MCprep_addon/ignore.blend").exists())
+
+    @mock.patch("sys.stdout", new_callable=StringIO)
     def test_depend_on_fail(self, mock_stdout: StringIO) -> None:
         """Perform a test build using the
         project in test_addon, using the depend_dev action

@@ -41,7 +41,7 @@ def build(ctx: BuildContext) -> Path:
     # Get all filters from currently used actions
     if ctx.config.build_actions:
         for name, act in ctx.config.build_actions.items():
-            if act.ignore_filters and name in ctx.cli.actions:
+            if act.ignore_filters and name in ctx.api.actions_to_execute:
                 FILTERS += act.ignore_filters
 
     ADDON_FOLDER = ctx.config_path.parent.joinpath(ctx.config.addon_folder)

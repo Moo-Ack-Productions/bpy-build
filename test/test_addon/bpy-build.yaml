@@ -16,6 +16,10 @@ build_actions:
   depend_dev:
     depends_on:
       - dev
+  dev_subaction:
+    script: "old.py"
+    subactions:
+      - dev
   old:
     script: "old.py"
   no-script:
