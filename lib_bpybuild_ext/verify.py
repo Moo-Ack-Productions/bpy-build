@@ -1,6 +1,6 @@
 # BSD 3-Clause License
 #
-# Copyright (c) 2024, Mahid Sheikh
+# Copyright (c) 2024-2025, Maryam Sheikh (Mahid Sheikh)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -104,9 +104,14 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
     try:
         min_version = Version(manifest_data.blender_version_min)
         v4_2 = Version("4.2.0")
+        v5_0 = Version("5.0.0")
         if min_version < v4_2:
             raise TypeError(
                 "Extensions are not supported in versions of Blender prior to 4.2"
+            )
+        elif min_version < v5_0:
+            print(
+                "Warning: Extensions must have blender_version_min set to 5.0.0 in order to be installable in Blender 5.0"
             )
     except InvalidVersion:
         raise TypeError(
