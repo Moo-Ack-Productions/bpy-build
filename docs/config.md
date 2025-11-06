@@ -1,7 +1,8 @@
 # Config Options
 
 > [!IMPORTANT]
-> For security reasons, BpyBuild restricts the characters an action name or file may have. The following is allowed:
+> For security reasons, BpyBuild restricts the characters an action name or file
+  may have. The following is allowed:
 > - All English letters (a-z, A-Z)
 > - Numerical digits (0-9)
 > - Whitespace
@@ -23,4 +24,7 @@
         - `script` (`str`): Path to the script containing the action code
         - `ignore_filters (`str`): Glob patterns of files to ignore when copying
         - `depends_on` (`list[str]`): List of actions that the current actions depends on
-            - Node: These actions must be executed *before* the dependent action. Actions order is based on the order provided in the command line
+            - Note: These actions must be executed *before* the dependent action. Actions order is
+              based on the order provided in the command line
+        - `subactions` (`list[str]`): List of actions to run afterwards
+            - Note: Subactions will be ran *after* the parent action
