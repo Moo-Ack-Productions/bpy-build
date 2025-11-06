@@ -69,6 +69,11 @@ class Api:
             if cli.debug_mode:
                 print(self.actions_to_execute)
 
+            for exec_act in self.actions_to_execute:
+                if exec_act not in self.build_actions:
+                    util.print_error(f"{exec_act} not defined in config!", console)
+                    util.exit_fail()
+
             for action in self.build_actions:
                 if action not in self.actions_to_execute:
                     continue
