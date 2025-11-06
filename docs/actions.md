@@ -84,6 +84,47 @@ class BabContext:
 
 - `current_path`: the path of the action's target directory. This can be thought of as the working directory for the action, though the working directory is not changed when running actions.
 
+# Subactions and Dependencies
+
+Actions may define other actions to be ran either afterwards (subactions) or that are depended
+on (dependencies). Subactions can be defined with the `subactions` variable, and dependencies can
+be defined with the `depends_on` variable.
+
+When an action has subactions defined, BpyBuild will run those actions *after* the parent action
+has ran. Consider the following example:
+
+```yaml
+build_actions:
+  dev: 
+    script: "dev.py"
+  dev_subaction:
+    # ...
+    subactions:
+      - dev
+```
+
+When running `bab -b dev_subaction`, BpyBuild will interpret that as `bab -b dev_subaction dev`, adding
+`dev` after `dev_subaction`. This is useful for say having a single action that really runs
+several actions (ex. a `production` action with subactions like `translate`).
+
+When an action has dependencies defined, BpyBuild will enforce the dependencies to be ran before
+the action, returning an error if the dependencies either aren't included in the action, or
+come after the action. For example, let's take a config like this:
+
+```yaml
+build_actions:
+  dev: 
+    script: "dev.py"
+  dev_dependent:
+    # ...
+    depends_on:
+      - dev
+```
+
+If BpyBuild is ran as either `bab -b dev_dependent` or `bab -b dev_dependent dev`, BpyBuild will detect
+that `dev` either A. is not going to be ran or B. will be ran after `dev_dependent`, and return an
+error. Only when running `bab -b dev dev_dependent` will BpyBuild continue on as normal.
+
 # Compatibility 
 > [!CAUTION]
 > This is intended for MCprep through [MCprep-first development](/docs/mcprep-first.md)
