@@ -5,12 +5,15 @@ from typing import Callable, Optional, Union, cast, get_type_hints
 from rich.console import Console
 from typeguard import TypeCheckError, check_type
 
-from bpy_addon_build.api import BabContext, BpyError, BpyWarning
+from bpy_addon_build.api import BabContext, BpyError, BpyWarning, BpyVariableDef
 from bpy_addon_build.build_context.core import WORKING_DIR, BuildContext
-from bpy_addon_build.util import print_error, print_warning
+from bpy_addon_build.util import exit_fail, print_error, print_warning
 
 # Function signature of all hooks
 ApiFunction = Callable[[BabContext], Optional[Union[BpyWarning, BpyError]]]
+
+# Function signature of dynamic_name
+DynamicNameFunction = Callable[[BabContext], Optional[Union[list[BpyVariableDef], BpyWarning, BpyError]]]
 
 # Old main function for
 # backwards compatibility
@@ -22,7 +25,7 @@ MAIN = "main"
 PRE_INSTALL = "pre_install"
 POST_INSTALL = "post_install"
 CLEAN_UP = "clean_up"
-
+DYNAMIC_NAME = "dynamic_name"
 
 class APIFunc(Enum):
     CTX_ARG = 0
@@ -51,7 +54,10 @@ def check_api_func(
         None
     """
     try:
-        check_type(func, ApiFunction)
+        if func_name == DYNAMIC_NAME:
+            check_type(func, DynamicNameFunction)
+        else:
+            check_type(func, ApiFunction)
         return APIFunc.CTX_ARG
     except TypeCheckError:
         try:
@@ -92,6 +98,8 @@ def check_action(ctx: BuildContext, action: str, console: Console) -> bool:
         print("Actions must be defined to use them!")
         return False
     if action not in ctx.api.actions_to_execute:
+        if ctx.cli.debug_mode:
+            print("Action not in execution list", action)
         return False
     if action not in ctx.api.action_mods:
         if ctx.cli.debug_mode:
@@ -113,10 +121,10 @@ def perform_returns(
     Returns:
         None
     """
-    if res is not None:
+    if res is not None: 
         if isinstance(res, BpyError):
             print_error(res.msg, console)
-            quit(-1)
+            exit_fail()
         elif isinstance(res, BpyWarning):
             print_error(res.msg, console)
 
@@ -169,6 +177,36 @@ def build_action_main(
             res: Optional[Union[BpyError, BpyWarning]] = cast(ApiFunction, func)(
                 api_ctx
             )
+            perform_returns(res, console)
+
+def build_action_dynamic_name(
+    ctx: BuildContext, action: str, console: Console, api_ctx: BabContext
+) -> None:
+    """
+    Runs an action's dynamic_name function
+
+    ctx: Build context
+    action: string representing the action name
+    console: Console from Rich
+
+    Returns:
+        None
+    """
+    if not check_action(ctx, action, console):
+        return
+    if hasattr(ctx.api.action_mods[action], DYNAMIC_NAME):
+        func: DynamicNameFunction = ctx.api.action_mods[action].dynamic_name
+        res: Optional[Union[list[BpyVariableDef], BpyError, BpyWarning]] = cast(DynamicNameFunction, func)(
+            api_ctx
+        )
+        if isinstance(res, list):
+            for name in res:
+                if isinstance(name, BpyVariableDef):
+                    continue
+                print_error("dynamic_name must return a list of only BpyVariableDef!", console)
+                exit_fail()
+            ctx.dynamic_vars = res
+        else:
             perform_returns(res, console)
 
 

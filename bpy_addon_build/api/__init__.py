@@ -11,7 +11,7 @@ from rich.console import Console
 
 from bpy_addon_build import util
 from bpy_addon_build.args import Args
-from bpy_addon_build.config import Config
+from bpy_addon_build.config import Config, BUILT_IN_ACTS
 
 
 @dataclass
@@ -28,6 +28,16 @@ class BpyWarning:
 
     # Message to print in the console
     msg: str
+
+@dataclass
+class BpyVariableDef:
+    """Class for dynamic BpyBuild variables"""
+
+    # Variable being defined
+    variable: str
+
+    # Value of the variable
+    vaule: str
 
 
 @dataclass
@@ -85,6 +95,10 @@ class Api:
             # the final execution list, and also loads the scripts in as modules
             for action_name in current_actions:
                 if action_name not in self.build_actions:
+                    # Continue on, this loop doesn't apply to built-in actions
+                    if action_name in BUILT_IN_ACTS:
+                        self.actions_to_execute.append(action_name)
+                        continue
                     util.print_error(f"{action_name} not defined in config!", console)
                     util.exit_fail()
 

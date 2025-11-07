@@ -6,9 +6,10 @@ from pathlib import Path
 from attrs import define
 from rich.console import Console
 
-from bpy_addon_build.api import Api
+from bpy_addon_build.api import Api, BpyVariableDef
 from bpy_addon_build.args import Args
-from bpy_addon_build.config import Config
+from bpy_addon_build.config import Config, DynamicType
+from bpy_addon_build.util import print_error, exit_fail
 
 INSTALL_PATHS: list[str] = [
     "~/AppData/Roaming/Blender Foundation/Blender/",
@@ -42,12 +43,16 @@ class BuildContext:
 
     cli: Args
         Arguments passed by the user
+
+    dynamic_vars: list[BpyVariableDef]
+        Dynamic variables defined in actions
     """
 
     config_path: Path
     config: Config
     cli: Args
     api: Api
+    dynamic_vars: list[BpyVariableDef]
 
 
 # TODO: Get more general list
@@ -84,6 +89,18 @@ def create_output_name(ctx: BuildContext) -> str:
             string_format_dict["os"] = output_settings.linux
         if sys.platform.startswith(POSIX_LIST) and output_settings.posix is not None:
             string_format_dict["os"] = output_settings.posix
+
+        # Now add dynamic variables
+        if ctx.config.output_settings.dynamic:
+            for name in ctx.dynamic_vars:
+                string_format_dict[name.variable] = name.vaule
+
+            for dyn_var, dyn_type in ctx.config.output_settings.dynamic:
+                if dyn_type == DynamicType.NOT_REQUIRED:
+                    continue
+                if dyn_var not in string_format_dict:
+                    print_error(f"{dyn_var} is defined as @dynamic_required, yet was not defined in any action!", console)
+                    exit_fail()
 
         return ctx.config.output_name.format(**string_format_dict)
 

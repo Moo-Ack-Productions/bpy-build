@@ -69,7 +69,7 @@ def main() -> None:
         data: ConfigDict = yaml.safe_load(f)
         config: Config = build_config(data)
         api: Api = Api(config, cli, cli.debug_mode)
-        context = BuildContext(cli.path, config, cli, api)
+        context = BuildContext(cli.path, config, cli, api, {})
 
         if cli.debug_mode:
             console.print(context)
@@ -80,6 +80,9 @@ def main() -> None:
     build_path = build(context)
     install(context, build_path)
     hooks.run_cleanup_hooks(context)
+
+    if cli.debug_mode:
+        console.print(context)
 
     # Build legacy addon alongside extension
     #

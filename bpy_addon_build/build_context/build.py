@@ -55,6 +55,7 @@ def build(ctx: BuildContext) -> Path:
         STAGE_ONE.mkdir()
 
     hooks.run_prebuild_hooks(ctx)
+    hooks.run_dynamic_name_hooks(ctx)
     # For some weird reason, shutil.ignore_patterns
     # expects positional arguments for all patterns,
     # and not a list like most would expect.

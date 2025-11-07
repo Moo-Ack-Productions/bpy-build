@@ -4,6 +4,7 @@ from bpy_addon_build.api import BabContext
 from bpy_addon_build.build_context.core import BuildContext, console
 from bpy_addon_build.build_context.hook_definitions import (
     build_action_cleanup,
+    build_action_dynamic_name,
     build_action_main,
     build_action_postinstall,
     build_action_prebuild,
@@ -28,6 +29,13 @@ def run_main_hooks(ctx: BuildContext, stage_one: Path, addon_folder: Path) -> No
                 ctx, k, console, BabContext(cwd, ctx.config.build_extension, ctx.config)
             )
 
+def run_dynamic_name_hooks(ctx: BuildContext) -> None:
+    if len(ctx.api.actions_to_execute):
+        cwd = Path(ctx.config_path.parent, ctx.config.addon_folder).expanduser()
+        for k in ctx.api.actions_to_execute:
+            build_action_dynamic_name(
+                ctx, k, console, BabContext(cwd, ctx.config.build_extension, ctx.config)
+            )
 
 def run_preinstall_hooks(ctx: BuildContext, zip_path: Path) -> None:
     if len(ctx.api.actions_to_execute):

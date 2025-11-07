@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import Enum
 import traceback
 from dataclasses import field
 from decimal import Decimal, getcontext
@@ -43,6 +44,10 @@ WINDOWS_BUILD_NAME: Literal["windows"] = "windows"
 OSX_BUILD_NAME: Literal["osx"] = "osx"
 LINUX_BUILD_NAME: Literal["linux"] = "linux"
 POSIX_BUILD_NAME: Literal["posix"] = "posix"
+
+# Dynamic variables
+DYNAMIC_KEYWORD: Literal["@dynamic"] = "@dynamic"
+DYNAMIC_REQUIRED_KEYWORD: Literal["@dynamic_required"] = "@dynamic_required"
 
 ## TODO: Make this more general
 X86_BUILD_NAME: Literal["x86"] = "x86"
@@ -142,7 +147,8 @@ class BuildAction:
 
 BUILT_IN_ACTIONS_FOLDER = Path(__file__).parent.joinpath("built_in_actions")
 BUILT_IN_ACTS = {
-    "extension": BuildAction(str(BUILT_IN_ACTIONS_FOLDER.joinpath("extension.py")))
+    "extension": BuildAction(str(BUILT_IN_ACTIONS_FOLDER.joinpath("extension.py"))),
+    "version": BuildAction(str(BUILT_IN_ACTIONS_FOLDER.joinpath("version.py")))
 }
 
 
@@ -172,6 +178,11 @@ class ExtensionSettings:
     build_name: Optional[str]
     remove_bl_info: bool
 
+
+class DynamicType(Enum):
+    """Types of dynamic variables"""
+    NOT_REQUIRED = 0
+    REQUIRED = 1
 
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
@@ -211,6 +222,14 @@ class OutputSettings:
     arm: Optional[str]
         String for ARM builds
 
+    dynamic: list[tuple[str, DynamicType]]
+        All dynamically defined variables
+        that will have their values set in
+        build actions.
+
+        Since BpyBuild will always have the
+        version variable, this can be never
+        None anyway
     """
 
     extension: Optional[str]
@@ -221,6 +240,7 @@ class OutputSettings:
     posix: Optional[str]
     x86: Optional[str]
     arm: Optional[str]
+    dynamic: list[tuple[str, DynamicType]]
 
 
 # Must be ignored to pass Mypy as this has
@@ -289,8 +309,10 @@ def build_config(data: ConfigDict) -> Config:
     """
 
     console = Console()
-    parsed_build_acts: dict[str, BuildAction] = {}
-    additional_actions: list[str] = []
+    parsed_build_acts: dict[str, BuildAction] = {
+        "version": BUILT_IN_ACTS["version"]
+    }
+    additional_actions: list[str] = ["version"]
     parsed_extension_settings: Optional[ExtensionSettings] = None
     parsed_output_settings: Optional[OutputSettings] = None
     install_versions: list[Decimal] = []
@@ -336,7 +358,7 @@ def build_config(data: ConfigDict) -> Config:
                 print_error("build_name uses unsupported characters!", console)
                 exit_fail()
         elif OUTPUT_NAME in data:
-            if not check_string_output_name(data[BUILD_NAME]):
+            if not check_string_output_name(data[OUTPUT_NAME]):
                 print_error("output_name uses unsupported characters!", console)
                 exit_fail()
             if OUTPUT_SETTINGS not in data:
@@ -354,33 +376,39 @@ def build_config(data: ConfigDict) -> Config:
                 posix_build_name = None
                 x86_build_name = None
                 arm_build_name = None
+                dynamic_vars: list[tuple[str, DynamicType]] = [("version", DynamicType.REQUIRED)]
                 if option == EXTENSION_BUILD_NAME:
-                    extension_name = data[option]
+                    extension_name = data[OUTPUT_SETTINGS][option]
                 elif option == LEGACY_BUILD_NAME:
-                    legacy_build_name = data[option]
+                    legacy_build_name = data[OUTPUT_SETTINGS][option]
                 elif option == WINDOWS_BUILD_NAME:
-                    windows_build_name = data[option]
+                    windows_build_name = data[OUTPUT_SETTINGS][option]
                 elif option == OSX_BUILD_NAME:
-                    osx_build_name = data[option]
+                    osx_build_name = data[OUTPUT_SETTINGS][option]
                 elif option == LINUX_BUILD_NAME:
-                    linux_build_name = data[option]
+                    linux_build_name = data[OUTPUT_SETTINGS][option]
                 elif option == POSIX_BUILD_NAME:
-                    posix_build_name = data[option]
+                    posix_build_name = data[OUTPUT_SETTINGS][option]
                 elif option == X86_BUILD_NAME:
                     print_warning(
-                        console,
                         "CPU architecture for build names is not yet implemented",
+                        console
                     )
-                    x86_build_name = data[option]
+                    x86_build_name = data[OUTPUT_SETTINGS][option]
                 elif option == ARM_BUILD_NAME:
                     print_warning(
-                        console,
                         "CPU architecture for build names is not yet implemented",
+                        console
                     )
-                    arm_build_name = data[option]
+                    arm_build_name = data[OUTPUT_SETTINGS][option]
                 else:
-                    print_error(console, f"{option} is not a valid output setting!")
-                    exit_fail()
+                    if data[OUTPUT_SETTINGS][option] == DYNAMIC_KEYWORD:
+                        dynamic_vars.append((option, DynamicType.NOT_REQUIRED))
+                    elif data[OUTPUT_SETTINGS][option] == DYNAMIC_REQUIRED_KEYWORD:
+                        dynamic_vars.append((option, DynamicType.REQUIRED))
+                    else:
+                        print_error(f"{option} is not a valid output setting!", console)
+                        exit_fail()
 
                 parsed_output_settings = OutputSettings(
                     extension_name,
@@ -391,6 +419,7 @@ def build_config(data: ConfigDict) -> Config:
                     posix_build_name,
                     x86_build_name,
                     arm_build_name,
+                    dynamic_vars,
                 )
 
         if BUILD_EXTENSION in data and data[BUILD_EXTENSION]:
