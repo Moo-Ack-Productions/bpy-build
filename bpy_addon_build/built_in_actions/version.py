@@ -34,6 +34,7 @@ from typing import Union, cast
 from bpy_addon_build.api import BabContext, BpyError, BpyVariableDef
 from lib_bpybuild_ext import BLENDER_MANIFEST, compat, get_manifest_data, verify
 
+
 class BlInfoVersionExtractVisitor(ast.NodeVisitor):
     def __init__(self):
         self.version: list[int] = []
@@ -44,13 +45,13 @@ class BlInfoVersionExtractVisitor(ast.NodeVisitor):
         if len(targets) > 1 or not len(targets):
             self.generic_visit(node)
             return
-        
+
         target_name = targets[0]
         if not isinstance(target_name, ast.Name):
             self.generic_visit(node)
             return
         else:
-            if target_name.id != 'bl_info':
+            if target_name.id != "bl_info":
                 self.generic_visit(node)
                 return
 
@@ -64,11 +65,11 @@ class BlInfoVersionExtractVisitor(ast.NodeVisitor):
             if not isinstance(key_node, ast.Constant):
                 self.generic_visit(node)
                 continue
-            
+
             const_node = (ast.Constant, key_node)
-            if key_node.value != 'version':
+            if key_node.value != "version":
                 continue
-            
+
             # In CPython's AST, values in dictionaries
             # are at the same index as the key
             value_node = values[idx]
@@ -95,11 +96,12 @@ class BlInfoVersionExtractVisitor(ast.NodeVisitor):
                     return
 
                 self.version.append(cast(int, elt_const_node.value))
-            
+
             # After all of this, let's break,
             # since there can only be one bl_info
             break
         self.generic_visit(node)
+
 
 def dynamic_name(ctx: BabContext) -> Union[list[BpyVariableDef], BpyError]:
     if ctx.is_extension:
@@ -108,15 +110,19 @@ def dynamic_name(ctx: BabContext) -> Union[list[BpyVariableDef], BpyError]:
 
         # Let's perform verification first, just to make sure the data is correct
         verify.verify_manifest(manifest_data, manifest_path)
-        compat.check_for_compat_issues(ctx.current_path, ctx.builtin_config.addon_folder)
+        compat.check_for_compat_issues(
+            ctx.current_path, ctx.builtin_config.addon_folder
+        )
 
         return [BpyVariableDef("version", manifest_data.version)]
     else:
         init_file = ctx.current_path.joinpath("__init__.py")
-        with open(init_file, 'r') as f:
+        with open(init_file, "r") as f:
             root = ast.parse(f.read())
             visitor = BlInfoVersionExtractVisitor()
             visitor.visit(root)
             if not len(visitor.version):
                 return BpyError(f"No version extracted from {str(init_file)}")
-            return [BpyVariableDef("version", '.'.join([str(x) for x in visitor.version]))]
+            return [
+                BpyVariableDef("version", ".".join([str(x) for x in visitor.version]))
+            ]

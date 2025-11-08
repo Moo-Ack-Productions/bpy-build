@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from enum import Enum
 import traceback
 from dataclasses import field
 from decimal import Decimal, getcontext
+from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Literal, Optional, TypedDict, cast
 
@@ -148,7 +148,7 @@ class BuildAction:
 BUILT_IN_ACTIONS_FOLDER = Path(__file__).parent.joinpath("built_in_actions")
 BUILT_IN_ACTS = {
     "extension": BuildAction(str(BUILT_IN_ACTIONS_FOLDER.joinpath("extension.py"))),
-    "version": BuildAction(str(BUILT_IN_ACTIONS_FOLDER.joinpath("version.py")))
+    "version": BuildAction(str(BUILT_IN_ACTIONS_FOLDER.joinpath("version.py"))),
 }
 
 
@@ -181,8 +181,10 @@ class ExtensionSettings:
 
 class DynamicType(Enum):
     """Types of dynamic variables"""
+
     NOT_REQUIRED = 0
     REQUIRED = 1
+
 
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
@@ -309,9 +311,7 @@ def build_config(data: ConfigDict) -> Config:
     """
 
     console = Console()
-    parsed_build_acts: dict[str, BuildAction] = {
-        "version": BUILT_IN_ACTS["version"]
-    }
+    parsed_build_acts: dict[str, BuildAction] = {"version": BUILT_IN_ACTS["version"]}
     additional_actions: list[str] = ["version"]
     parsed_extension_settings: Optional[ExtensionSettings] = None
     parsed_output_settings: Optional[OutputSettings] = None
@@ -376,7 +376,9 @@ def build_config(data: ConfigDict) -> Config:
                 posix_build_name = None
                 x86_build_name = None
                 arm_build_name = None
-                dynamic_vars: list[tuple[str, DynamicType]] = [("version", DynamicType.REQUIRED)]
+                dynamic_vars: list[tuple[str, DynamicType]] = [
+                    ("version", DynamicType.REQUIRED)
+                ]
                 if option == EXTENSION_BUILD_NAME:
                     extension_name = data[OUTPUT_SETTINGS][option]
                 elif option == LEGACY_BUILD_NAME:
@@ -392,13 +394,13 @@ def build_config(data: ConfigDict) -> Config:
                 elif option == X86_BUILD_NAME:
                     print_warning(
                         "CPU architecture for build names is not yet implemented",
-                        console
+                        console,
                     )
                     x86_build_name = data[OUTPUT_SETTINGS][option]
                 elif option == ARM_BUILD_NAME:
                     print_warning(
                         "CPU architecture for build names is not yet implemented",
-                        console
+                        console,
                     )
                     arm_build_name = data[OUTPUT_SETTINGS][option]
                 else:

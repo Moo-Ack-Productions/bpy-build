@@ -5,7 +5,7 @@ from typing import Callable, Optional, Union, cast, get_type_hints
 from rich.console import Console
 from typeguard import TypeCheckError, check_type
 
-from bpy_addon_build.api import BabContext, BpyError, BpyWarning, BpyVariableDef
+from bpy_addon_build.api import BabContext, BpyError, BpyVariableDef, BpyWarning
 from bpy_addon_build.build_context.core import WORKING_DIR, BuildContext
 from bpy_addon_build.util import exit_fail, print_error, print_warning
 
@@ -13,7 +13,9 @@ from bpy_addon_build.util import exit_fail, print_error, print_warning
 ApiFunction = Callable[[BabContext], Optional[Union[BpyWarning, BpyError]]]
 
 # Function signature of dynamic_name
-DynamicNameFunction = Callable[[BabContext], Optional[Union[list[BpyVariableDef], BpyWarning, BpyError]]]
+DynamicNameFunction = Callable[
+    [BabContext], Optional[Union[list[BpyVariableDef], BpyWarning, BpyError]]
+]
 
 # Old main function for
 # backwards compatibility
@@ -26,6 +28,7 @@ PRE_INSTALL = "pre_install"
 POST_INSTALL = "post_install"
 CLEAN_UP = "clean_up"
 DYNAMIC_NAME = "dynamic_name"
+
 
 class APIFunc(Enum):
     CTX_ARG = 0
@@ -121,7 +124,7 @@ def perform_returns(
     Returns:
         None
     """
-    if res is not None: 
+    if res is not None:
         if isinstance(res, BpyError):
             print_error(res.msg, console)
             exit_fail()
@@ -179,6 +182,7 @@ def build_action_main(
             )
             perform_returns(res, console)
 
+
 def build_action_dynamic_name(
     ctx: BuildContext, action: str, console: Console, api_ctx: BabContext
 ) -> None:
@@ -196,14 +200,16 @@ def build_action_dynamic_name(
         return
     if hasattr(ctx.api.action_mods[action], DYNAMIC_NAME):
         func: DynamicNameFunction = ctx.api.action_mods[action].dynamic_name
-        res: Optional[Union[list[BpyVariableDef], BpyError, BpyWarning]] = cast(DynamicNameFunction, func)(
-            api_ctx
-        )
+        res: Optional[Union[list[BpyVariableDef], BpyError, BpyWarning]] = cast(
+            DynamicNameFunction, func
+        )(api_ctx)
         if isinstance(res, list):
             for name in res:
                 if isinstance(name, BpyVariableDef):
                     continue
-                print_error("dynamic_name must return a list of only BpyVariableDef!", console)
+                print_error(
+                    "dynamic_name must return a list of only BpyVariableDef!", console
+                )
                 exit_fail()
             ctx.dynamic_vars = res
         else:

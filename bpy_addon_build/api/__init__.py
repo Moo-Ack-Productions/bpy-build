@@ -11,7 +11,7 @@ from rich.console import Console
 
 from bpy_addon_build import util
 from bpy_addon_build.args import Args
-from bpy_addon_build.config import Config, BUILT_IN_ACTS
+from bpy_addon_build.config import BUILT_IN_ACTS, Config
 
 
 @dataclass
@@ -28,6 +28,7 @@ class BpyWarning:
 
     # Message to print in the console
     msg: str
+
 
 @dataclass
 class BpyVariableDef:

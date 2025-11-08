@@ -9,7 +9,7 @@ from rich.console import Console
 from bpy_addon_build.api import Api, BpyVariableDef
 from bpy_addon_build.args import Args
 from bpy_addon_build.config import Config, DynamicType
-from bpy_addon_build.util import print_error, exit_fail
+from bpy_addon_build.util import exit_fail, print_error
 
 INSTALL_PATHS: list[str] = [
     "~/AppData/Roaming/Blender Foundation/Blender/",
@@ -99,7 +99,10 @@ def create_output_name(ctx: BuildContext) -> str:
                 if dyn_type == DynamicType.NOT_REQUIRED:
                     continue
                 if dyn_var not in string_format_dict:
-                    print_error(f"{dyn_var} is defined as @dynamic_required, yet was not defined in any action!", console)
+                    print_error(
+                        f"{dyn_var} is defined as @dynamic_required, yet was not defined in any action!",
+                        console,
+                    )
                     exit_fail()
 
         return ctx.config.output_name.format(**string_format_dict)

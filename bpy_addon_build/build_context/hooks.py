@@ -29,6 +29,7 @@ def run_main_hooks(ctx: BuildContext, stage_one: Path, addon_folder: Path) -> No
                 ctx, k, console, BabContext(cwd, ctx.config.build_extension, ctx.config)
             )
 
+
 def run_dynamic_name_hooks(ctx: BuildContext) -> None:
     if len(ctx.api.actions_to_execute):
         cwd = Path(ctx.config_path.parent, ctx.config.addon_folder).expanduser()
@@ -36,6 +37,7 @@ def run_dynamic_name_hooks(ctx: BuildContext) -> None:
             build_action_dynamic_name(
                 ctx, k, console, BabContext(cwd, ctx.config.build_extension, ctx.config)
             )
+
 
 def run_preinstall_hooks(ctx: BuildContext, zip_path: Path) -> None:
     if len(ctx.api.actions_to_execute):
