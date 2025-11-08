@@ -29,17 +29,21 @@
 
 import ast
 from pathlib import Path
-from typing import Union, cast
+from typing import Any, Union, cast, no_type_check
+
+from typing_extensions import override
 
 from bpy_addon_build.api import BabContext, BpyError, BpyVariableDef
 from lib_bpybuild_ext import BLENDER_MANIFEST, compat, get_manifest_data, verify
 
 
 class BlInfoVersionExtractVisitor(ast.NodeVisitor):
-    def __init__(self):
+    def __init__(self) -> None:
         self.version: list[int] = []
 
-    def visit_Assign(self, node: ast.Assign):
+    @override
+    @no_type_check  # ast module inherently uses Any a lot
+    def visit_Assign(self, node: ast.Assign) -> Any:
         targets = node.targets
 
         if len(targets) > 1 or not len(targets):
@@ -66,7 +70,6 @@ class BlInfoVersionExtractVisitor(ast.NodeVisitor):
                 self.generic_visit(node)
                 continue
 
-            const_node = (ast.Constant, key_node)
             if key_node.value != "version":
                 continue
 
@@ -75,27 +78,24 @@ class BlInfoVersionExtractVisitor(ast.NodeVisitor):
             value_node = values[idx]
             if not isinstance(value_node, ast.Tuple):
                 continue
-            tuple_node = cast(ast.Tuple, value_node)
 
             # Verify that all values in tuple are constants
             # and that said constants are integers. Also use
             # this time to extract values
-            for elt in tuple_node.elts:
+            for elt in value_node.elts:
                 # At this point, it better be a constant or else
                 # we have no hope in parsing this
                 if not isinstance(elt, ast.Constant):
                     self.generic_visit(node)
                     return
 
-                elt_const_node = cast(ast.Constant, elt)
-
                 # This better be an integer or else there's no good
                 # way to convert this to a nice string
-                if not isinstance(elt_const_node.value, int):
+                if not isinstance(elt.value, int):
                     self.generic_visit(node)
                     return
 
-                self.version.append(cast(int, elt_const_node.value))
+                self.version.append(cast(int, elt.value))
 
             # After all of this, let's break,
             # since there can only be one bl_info
