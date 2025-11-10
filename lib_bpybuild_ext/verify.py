@@ -154,8 +154,10 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
         )
 
     if manifest_data.tags is not None:
-        all_tags = cast(tuple[str], get_args(manifest.AddonManifestTagsLiteral)) + cast(
-            tuple[str], get_args(manifest.ThemeManifestTagsLiteral)
+        all_tags = cast(
+            tuple[str],
+            cast(tuple[str], get_args(manifest.AddonManifestTagsLiteral))
+            + cast(tuple[str], get_args(manifest.ThemeManifestTagsLiteral)),
         )
         for t in manifest_data.tags:
             # Python 3.8 typing woes requires us to ignore these get_args calls
@@ -176,7 +178,9 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
     if manifest_data.copyright is not None:
         for copyright in manifest_data.copyright:
             year, _, name = copyright.partition(" ")
-            if not all(x.isdigit() for x in year.partition("-")[0::2]):
+            if not all(
+                x.isdigit() for x in cast(tuple[str, str], year.partition("-")[0::2])
+            ):
                 raise TypeError(
                     f'{copyright} is not in the proper format; supported format: ("YEAR First Last", "YEAR-YEAR First Last") '
                 )
