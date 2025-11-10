@@ -109,9 +109,9 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
             raise TypeError(
                 "Extensions are not supported in versions of Blender prior to 4.2"
             )
-        elif min_version < v5_0:
+        elif min_version < v5_0 and manifest_data.type == "theme":
             print(
-                "Warning: Extensions must have blender_version_min set to 5.0.0 in order to be installable in Blender 5.0"
+                "Warning: Themes must have blender_version_min set to 5.0.0 in order to be installable in Blender 5.0"
             )
     except InvalidVersion:
         raise TypeError(
