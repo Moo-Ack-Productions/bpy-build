@@ -53,11 +53,11 @@ from bpy_addon_build.build_context.install import get_paths
 
 # parent folder of the tests
 TEST_FOLDER = Path(__file__).parent
-VERSIONS = [2.8, 3.4, 3.5]
+VERSIONS = [2.8, 3.4, 3.5, 4.5]
 MCPREP_REPO = f"{TEST_FOLDER}/MCprep"
 
 # The commit to clone from
-MCPREP_SHA = "19da433ec7145f3312884df5b6950205ad96d241"
+MCPREP_SHA = "2e702d32528b8d9dae411ede9777fe44cb6217ab"
 MCPREP_URL = "https://github.com/Moo-Ack-Productions/MCprep.git"
 MCPREP_BRANCH = "dev"
 
