@@ -77,18 +77,18 @@ def create_output_name(ctx: BuildContext) -> str:
 
         if output_settings.extension is not None:
             if ctx.config.build_extension:
-                string_format_dict["build_type"] = output_settings.extension
+                string_format_dict["extension"] = output_settings.extension
         if output_settings.legacy is not None:
             if not ctx.config.build_extension:
-                string_format_dict["build_type"] = output_settings.legacy
+                string_format_dict["legacy"] = output_settings.legacy
         if sys.platform == "windows" and output_settings.windows is not None:
-            string_format_dict["os"] = output_settings.windows
+            string_format_dict["windows"] = output_settings.windows
         if sys.platform == "darwin" and output_settings.osx is not None:
-            string_format_dict["os"] = output_settings.osx
+            string_format_dict["osx"] = output_settings.osx
         if sys.platform == "linux" and output_settings.linux is not None:
-            string_format_dict["os"] = output_settings.linux
+            string_format_dict["linux"] = output_settings.linux
         if sys.platform.startswith(POSIX_LIST) and output_settings.posix is not None:
-            string_format_dict["os"] = output_settings.posix
+            string_format_dict["posix"] = output_settings.posix
 
         # Now add dynamic variables
         if ctx.config.output_settings.dynamic:
