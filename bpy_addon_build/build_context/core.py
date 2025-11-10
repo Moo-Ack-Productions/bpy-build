@@ -291,12 +291,9 @@ def parse_expr(input: str) -> tuple[list[tuple[str, ExprType]], int]:
                     if not len(expr_var_const_stack):
                         expr_var_const_stack.append(("", ExprType.CONST))
                     else:
-                        top_val, top_type = expr_var_const_stack.pop()
+                        _, top_type = expr_var_const_stack[-1]
                         if top_type != ExprType.CONST:
-                            expr_var_const_stack.append((top_val, top_type))
                             expr_var_const_stack.append(("", ExprType.CONST))
-                        else:
-                            expr_var_const_stack.append((top_val, top_type))
                     cur_expr_type = ExprType.VAR
                 else:
                     cur_expr_type = ExprType.CONST
