@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.9.0
+  rev: v1.18.2
   hooks:
     - id: mypy
       args: [--pretty]
@@ -18,14 +18,9 @@ repos:
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: v0.3.4
+  rev: v0.14.4
   hooks:
-    # Run the linter.
-    - id: ruff
-
-    # Sort imports
-    - id: ruff
+    - id: ruff-check
+    - id: ruff-check
       args: [--select, I, --fix]
-
-    # Run the formatter.
     - id: ruff-format
