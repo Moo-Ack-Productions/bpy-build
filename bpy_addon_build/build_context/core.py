@@ -259,10 +259,8 @@ def parse_expr(input: str) -> tuple[list[tuple[str, ExprType]], int]:
                 #
                 # All | have the same precedence, so it's evaluated
                 # from left to right
-                if len(expr_op_stack):
-                    expr_var_const_stack += [("", op) for op in reversed(expr_op_stack)]
-                    expr_op_stack.clear()
-                expr_op_stack.append(ExprType.FALLBACK)
+                expr_var_const_stack += [("", op) for op in reversed(expr_op_stack)]
+                expr_op_stack = [ExprType.FALLBACK]
                 last_char_op = True
             case "+":
                 expr_op_stack.append(ExprType.CONCAT)
@@ -278,12 +276,11 @@ def parse_expr(input: str) -> tuple[list[tuple[str, ExprType]], int]:
                 last_char_op = True
             case "}":
                 # Clear stack
-                for op in reversed(expr_op_stack):
-                    expr_var_const_stack.append(("", op))
-
-                found_r_brace = True
+                expr_var_const_stack += [("", op) for op in reversed(expr_op_stack)]
+                expr_op_stack.clear()
 
                 # Break from loop
+                found_r_brace = True
                 break
             case "'" | '"':
                 if cur_expr_type == ExprType.CONST:
