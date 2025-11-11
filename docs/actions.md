@@ -43,10 +43,13 @@ def main(ctx: BabContext) -> None:
 > BpyBuild does not count the `.py` extension for files.
 
 # Hooks
+
 BpyBuild also supports the concept of hooks. Currently, the following hooks are supported:
 - `main`: executed during the build process; directory is set to a copy of the source tree
   under `build/stage-1`
 - `pre_build`: executed before building; directory is set to the `addon_folder` variable defined
+  in `bpy-build.yaml`
+- `dynamic_name`: executed before building; directory is set to the `addon_folder` variable defined
   in `bpy-build.yaml`
 - `pre_install`: executed before installing the built addon; directory is set to `build/`
 - `post_install`: executed after installing the built addon; directory is set to the addons folder
