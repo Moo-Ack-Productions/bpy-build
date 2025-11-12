@@ -98,6 +98,8 @@ def create_output_name(ctx: BuildContext) -> str:
                 string_format_dict[name.variable] = name.vaule
 
             for dyn_var, dyn_type in ctx.config.output_settings.dynamic:
+                # TODO: Figure out a way to enforce fallbacks for these types
+                # of variables
                 if dyn_type == DynamicType.NOT_REQUIRED:
                     continue
                 if dyn_var not in string_format_dict:
@@ -107,7 +109,7 @@ def create_output_name(ctx: BuildContext) -> str:
                     )
                     exit_fail()
 
-        return ctx.config.output_name.format(**string_format_dict)
+        return format_string(ctx.config.output_name, string_format_dict)
 
     return "THIS RESULT SHOULD NOT HAPPEN IF IT DOES REPORT IT ON GITHUB IMMEDIATELY"
 
