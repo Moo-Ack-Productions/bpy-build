@@ -361,68 +361,64 @@ def build_config(data: ConfigDict) -> Config:
             if not check_string_output_name(data[OUTPUT_NAME]):
                 print_error("output_name uses unsupported characters!", console)
                 exit_fail()
-            if OUTPUT_SETTINGS not in data:
-                print_error(
-                    "output_settings must be defined to use output_name!", console
-                )
-                exit_fail()
 
-            for option in cast(OutputSettingsDict, data[OUTPUT_SETTINGS]):
-                extension_name = None
-                legacy_build_name = None
-                windows_build_name = None
-                osx_build_name = None
-                linux_build_name = None
-                posix_build_name = None
-                x86_build_name = None
-                arm_build_name = None
-                dynamic_vars: list[tuple[str, DynamicType]] = [
-                    ("version", DynamicType.REQUIRED)
-                ]
-                if option == EXTENSION_BUILD_NAME:
-                    extension_name = data[OUTPUT_SETTINGS][option]
-                elif option == LEGACY_BUILD_NAME:
-                    legacy_build_name = data[OUTPUT_SETTINGS][option]
-                elif option == WINDOWS_BUILD_NAME:
-                    windows_build_name = data[OUTPUT_SETTINGS][option]
-                elif option == OSX_BUILD_NAME:
-                    osx_build_name = data[OUTPUT_SETTINGS][option]
-                elif option == LINUX_BUILD_NAME:
-                    linux_build_name = data[OUTPUT_SETTINGS][option]
-                elif option == POSIX_BUILD_NAME:
-                    posix_build_name = data[OUTPUT_SETTINGS][option]
-                elif option == X86_BUILD_NAME:
-                    print_warning(
-                        "CPU architecture for build names is not yet implemented",
-                        console,
-                    )
-                    x86_build_name = data[OUTPUT_SETTINGS][option]
-                elif option == ARM_BUILD_NAME:
-                    print_warning(
-                        "CPU architecture for build names is not yet implemented",
-                        console,
-                    )
-                    arm_build_name = data[OUTPUT_SETTINGS][option]
-                else:
-                    if data[OUTPUT_SETTINGS][option] == DYNAMIC_KEYWORD:
-                        dynamic_vars.append((option, DynamicType.NOT_REQUIRED))
-                    elif data[OUTPUT_SETTINGS][option] == DYNAMIC_REQUIRED_KEYWORD:
-                        dynamic_vars.append((option, DynamicType.REQUIRED))
+            extension_name = None
+            legacy_build_name = None
+            windows_build_name = None
+            osx_build_name = None
+            linux_build_name = None
+            posix_build_name = None
+            x86_build_name = None
+            arm_build_name = None
+            dynamic_vars: list[tuple[str, DynamicType]] = [
+                ("version", DynamicType.REQUIRED)
+            ]
+            if OUTPUT_SETTINGS in data:
+                for option in cast(OutputSettingsDict, data[OUTPUT_SETTINGS]):
+                    if option == EXTENSION_BUILD_NAME:
+                        extension_name = data[OUTPUT_SETTINGS][option]
+                    elif option == LEGACY_BUILD_NAME:
+                        legacy_build_name = data[OUTPUT_SETTINGS][option]
+                    elif option == WINDOWS_BUILD_NAME:
+                        windows_build_name = data[OUTPUT_SETTINGS][option]
+                    elif option == OSX_BUILD_NAME:
+                        osx_build_name = data[OUTPUT_SETTINGS][option]
+                    elif option == LINUX_BUILD_NAME:
+                        linux_build_name = data[OUTPUT_SETTINGS][option]
+                    elif option == POSIX_BUILD_NAME:
+                        posix_build_name = data[OUTPUT_SETTINGS][option]
+                    elif option == X86_BUILD_NAME:
+                        print_warning(
+                            "CPU architecture for build names is not yet implemented",
+                            console,
+                        )
+                        x86_build_name = data[OUTPUT_SETTINGS][option]
+                    elif option == ARM_BUILD_NAME:
+                        print_warning(
+                            "CPU architecture for build names is not yet implemented",
+                            console,
+                        )
+                        arm_build_name = data[OUTPUT_SETTINGS][option]
                     else:
-                        print_error(f"{option} is not a valid output setting!", console)
-                        exit_fail()
+                        if data[OUTPUT_SETTINGS][option] == DYNAMIC_KEYWORD:
+                            dynamic_vars.append((option, DynamicType.NOT_REQUIRED))
+                        elif data[OUTPUT_SETTINGS][option] == DYNAMIC_REQUIRED_KEYWORD:
+                            dynamic_vars.append((option, DynamicType.REQUIRED))
+                        else:
+                            print_error(f"{option} is not a valid output setting!", console)
+                            exit_fail()
 
-                parsed_output_settings = OutputSettings(
-                    extension_name,
-                    legacy_build_name,
-                    windows_build_name,
-                    osx_build_name,
-                    linux_build_name,
-                    posix_build_name,
-                    x86_build_name,
-                    arm_build_name,
-                    dynamic_vars,
-                )
+            parsed_output_settings = OutputSettings(
+                extension_name,
+                legacy_build_name,
+                windows_build_name,
+                osx_build_name,
+                linux_build_name,
+                posix_build_name,
+                x86_build_name,
+                arm_build_name,
+                dynamic_vars,
+            )
 
         if BUILD_EXTENSION in data and data[BUILD_EXTENSION]:
             parsed_build_acts["extension"] = BUILT_IN_ACTS["extension"]
@@ -550,7 +546,7 @@ def build_config(data: ConfigDict) -> Config:
         addon_folder=data[ADDON_FOLDER],
         build_name=data[BUILD_NAME] if BUILD_NAME in data else None,
         output_name=data[OUTPUT_NAME] if OUTPUT_NAME in data else None,
-        output_settings=parsed_output_settings if OUTPUT_SETTINGS in data else None,
+        output_settings=parsed_output_settings,
         build_extension=data[BUILD_EXTENSION] if BUILD_EXTENSION in data else False,
         extension_settings=parsed_extension_settings,
         install_versions=sorted(install_versions, reverse=True)
