@@ -5,7 +5,7 @@ install_versions:
   - 3.0..3.5
   - 2.8
 
-output_name: MCprep_addon
+output_name: MCprep_addon_{version}
 
 build_actions:
   default: 
