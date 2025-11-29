@@ -176,9 +176,7 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
     if manifest_data.copyright is not None:
         for copyright in manifest_data.copyright:
             year, _, name = copyright.partition(" ")
-            if not all(
-                x.isdigit() for x in cast(tuple[str, str], year.partition("-")[0::2])
-            ):
+            if not all(x.isdigit() for x in year.partition("-")[0::2]):
                 raise TypeError(
                     f'{copyright} is not in the proper format; supported format: ("YEAR First Last", "YEAR-YEAR First Last") '
                 )
