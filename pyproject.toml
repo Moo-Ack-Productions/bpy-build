@@ -27,6 +27,7 @@ types-pyyaml = "^6.0.12.11"
 ruff = "^0.3.4"
 gitpython = "^3.1.43"
 prek = "^0.2.13"
+ty = "^0.0.1a29"
 
 [tool.poetry.scripts]
 bab = "bpy_addon_build:main"
