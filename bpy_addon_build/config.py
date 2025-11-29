@@ -92,24 +92,13 @@ class ExtensionSettingsDict(TypedDict):
     remove_bl_info: NotRequired[bool]
 
 
-class OutputSettingsDict(TypedDict):
-    extension: NotRequired[str]
-    legacy: NotRequired[str]
-    windows: NotRequired[str]
-    osx: NotRequired[str]
-    linux: NotRequired[str]
-    posix: NotRequired[str]
-    x86: NotRequired[str]
-    arm: NotRequired[str]
-
-
 class ConfigDict(TypedDict):
     """TypeDict version of Config"""
 
     addon_folder: str
     build_name: str  # WARNING: Deprecated
     output_name: NotRequired[str]
-    output_settings: NotRequired[OutputSettingsDict]
+    output_settings: NotRequired[dict[str, str]]
     build_extension: bool
     extension_settings: NotRequired[ExtensionSettingsDict]
     install_versions: NotRequired[list[Union[float, str]]]
@@ -374,7 +363,7 @@ def build_config(data: ConfigDict) -> Config:
                 ("version", DynamicType.REQUIRED)
             ]
             if OUTPUT_SETTINGS in data:
-                for option in cast(OutputSettingsDict, data[OUTPUT_SETTINGS]):
+                for option in data[OUTPUT_SETTINGS]:
                     if option == EXTENSION_BUILD_NAME:
                         extension_name = data[OUTPUT_SETTINGS][option]
                     elif option == LEGACY_BUILD_NAME:
