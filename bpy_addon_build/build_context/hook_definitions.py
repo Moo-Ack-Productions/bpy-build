@@ -197,9 +197,7 @@ def build_action_dynamic_name(
         return
     if hasattr(ctx.api.action_mods[action], DYNAMIC_NAME):
         func: DynamicNameFunction = ctx.api.action_mods[action].dynamic_name
-        res: list[BpyVariableDef] | BpyError | BpyWarning | None = cast(
-            DynamicNameFunction, func
-        )(api_ctx)
+        res: list[BpyVariableDef] | BpyError | BpyWarning | None = func(api_ctx)
         if isinstance(res, list):
             # While technically this is unneeded, since actions
             # are defined by the end user (and thus could have
