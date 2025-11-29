@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional, cast
+from typing import cast
 
 from attrs import Attribute, define, field
 
@@ -51,14 +51,14 @@ class Args:
     """
 
     path: Path = field(default=Path("bpy-build.yaml"))
-    versions: List[float] = field(default=[])
-    actions: List[str] = field(default=["default"])
+    versions: list[float] = field(default=[])
+    actions: list[str] = field(default=["default"])
     debug_mode: bool = field(default=False)
     supress_messages: bool = field(default=False)
     build_extension_only: bool = field(default=False)
 
     @path.validator
-    def path_validate(self, _: Attribute, value: Optional[Path]) -> None:
+    def path_validate(self, _: Attribute, value: Path | None) -> None:
         # Assume the user did not pass
         # a path in
         if value is None:
@@ -69,7 +69,7 @@ class Args:
             raise IsADirectoryError("Expected a file, got a direcory!")
 
     @versions.validator
-    def version_validate(self, _: Attribute, value: Optional[List[float]]) -> None:
+    def version_validate(self, _: Attribute, value: list[float] | None) -> None:
         if value is None:
             self.versions = []
         else:
@@ -78,7 +78,7 @@ class Args:
                     raise ValueError("Expected List of floating point values!")
 
     @actions.validator
-    def actions_validate(self, _: Attribute, value: Optional[List[str]]) -> None:
+    def actions_validate(self, _: Attribute, value: list[str] | None) -> None:
         if value is None:
             self.actions = ["default"]
         else:
@@ -158,23 +158,23 @@ def parse_args() -> Args:
 
     args: Namespace = parser.parse_args()
     config: str = "bpy-build.yaml"
-    actions: List[str] = ["default"]
+    actions: list[str] = ["default"]
 
     # The config path can be None
-    if cast(Optional[str], args.config) is not None:
+    if cast(str | None, args.config) is not None:
         config = args.config
 
     # This allows the default action to always
     # be executed
-    if cast(List[str], args.build_actions) is not None:
-        actions += cast(List[str], args.build_actions)
+    if cast(list[str], args.build_actions) is not None:
+        actions += cast(list[str], args.build_actions)
 
     # We use cast here to prevent Mypy from complaining, the
     # validators should handle the types anyway, if argparse doesn't
     return Args(
         Path(cast(str, config)),
-        cast(List[float], args.versions),
-        cast(List[str], actions),
+        cast(list[float], args.versions),
+        actions,
         cast(bool, args.debug_mode),
         cast(bool, args.supress_output),
         cast(bool, args.build_extension_only),

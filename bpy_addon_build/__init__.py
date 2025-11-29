@@ -34,7 +34,6 @@ from __future__ import annotations
 
 import copy
 from decimal import getcontext
-from typing import Optional
 
 import attrs
 import yaml
@@ -64,7 +63,7 @@ def main() -> None:
     if not cli.path.exists():
         print(f"Could not find {str(cli.path)}")
 
-    context: Optional[BuildContext] = None
+    context: BuildContext | None = None
     with open(cli.path, "r") as f:
         data: ConfigDict = yaml.safe_load(f)
         config: Config = build_config(data)

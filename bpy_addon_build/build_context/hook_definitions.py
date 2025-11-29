@@ -1,6 +1,6 @@
 import os
 from enum import Enum
-from typing import Callable, Optional, Union, cast, get_type_hints
+from typing import Callable, cast, get_type_hints
 
 from rich.console import Console
 from typeguard import TypeCheckError, check_type
@@ -10,12 +10,13 @@ from bpy_addon_build.build_context.core import WORKING_DIR, BuildContext
 from bpy_addon_build.util import exit_fail, print_error, print_warning
 
 # Function signature of all hooks
-ApiFunction = Callable[[BabContext], Optional[Union[BpyWarning, BpyError]]]
+ApiFunction = Callable[[BabContext], BpyWarning | BpyError | None]
 
 # Function signature of dynamic_name
 DynamicNameFunction = Callable[
-    [BabContext], Optional[Union[list[BpyVariableDef], BpyWarning, BpyError]]
+    [BabContext], list[BpyVariableDef] | BpyWarning | BpyError | None
 ]
+
 
 # Old main function for
 # backwards compatibility
@@ -42,7 +43,7 @@ class APIFunc(Enum):
 
 
 def check_api_func(
-    func_name: str, func: Union[ApiFunction, OldMain], action: str, console: Console
+    func_name: str, func: ApiFunction | OldMain, action: str, console: Console
 ) -> APIFunc:
     """
     Check type signature of API functions and throw an
@@ -112,9 +113,7 @@ def check_action(ctx: BuildContext, action: str, console: Console) -> bool:
     return True
 
 
-def perform_returns(
-    res: Optional[Union[BpyWarning, BpyError]], console: Console
-) -> None:
+def perform_returns(res: BpyWarning | BpyError | None, console: Console) -> None:
     """
     Performs tasks based on the return value of an API function.
 
@@ -150,7 +149,7 @@ def build_action_prebuild(
     if hasattr(ctx.api.action_mods[action], PRE_BUILD):
         func: ApiFunction = ctx.api.action_mods[action].pre_build
         _ = check_api_func(PRE_BUILD, func, action, console)
-        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
+        res: BpyError | BpyWarning | None = func(api_ctx)
         perform_returns(res, console)
 
 
@@ -170,16 +169,14 @@ def build_action_main(
     if not check_action(ctx, action, console):
         return
     if hasattr(ctx.api.action_mods[action], MAIN):
-        func: Union[ApiFunction, OldMain] = ctx.api.action_mods[action].main
+        func: ApiFunction | OldMain = ctx.api.action_mods[action].main
         if check_api_func(MAIN, func, action, console) == APIFunc.NO_ARG:
             # Backwards compatibility
             os.chdir(api_ctx.current_path)
             cast(OldMain, func)()
             os.chdir(WORKING_DIR)
         else:
-            res: Optional[Union[BpyError, BpyWarning]] = cast(ApiFunction, func)(
-                api_ctx
-            )
+            res: BpyError | BpyWarning | None = cast(ApiFunction, func)(api_ctx)
             perform_returns(res, console)
 
 
@@ -200,10 +197,14 @@ def build_action_dynamic_name(
         return
     if hasattr(ctx.api.action_mods[action], DYNAMIC_NAME):
         func: DynamicNameFunction = ctx.api.action_mods[action].dynamic_name
-        res: Optional[Union[list[BpyVariableDef], BpyError, BpyWarning]] = cast(
+        res: list[BpyVariableDef] | BpyError | BpyWarning | None = cast(
             DynamicNameFunction, func
         )(api_ctx)
         if isinstance(res, list):
+            # While technically this is unneeded, since actions
+            # are defined by the end user (and thus could have
+            # errors from improper use of typing/lack of typing),
+            # it makes sense to validate anyway
             for name in res:
                 if isinstance(name, BpyVariableDef):
                     continue
@@ -234,7 +235,7 @@ def build_action_preinstall(
     if hasattr(ctx.api.action_mods[action], PRE_INSTALL):
         func: ApiFunction = ctx.api.action_mods[action].pre_install
         _ = check_api_func(PRE_INSTALL, func, action, console)
-        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
+        res: BpyError | BpyWarning | None = func(api_ctx)
         perform_returns(res, console)
 
 
@@ -256,7 +257,7 @@ def build_action_postinstall(
     if hasattr(ctx.api.action_mods[action], POST_INSTALL):
         func: ApiFunction = ctx.api.action_mods[action].post_install
         _ = check_api_func(POST_INSTALL, func, action, console)
-        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
+        res: BpyError | BpyWarning | None = func(api_ctx)
         perform_returns(res, console)
 
 
@@ -278,5 +279,5 @@ def build_action_cleanup(
     if hasattr(ctx.api.action_mods[action], CLEAN_UP):
         func: ApiFunction = ctx.api.action_mods[action].clean_up
         _ = check_api_func(CLEAN_UP, func, action, console)
-        res: Optional[Union[BpyError, BpyWarning]] = func(api_ctx)
+        res: BpyError | BpyWarning | None = func(api_ctx)
         perform_returns(res, console)

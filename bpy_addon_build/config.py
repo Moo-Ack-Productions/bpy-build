@@ -5,11 +5,11 @@ from dataclasses import field
 from decimal import Decimal, getcontext
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, TypedDict, cast
+from typing import Literal, TypedDict
 
 from attrs import frozen
 from rich.console import Console
-from typing_extensions import NotRequired, Union
+from typing_extensions import NotRequired
 
 from .util import (
     check_string,
@@ -101,8 +101,8 @@ class ConfigDict(TypedDict):
     output_settings: NotRequired[dict[str, str]]
     build_extension: bool
     extension_settings: NotRequired[ExtensionSettingsDict]
-    install_versions: NotRequired[list[Union[float, str]]]
-    build_actions: NotRequired[dict[str, Optional[BuildActionDict]]]
+    install_versions: NotRequired[list[float | str]]
+    build_actions: NotRequired[dict[str, BuildActionDict | None]]
 
 
 # Must be ignored to pass Mypy as this has
@@ -128,10 +128,10 @@ class BuildAction:
         Actions to run afterwards
     """
 
-    script: Optional[str] = None
-    ignore_filters: Optional[list[str]] = None
-    depends_on: Optional[list[str]] = None
-    subactions: Optional[list[str]] = None
+    script: str | None = None
+    ignore_filters: list[str] | None = None
+    depends_on: list[str] | None = None
+    subactions: list[str] | None = None
 
 
 BUILT_IN_ACTIONS_FOLDER = Path(__file__).parent.joinpath("built_in_actions")
@@ -164,7 +164,7 @@ class ExtensionSettings:
     """
 
     build_legacy: bool
-    build_name: Optional[str]
+    build_name: str | None
     remove_bl_info: bool
 
 
@@ -223,14 +223,14 @@ class OutputSettings:
         None anyway
     """
 
-    extension: Optional[str]
-    legacy: Optional[str]
-    windows: Optional[str]
-    osx: Optional[str]
-    linux: Optional[str]
-    posix: Optional[str]
-    x86: Optional[str]
-    arm: Optional[str]
+    extension: str | None
+    legacy: str | None
+    windows: str | None
+    osx: str | None
+    linux: str | None
+    posix: str | None
+    x86: str | None
+    arm: str | None
     dynamic: list[tuple[str, DynamicType]]
 
 
@@ -274,13 +274,13 @@ class Config:
     """
 
     addon_folder: str
-    build_name: Optional[str] = None
-    output_name: Optional[str] = None
-    output_settings: Optional[OutputSettings] = None
+    build_name: str | None = None
+    output_name: str | None = None
+    output_settings: OutputSettings | None = None
     build_extension: bool = True
-    extension_settings: Optional[ExtensionSettings] = None
-    install_versions: Optional[List[Decimal]] = None
-    build_actions: Optional[Dict[str, BuildAction]] = None
+    extension_settings: ExtensionSettings | None = None
+    install_versions: list[Decimal] | None = None
+    build_actions: dict[str, BuildAction] | None = None
     additional_actions: list[str] = field(default_factory=list)
 
 
@@ -302,8 +302,8 @@ def build_config(data: ConfigDict) -> Config:
     console = Console()
     parsed_build_acts: dict[str, BuildAction] = {"version": BUILT_IN_ACTS["version"]}
     additional_actions: list[str] = ["version"]
-    parsed_extension_settings: Optional[ExtensionSettings] = None
-    parsed_output_settings: Optional[OutputSettings] = None
+    parsed_extension_settings: ExtensionSettings | None = None
+    parsed_output_settings: OutputSettings | None = None
     install_versions: list[Decimal] = []
 
     # Set the precision for Decimal to
@@ -394,7 +394,9 @@ def build_config(data: ConfigDict) -> Config:
                         elif data[OUTPUT_SETTINGS][option] == DYNAMIC_REQUIRED_KEYWORD:
                             dynamic_vars.append((option, DynamicType.REQUIRED))
                         else:
-                            print_error(f"{option} is not a valid output setting!", console)
+                            print_error(
+                                f"{option} is not a valid output setting!", console
+                            )
                             exit_fail()
 
             parsed_output_settings = OutputSettings(

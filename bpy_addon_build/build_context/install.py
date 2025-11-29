@@ -3,7 +3,6 @@ from __future__ import annotations
 import shutil
 from decimal import Decimal
 from pathlib import Path
-from typing import Union
 
 from bpy_addon_build.build_context import hooks
 from bpy_addon_build.build_context.core import (
@@ -15,7 +14,7 @@ from bpy_addon_build.build_context.core import (
 
 
 def get_paths(
-    versions: Union[list[float], list[Decimal]], is_extension: bool = False
+    versions: list[float] | list[Decimal], is_extension: bool = False
 ) -> list[Path]:
     """Given a list of versions, return paths that exist to the corresponding addon folders on the system.
 

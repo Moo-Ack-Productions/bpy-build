@@ -296,7 +296,7 @@ def parse_expr(input: str) -> tuple[list[tuple[str, ExprType]], int]:
                     cur_expr_type = ExprType.VAR
                 else:
                     cur_expr_type = ExprType.CONST
-            case ' ' | '\n':
+            case " " | "\n":
                 # Ignore whitespace
                 continue
             case _:

@@ -5,7 +5,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Optional
 
 from rich.console import Console
 
@@ -141,7 +140,7 @@ class Api:
 
     def add_modules(
         self, config_path: Path, action: str, debug_mode: bool
-    ) -> Optional[ModuleType]:
+    ) -> ModuleType | None:
         script = self.build_actions[action].script
         if script is None:
             return None
