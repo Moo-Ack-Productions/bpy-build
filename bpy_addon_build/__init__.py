@@ -30,8 +30,6 @@
 # Disclaimer: This is not a product from VLK Architects or VLK Experience Design,
 # nor is this endorsed by VLK Architects or VLK Experience Design
 
-from __future__ import annotations
-
 import copy
 from decimal import getcontext
 

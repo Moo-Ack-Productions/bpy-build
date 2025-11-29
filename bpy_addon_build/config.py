@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import traceback
 from dataclasses import field
 from decimal import Decimal, getcontext

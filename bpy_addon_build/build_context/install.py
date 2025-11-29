@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import shutil
 from decimal import Decimal
 from pathlib import Path
