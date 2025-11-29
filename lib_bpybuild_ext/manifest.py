@@ -31,7 +31,7 @@
 # nor is this endorsed by VLK Architects or VLK Experience Design
 
 from dataclasses import dataclass, field
-from typing import Literal, Optional, Union
+from typing import Literal
 
 from typing_extensions import NotRequired, TypedDict
 
@@ -117,7 +117,7 @@ class ManifestTypedDict(TypedDict):
 
     permissions: NotRequired[ManifestPermissionsTypedDict]
     website: NotRequired[str]
-    tags: NotRequired[list[Union[AddonManifestTagsLiteral, ThemeManifestTagsLiteral]]]
+    tags: NotRequired[list[AddonManifestTagsLiteral | ThemeManifestTagsLiteral]]
 
     blender_version_min: str
     blender_version_max: NotRequired[str]
@@ -140,18 +140,16 @@ class ManifestData:
     maintainer: str = "Developer name <email@address.com>"
     type: ManifestTypeLiteral = "add-on"
 
-    permissions: Optional[ManifestPermissionsTypedDict] = None
-    website: Optional[str] = None
-    tags: Optional[list[Union[AddonManifestTagsLiteral | ThemeManifestTagsLiteral]]] = (
-        None
-    )
+    permissions: ManifestPermissionsTypedDict | None = None
+    website: str | None = None
+    tags: list[AddonManifestTagsLiteral | ThemeManifestTagsLiteral] | None = None
 
     blender_version_min: str = "4.2.0"
-    blender_version_max: Optional[str] = None
+    blender_version_max: str | None = None
 
     license: list[str] = field(default_factory=lambda: ["SPDX:GPL-2.0-or-later"])
-    copyright: Optional[list[str]] = None
+    copyright: list[str] | None = None
 
-    platforms: Optional[list[ManifestPlatformLiteral]] = None
-    wheels: Optional[list[str]] = None
-    build: Optional[ManifestBuildTypedDict] = None
+    platforms: list[ManifestPlatformLiteral] | None = None
+    wheels: list[str] | None = None
+    build: ManifestBuildTypedDict | None = None
