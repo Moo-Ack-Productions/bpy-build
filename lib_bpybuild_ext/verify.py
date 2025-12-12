@@ -124,6 +124,10 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
                 raise TypeError(
                     "Cannot use the same version for both blender_version_min and blender_version_max"
                 )
+            elif max_version < min_version:
+                raise TypeError(
+                    "Cannot set blender_version_max lower than blender_version_min"
+                )
         except InvalidVersion:
             raise TypeError(
                 f"{manifest_data.blender_version_max} is not in the correct format that Blender versions follow"
