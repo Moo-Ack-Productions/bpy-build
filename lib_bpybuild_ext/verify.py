@@ -227,3 +227,12 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
                 )
             if not Path(manifest_path.parent, wheel).exists():
                 raise TypeError(f"Wheel path {wheel} does not exist!")
+
+    if manifest_data.build:
+        if (
+            "paths" in manifest_data.build
+            and "paths_exclude_pattern" in manifest_data.build
+        ):
+            raise TypeError(
+                "build.paths_exclude_pattern cannot be declared if build.paths is also declared!"
+            )
