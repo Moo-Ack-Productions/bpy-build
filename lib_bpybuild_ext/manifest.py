@@ -95,6 +95,7 @@ ManifestPermissionsLiteral = Literal[
 
 
 class ManifestBuildTypedDict(TypedDict):
+    paths: NotRequired[list[str]]
     paths_exclude_pattern: NotRequired[list[str]]
 
 
