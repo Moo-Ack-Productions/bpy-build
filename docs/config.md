@@ -20,7 +20,7 @@
     - `osx` (`str`): Defined if addon is being built on OSX
     - `linux` (`str`): Defined if addon is being built on Linux
     - `posix` (`str`): Defined if addon is being ran on FreeBSD, NetBSD, or OpenBSD
-- `build_extension` (`bool, default `True`): Build an extension
+- `build_extension` (`bool`, default `True`): Build an extension
 - `extension_settings` (`dict`): Settings for extension building with the following options:
     - `build_legacy` (`bool`, default `False`): Build a legacy addon alongside an extension
         - Note: Legacy addon builds have the suffix `_legacy`
