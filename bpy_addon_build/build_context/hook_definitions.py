@@ -23,9 +23,12 @@ DynamicNameFunction = Callable[
 OldMain = Callable[[], None]
 
 # All hooks
-PRE_BUILD = "pre_build"
-MAIN = "main"
-PRE_INSTALL = "pre_install"
+PRE_BUILD = "pre_build"  # WARN: DEPRECATED
+PRE_INTER_COPY = "pre_intermediate_copy"
+MAIN = "main"  # WARN: DEPRECATED
+IN_INTER_COPY = "in_intermediate_copy"
+PRE_INSTALL = "pre_install"  # WARN: DEPRECATED
+POST_BUILD = "post_build"
 POST_INSTALL = "post_install"
 CLEAN_UP = "clean_up"
 DYNAMIC_NAME = "dynamic_name"
@@ -131,11 +134,11 @@ def perform_returns(res: BpyWarning | BpyError | None, console: Console) -> None
             print_error(res.msg, console)
 
 
-def build_action_prebuild(
+def build_action_pre_inter_copy(
     ctx: BuildContext, action: str, console: Console, api_ctx: BabContext
 ) -> None:
     """
-    Runs an action's pre_build function
+    Runs an action's pre_intermediate_copy function
 
     ctx: Build context
     action: string representing the action name
@@ -146,18 +149,26 @@ def build_action_prebuild(
     """
     if not check_action(ctx, action, console):
         return
-    if hasattr(ctx.api.action_mods[action], PRE_BUILD):
+    if (has_pre_build := hasattr(ctx.api.action_mods[action], PRE_BUILD)) or hasattr(
+        ctx.api.action_mods[action], PRE_INTER_COPY
+    ):
+        if has_pre_build:
+            print_warning(
+                "pre_build hook is deprecated, please swap it out for pre_intermediate_copy",
+                console,
+            )
+            print_warning("pre_build will be removed in BpyBuild 0.7", console)
         func: ApiFunction = ctx.api.action_mods[action].pre_build
         _ = check_api_func(PRE_BUILD, func, action, console)
         res: BpyError | BpyWarning | None = func(api_ctx)
         perform_returns(res, console)
 
 
-def build_action_main(
+def build_action_in_inter_copy(
     ctx: BuildContext, action: str, console: Console, api_ctx: BabContext
 ) -> None:
     """
-    Runs an action's main function
+    Runs an action's in_intermediate_copy function
 
     ctx: Build context
     action: string representing the action name
@@ -168,7 +179,15 @@ def build_action_main(
     """
     if not check_action(ctx, action, console):
         return
-    if hasattr(ctx.api.action_mods[action], MAIN):
+    if (has_main := hasattr(ctx.api.action_mods[action], MAIN)) or hasattr(
+        ctx.api.action_mods[action], IN_INTER_COPY
+    ):
+        if has_main:
+            print_warning(
+                "main hook is deprecated, please swap it out for in_intermediate_copy",
+                console,
+            )
+            print_warning("main wil be removed in BpyBuild 0.7", console)
         func: ApiFunction | OldMain = ctx.api.action_mods[action].main
         if check_api_func(MAIN, func, action, console) == APIFunc.NO_ARG:
             # Backwards compatibility
@@ -231,7 +250,35 @@ def build_action_preinstall(
     if not check_action(ctx, action, console):
         return
     if hasattr(ctx.api.action_mods[action], PRE_INSTALL):
+        print_warning("pre_install is deprecated, consider using post_build", console)
+        print_warning("pre_install will be removed in BpyBuild 0.7", console)
+        print_warning(
+            "Note: post_build will only run once, and not once for each Blender version",
+            console,
+        )
         func: ApiFunction = ctx.api.action_mods[action].pre_install
+        _ = check_api_func(PRE_INSTALL, func, action, console)
+        res: BpyError | BpyWarning | None = func(api_ctx)
+        perform_returns(res, console)
+
+
+def build_action_postbuild(
+    ctx: BuildContext, action: str, console: Console, api_ctx: BabContext
+) -> None:
+    """
+    Runs an action's post_build function
+
+    ctx: Build context
+    action: string representing the action name
+    console: Console from Rich
+
+    Returns:
+        None
+    """
+    if not check_action(ctx, action, console):
+        return
+    if hasattr(ctx.api.action_mods[action], POST_BUILD):
+        func: ApiFunction = ctx.api.action_mods[action].post_build
         _ = check_api_func(PRE_INSTALL, func, action, console)
         res: BpyError | BpyWarning | None = func(api_ctx)
         perform_returns(res, console)

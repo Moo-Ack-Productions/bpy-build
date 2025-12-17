@@ -54,7 +54,7 @@ def build(ctx: BuildContext) -> Path:
         shutil.rmtree(STAGE_ONE)
         STAGE_ONE.mkdir()
 
-    hooks.run_prebuild_hooks(ctx)
+    hooks.run_pre_inter_copy_hooks(ctx)
     hooks.run_dynamic_name_hooks(ctx)
     # For some weird reason, shutil.ignore_patterns
     # expects positional arguments for all patterns,
@@ -70,8 +70,9 @@ def build(ctx: BuildContext) -> Path:
         ignore=shutil.ignore_patterns(*FILTERS),  # type: ignore
     )
 
-    hooks.run_main_hooks(ctx, STAGE_ONE, Path(create_output_name(ctx)))
+    hooks.run_in_inter_copy_hooks(ctx, STAGE_ONE, Path(create_output_name(ctx)))
 
     combined_str = str(combine_with_build(ctx, BUILD_DIR))
     _ = shutil.make_archive(combined_str, "zip", STAGE_ONE)
+    hooks.run_postbuild_hooks(ctx, Path(combined_str + ".zip"))
     return Path(combined_str + ".zip")

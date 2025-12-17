@@ -5,27 +5,30 @@ from bpy_addon_build.build_context.core import BuildContext, console
 from bpy_addon_build.build_context.hook_definitions import (
     build_action_cleanup,
     build_action_dynamic_name,
-    build_action_main,
+    build_action_in_inter_copy,
+    build_action_postbuild,
     build_action_postinstall,
-    build_action_prebuild,
-    build_action_preinstall,
+    build_action_pre_inter_copy,
+    build_action_preinstall,  # WARN: DEPRECATED
 )
 
 
-def run_prebuild_hooks(ctx: BuildContext) -> None:
+def run_pre_inter_copy_hooks(ctx: BuildContext) -> None:
     if len(ctx.api.actions_to_execute):
         cwd = Path(ctx.config_path.parent, ctx.config.addon_folder).expanduser()
         for k in ctx.api.actions_to_execute:
-            build_action_prebuild(
+            build_action_pre_inter_copy(
                 ctx, k, console, BabContext(cwd, ctx.config.build_extension, ctx.config)
             )
 
 
-def run_main_hooks(ctx: BuildContext, stage_one: Path, addon_folder: Path) -> None:
+def run_in_inter_copy_hooks(
+    ctx: BuildContext, stage_one: Path, addon_folder: Path
+) -> None:
     if len(ctx.api.actions_to_execute):
         cwd = stage_one.joinpath(addon_folder.name).expanduser()
         for k in ctx.api.actions_to_execute:
-            build_action_main(
+            build_action_in_inter_copy(
                 ctx, k, console, BabContext(cwd, ctx.config.build_extension, ctx.config)
             )
 
@@ -52,6 +55,17 @@ def run_postinstall_hooks(ctx: BuildContext, v_path: Path) -> None:
     if len(ctx.api.actions_to_execute):
         for k in ctx.api.actions_to_execute:
             build_action_postinstall(
+                ctx,
+                k,
+                console,
+                BabContext(v_path, ctx.config.build_extension, ctx.config),
+            )
+
+
+def run_postbuild_hooks(ctx: BuildContext, v_path: Path) -> None:
+    if len(ctx.api.actions_to_execute):
+        for k in ctx.api.actions_to_execute:
+            build_action_postbuild(
                 ctx,
                 k,
                 console,
