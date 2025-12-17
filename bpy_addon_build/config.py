@@ -20,7 +20,7 @@ from .util import (
 # Base settings
 ADDON_FOLDER: Literal["addon_folder"] = "addon_folder"
 BUILD_NAME: Literal["build_name"] = "build_name"  # WARNING: Deprecated
-BUILD_EXTENSION: Literal["build_extension"] = "build_extension"
+BUILD_EXTENSION: Literal["build_extension"] = "build_extension" # WARN: DEPRECATED
 INSTALL_VERSIONS: Literal["install_versions"] = "install_versions"
 
 # Build names
@@ -28,8 +28,8 @@ OUTPUT_NAME: Literal["output_name"] = "output_name"
 OUTPUT_SETTINGS: Literal["output_settings"] = "output_settings"
 
 ## Extensions and legacy addons
-EXTENSION_BUILD_NAME: Literal["extension"] = "extension"
-LEGACY_BUILD_NAME: Literal["legacy"] = "legacy"
+EXTENSION_BUILD_NAME: Literal["extension"] = "extension" # WARN: DEPRECATED
+LEGACY_BUILD_NAME: Literal["legacy"] = "legacy" # WARN: DEPRECATED
 
 ## Platforms
 ## NOTE: Linux and POSIX are marked as separate
@@ -59,9 +59,9 @@ DEPENDS_ON: Literal["depends_on"] = "depends_on"
 SUBACTIONS: Literal["subactions"] = "subactions"
 
 # Extension Settings
-EXTENSION_SETTINGS: Literal["extension_settings"] = "extension_settings"
-BUILD_LEGACY: Literal["build_legacy"] = "build_legacy"
-REMOVE_BL_INFO: Literal["remove_bl_info"] = "remove_bl_info"
+EXTENSION_SETTINGS: Literal["extension_settings"] = "extension_settings" # WARN: DEPRECATED
+BUILD_LEGACY: Literal["build_legacy"] = "build_legacy" # WARN: DEPRECATED
+REMOVE_BL_INFO: Literal["remove_bl_info"] = "remove_bl_info" # WARN: DEPRECATED
 
 VERSION_JUMPS = {
     "2.83": Decimal(2.9),
@@ -82,9 +82,10 @@ class BuildActionDict(TypedDict):
     subactions: NotRequired[list[str]]
 
 
+# WARN: DEPRECATED
 class ExtensionSettingsDict(TypedDict):
     """TypeDict verson of ExtensionSettings"""
-
+    
     build_legacy: NotRequired[bool]
     build_name: NotRequired[str]
     remove_bl_info: NotRequired[bool]
@@ -97,8 +98,8 @@ class ConfigDict(TypedDict):
     build_name: str  # WARNING: Deprecated
     output_name: NotRequired[str]
     output_settings: NotRequired[dict[str, str]]
-    build_extension: bool
-    extension_settings: NotRequired[ExtensionSettingsDict]
+    build_extension: bool # WARN: DEPRECATED
+    extension_settings: NotRequired[ExtensionSettingsDict] # WARN: DEPRECATED
     install_versions: NotRequired[list[float | str]]
     build_actions: NotRequired[dict[str, BuildActionDict | None]]
 
@@ -134,7 +135,7 @@ class BuildAction:
 
 BUILT_IN_ACTIONS_FOLDER = Path(__file__).parent.joinpath("built_in_actions")
 BUILT_IN_ACTS = {
-    "extension": BuildAction(str(BUILT_IN_ACTIONS_FOLDER.joinpath("extension.py"))),
+    "extension": BuildAction(str(BUILT_IN_ACTIONS_FOLDER.joinpath("extension.py"))), # WARN: DEPRECATED, will be incorporated into BpyBuild
     "version": BuildAction(str(BUILT_IN_ACTIONS_FOLDER.joinpath("version.py"))),
 }
 
@@ -142,6 +143,7 @@ BUILT_IN_ACTS = {
 # Must be ignored to pass Mypy as this has
 # an expression of Any, likely due to how
 # attrs works
+# WARN: DEPRECATED
 @frozen  # type: ignore
 class ExtensionSettings:
     """Class storing all settings for Blender extensions
@@ -185,9 +187,11 @@ class OutputSettings:
     ----------
     extension: Optional[str]
         String for extension builds
+        Deprecated
 
     legacy: Optional[str]
         String for legacy builds
+        Deprecated
 
     windows: Optional[str]
         String for Windows builds
@@ -221,8 +225,8 @@ class OutputSettings:
         None anyway
     """
 
-    extension: str | None
-    legacy: str | None
+    extension: str | None # WARN: DEPRECATED
+    legacy: str | None # WARN: DEPRECATED
     windows: str | None
     osx: str | None
     linux: str | None
@@ -261,8 +265,12 @@ class Config:
     build_extension: bool
         Whether to build a Blender 4.2+ extension
 
+        Deprecated, will be removed in 0.7
+
     extension_settings: Optional[ExtensionSettings]
         Settings for building an extension
+
+        Deprecated, will be removed in 0.7
 
     versions: Optional[List[float]]
         List of Blender versions to install the final addon to
@@ -275,8 +283,8 @@ class Config:
     build_name: str | None = None
     output_name: str | None = None
     output_settings: OutputSettings | None = None
-    build_extension: bool = True
-    extension_settings: ExtensionSettings | None = None
+    build_extension: bool = True # WARN: DEPRECATED
+    extension_settings: ExtensionSettings | None = None # WARN: DEPRECATED
     install_versions: list[Decimal] | None = None
     build_actions: dict[str, BuildAction] | None = None
     additional_actions: list[str] = field(default_factory=list)
@@ -363,8 +371,10 @@ def build_config(data: ConfigDict) -> Config:
             if OUTPUT_SETTINGS in data:
                 for option in data[OUTPUT_SETTINGS]:
                     if option == EXTENSION_BUILD_NAME:
+                        print_warning("output_settings:extension will be removed in BpyBuild 0.7!", console)
                         extension_name = data[OUTPUT_SETTINGS][option]
                     elif option == LEGACY_BUILD_NAME:
+                        print_warning("output_settings:legacy will be removed in BpyBuild 0.7!", console)
                         legacy_build_name = data[OUTPUT_SETTINGS][option]
                     elif option == WINDOWS_BUILD_NAME:
                         windows_build_name = data[OUTPUT_SETTINGS][option]
@@ -410,16 +420,18 @@ def build_config(data: ConfigDict) -> Config:
             )
 
         if BUILD_EXTENSION in data and data[BUILD_EXTENSION]:
+            print_warning("build_extension is deprecated and will be removed in BpyBuild 0.7!", console)
             parsed_build_acts["extension"] = BUILT_IN_ACTS["extension"]
             additional_actions.append("extension")
             if EXTENSION_SETTINGS in data:
+                print_warning("extension_settings is deprecated and will be removed in BpyBuild 0.7!", console)
                 extension_settings_data = data[EXTENSION_SETTINGS]
                 if (
                     REMOVE_BL_INFO in extension_settings_data
                     and BUILD_LEGACY not in extension_settings_data
                 ):
                     print_error(
-                        "Cannot set extension_settings::remove_bl_info if legacy builds are not performed!",
+                        "Cannot set extension_settings:remove_bl_info if legacy builds are not performed!",
                         console,
                     )
                     exit_fail()
@@ -427,7 +439,7 @@ def build_config(data: ConfigDict) -> Config:
                     extension_settings_data[BUILD_NAME]
                 ):
                     print_error(
-                        "extension_settings::build_name uses unsupported characters!",
+                        "extension_settings:build_name uses unsupported characters!",
                         console,
                     )
                     exit_fail()
