@@ -17,10 +17,6 @@ INSTALL_PATHS: list[str] = [
     "~/.config/blender/",
 ]
 
-# Must be ignored because Mypy likes
-# to complain about this for some reason
-WORKING_DIR = Path.cwd()  # type: ignore
-
 console = Console()
 
 
