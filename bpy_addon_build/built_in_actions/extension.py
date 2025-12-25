@@ -36,7 +36,7 @@ from bpy_addon_build.api import BabContext
 from lib_bpybuild_ext import BLENDER_MANIFEST, compat, get_manifest_data, verify
 
 
-def main(ctx: BabContext) -> None:
+def in_intermediate_copy(ctx: BabContext) -> None:
     if not ctx.is_extension:
         return
     manifest_path = Path(ctx.current_path, BLENDER_MANIFEST)

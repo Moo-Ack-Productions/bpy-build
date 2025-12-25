@@ -16,6 +16,7 @@ EXIT_FAIL: int = 1
 # - Backslash (NOTE: Temporary)
 # TODO: Handle backslash in the importing of scripts itself
 ALLOWED_CHARS = set(string.ascii_letters + string.digits + string.whitespace + "-_/")
+ALLOWED_CHARS_OUTPUT_NAME = ALLOWED_CHARS.union(set("{}%"))
 
 
 def exit_fail() -> None:
@@ -39,6 +40,22 @@ def check_string(string: str) -> bool:
         - False otherwise
     """
     return set(string) <= ALLOWED_CHARS
+
+
+def check_string_output_name(string: str) -> bool:
+    """Check if output_name has proper input. See
+    description of check_string for the rationale
+    of checking strings in general.
+
+    This is a modified version that adds additional
+    allowed characters into the build name, specifically
+    {, }, and %
+
+    Returns:
+        - True if the string has only allowed characters
+        - False otherwise
+    """
+    return set(string) <= ALLOWED_CHARS_OUTPUT_NAME
 
 
 def print_warning(msg: str, console: Console) -> None:

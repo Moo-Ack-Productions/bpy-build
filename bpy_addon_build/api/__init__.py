@@ -1,17 +1,14 @@
-from __future__ import annotations
-
-import importlib
+import importlib.util
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Optional
 
 from rich.console import Console
 
 from bpy_addon_build import util
 from bpy_addon_build.args import Args
-from bpy_addon_build.config import Config
+from bpy_addon_build.config import BUILT_IN_ACTS, Config
 
 
 @dataclass
@@ -28,6 +25,17 @@ class BpyWarning:
 
     # Message to print in the console
     msg: str
+
+
+@dataclass
+class BpyVariableDef:
+    """Class for dynamic BpyBuild variables"""
+
+    # Variable being defined
+    variable: str
+
+    # Value of the variable
+    vaule: str
 
 
 @dataclass
@@ -64,40 +72,73 @@ class Api:
         if conf.build_actions is not None:
             self.build_actions = conf.build_actions
             self.action_mods: dict[str, ModuleType] = {}
-            self.actions_to_execute: list[str] = cli.actions + conf.additional_actions
+            self.actions_to_execute: list[str] = []
 
+            current_actions = cli.actions + conf.additional_actions
             if cli.debug_mode:
-                print(self.actions_to_execute)
+                print(current_actions)
 
-            for action in self.build_actions:
-                if action not in self.actions_to_execute:
+            # TODO: Figure out a good way to consolidate these two for
+            # loops into a single for loop
+            #
+            # The two loops is weird, and I hate it, but there's no easy
+            # way to self-modify a list that is currently being iterated on
+            #
+            # The first loop handles subactions and adding them to the list.
+            # Unlike conf.additional_actions, which is added to the end of the
+            # execution list, subactions are to be ran after the parent action,
+            # and as such require special handling
+            #
+            # The second loop is what handles the dependencies, as it is ran on
+            # the final execution list, and also loads the scripts in as modules
+            for action_name in current_actions:
+                if action_name not in self.build_actions:
+                    # Continue on, this loop doesn't apply to built-in actions
+                    if action_name in BUILT_IN_ACTS:
+                        self.actions_to_execute.append(action_name)
+                        continue
+                    util.print_error(f"{action_name} not defined in config!", console)
+                    util.exit_fail()
+
+                # Handle subactions
+                action = self.build_actions[action_name]
+
+                self.actions_to_execute.append(action_name)
+                if action.subactions:
+                    self.actions_to_execute += (
+                        action.subactions
+                    )  # add subactions after action
+
+            for action_name, action in self.build_actions.items():
+                if action_name not in self.actions_to_execute:
                     continue
 
-                depends = self.build_actions[action].depends_on
-                if depends is not None:
+                if action.depends_on is not None:
                     if debug_mode:
-                        print(action, "depends on", depends)
-                    for dep in depends:
+                        print(action, "depends on", action.depends_on)
+                    for dep in action.depends_on:
                         if (
                             dep in self.actions_to_execute
                             and self.actions_to_execute.index(dep)
-                            < self.actions_to_execute.index(action)
+                            < self.actions_to_execute.index(action_name)
                         ):
                             continue
-                        util.print_error(f"{dep} required to run {action}", console)
+                        util.print_error(
+                            f"{dep} required to run {action_name}", console
+                        )
                         util.exit_fail()
 
-                if self.build_actions[action].script is None:
+                if action.script is None:
                     continue
 
-                mod = self.add_modules(cli.path, action, debug_mode)
+                mod = self.add_modules(cli.path, action_name, debug_mode)
                 if mod is None:
                     continue
-                self.action_mods[action] = mod
+                self.action_mods[action_name] = mod
 
     def add_modules(
         self, config_path: Path, action: str, debug_mode: bool
-    ) -> Optional[ModuleType]:
+    ) -> ModuleType | None:
         script = self.build_actions[action].script
         if script is None:
             return None

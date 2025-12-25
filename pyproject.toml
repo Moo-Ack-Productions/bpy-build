@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "bpy-addon-build"
-version = "0.5.1"
+version = "0.6"
 description = "A build system to make building and testing Blender addons 10 times easier"
-authors = ["Mahid Sheikh <mahid@standingpad.org>"]
+authors = ["Maryam Sheikh <mahid@standingpad.org>"]
 license = "BSD-3-Clause"
 homepage = "https://github.com/StandingPadAnimations/bpy-build"
 
@@ -12,7 +12,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9"
+python = ">=3.10"
 attrs = "^23.1.0"
 pyyaml = "^6.0.1"
 rich = "^13.7.0"
@@ -26,6 +26,8 @@ mypy = "^1.4.1"
 types-pyyaml = "^6.0.12.11"
 ruff = "^0.3.4"
 gitpython = "^3.1.43"
+prek = "^0.2.13"
+ty = "^0.0.1a29"
 
 [tool.poetry.scripts]
 bab = "bpy_addon_build:main"

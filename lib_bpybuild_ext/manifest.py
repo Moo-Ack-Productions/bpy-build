@@ -30,10 +30,8 @@
 # Disclaimer: This is not a product from VLK Architects or VLK Experience Design,
 # nor is this endorsed by VLK Architects or VLK Experience Design
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
-from typing import Literal, Optional
+from typing import Literal
 
 from typing_extensions import NotRequired, TypedDict
 
@@ -42,8 +40,8 @@ from typing_extensions import NotRequired, TypedDict
 #
 # TODO: Implement theme support
 ManifestSchemaLiteral = Literal["1.0.0"]
-ManifestTypeLiteral = Literal["add-on"]
-ManifestTagsLiteral = Literal[
+ManifestTypeLiteral = Literal["add-on", "theme"]
+AddonManifestTagsLiteral = Literal[
     "3D View",
     "Add Curve",
     "Add Mesh",
@@ -77,8 +75,18 @@ ManifestTagsLiteral = Literal[
     "UV",
 ]
 
+ThemeManifestTagsLiteral = Literal[
+    "Dark",
+    "Light",
+    "Colorful",
+    "Inspired By",
+    "Print",
+    "Accessibility",
+    "High Contrast",
+]
+
 ManifestPlatformLiteral = Literal[
-    "windows-amd64", "macos-arm64", "linux-x86_64", "windows-arm64", "macos-x86_64"
+    "windows-x64", "macos-arm64", "linux-x64", "windows-arm64", "macos-x64"
 ]
 
 ManifestPermissionsLiteral = Literal[
@@ -87,6 +95,7 @@ ManifestPermissionsLiteral = Literal[
 
 
 class ManifestBuildTypedDict(TypedDict):
+    paths: NotRequired[list[str]]
     paths_exclude_pattern: NotRequired[list[str]]
 
 
@@ -109,7 +118,7 @@ class ManifestTypedDict(TypedDict):
 
     permissions: NotRequired[ManifestPermissionsTypedDict]
     website: NotRequired[str]
-    tags: NotRequired[list[ManifestTagsLiteral]]
+    tags: NotRequired[list[AddonManifestTagsLiteral | ThemeManifestTagsLiteral]]
 
     blender_version_min: str
     blender_version_max: NotRequired[str]
@@ -132,16 +141,16 @@ class ManifestData:
     maintainer: str = "Developer name <email@address.com>"
     type: ManifestTypeLiteral = "add-on"
 
-    permissions: Optional[ManifestPermissionsTypedDict] = None
-    website: Optional[str] = None
-    tags: Optional[list[ManifestTagsLiteral]] = None
+    permissions: ManifestPermissionsTypedDict | None = None
+    website: str | None = None
+    tags: list[AddonManifestTagsLiteral | ThemeManifestTagsLiteral] | None = None
 
     blender_version_min: str = "4.2.0"
-    blender_version_max: Optional[str] = None
+    blender_version_max: str | None = None
 
     license: list[str] = field(default_factory=lambda: ["SPDX:GPL-2.0-or-later"])
-    copyright: Optional[list[str]] = None
+    copyright: list[str] | None = None
 
-    platforms: Optional[list[ManifestPlatformLiteral]] = None
-    wheels: Optional[list[str]] = None
-    build: Optional[ManifestBuildTypedDict] = None
+    platforms: list[ManifestPlatformLiteral] | None = None
+    wheels: list[str] | None = None
+    build: ManifestBuildTypedDict | None = None

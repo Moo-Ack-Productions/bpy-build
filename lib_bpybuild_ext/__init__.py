@@ -52,8 +52,6 @@
 # enough to include in the manual, then it isn't important enough to be in a third-party
 # reimplementation of the extension builder.
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 from typing import cast
@@ -129,4 +127,5 @@ def get_manifest_data(manifest_path: Path) -> manifest.ManifestData:
             #        f"{key} is not the correct type! See the Blender docs for more info"
             #    )
             setattr(manifest_data, key, val)  # type: ignore[misc]
+
     return manifest_data

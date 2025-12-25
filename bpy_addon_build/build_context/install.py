@@ -1,16 +1,18 @@
-from __future__ import annotations
-
 import shutil
 from decimal import Decimal
 from pathlib import Path
-from typing import Union
 
 from bpy_addon_build.build_context import hooks
-from bpy_addon_build.build_context.core import INSTALL_PATHS, BuildContext, console
+from bpy_addon_build.build_context.core import (
+    INSTALL_PATHS,
+    BuildContext,
+    console,
+    create_output_name,
+)
 
 
 def get_paths(
-    versions: Union[list[float], list[Decimal]], is_extension: bool = False
+    versions: list[float] | list[Decimal], is_extension: bool = False
 ) -> list[Path]:
     """Given a list of versions, return paths that exist to the corresponding addon folders on the system.
 
@@ -64,7 +66,7 @@ def install(ctx: BuildContext, build_path: Path) -> None:
     # passing some argument of type object, but the versions
     # argument is correct...
     for path in get_paths(versions, ctx.config.build_extension):  # type: ignore[arg-type]
-        addon_path = path.joinpath(Path(ctx.config.build_name))
+        addon_path = path.joinpath(Path(create_output_name(ctx)))
 
         # Remove previous install
         if addon_path.exists():

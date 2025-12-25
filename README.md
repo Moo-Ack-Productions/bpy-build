@@ -1,15 +1,19 @@
 # Bpy-build
-BpyBuild is a tool that makes building addons faster. It was created as part of the [MCprep](https://github.com/Moo-Ack-Productions/MCprep) project for the purposes of speeding up development, and is now available as a general tool. It is available under the BSD 3-Clause License.
+
+BpyBuild is a tool that makes building addons faster. It was created as part of the
+[MCprep](https://github.com/Moo-Ack-Productions/MCprep) project for the purposes of speeding
+up development, and is now available as a general tool. It is available under the BSD 3-Clause License.
 
 Please check out our [Getting Started guide](/docs/getting-started.md) to get started with BpyBuild in your project.
 
 > [!NOTE]
-> BpyBuild is in alpha. Although we've had great success using BpyBuild in production for MCprep, we're aware that there's still issues that need to be addressed. If you encounter any bugs, please report them on GitHub Issues.
+> BpyBuild is in alpha. Although we've had great success using BpyBuild in production for MCprep, we're aware that
+  there's still issues that need to be addressed. If you encounter any bugs, please report them on GitHub Issues.
 
 ```
 BSD 3-Clause License
 
-Copyright (c) 2024, Mahid Sheikh
+Copyright (c) 2024-2025, Maryam Sheikh (Mahid Sheikh)
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:

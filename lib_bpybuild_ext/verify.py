@@ -1,6 +1,6 @@
 # BSD 3-Clause License
 #
-# Copyright (c) 2024, Mahid Sheikh
+# Copyright (c) 2024-2025, Maryam Sheikh (Mahid Sheikh)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -29,8 +29,6 @@
 
 # Disclaimer: This is not a product from VLK Architects or VLK Experience Design,
 # nor is this endorsed by VLK Architects or VLK Experience Design
-
-from __future__ import annotations
 
 import os
 import re
@@ -88,12 +86,30 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
     if not RE_MANIFEST_SEMVER.match(manifest_data.version):
         raise TypeError("Version must be in semantic versioning format")
 
+    # We have to get Mypy to ignore some stuff because
+    # it doesn't seem to work well with typing.get_args
+    if manifest_data.tags:
+        for tag in manifest_data.tags:
+            if manifest_data.type == "add-on" and tag not in get_args(
+                manifest.AddonManifestTagsLiteral
+            ):  # type: ignore[misc]
+                raise TypeError(f"{tag} not allowed for add-on")
+            elif manifest_data.type == "theme" and tag not in get_args(
+                manifest.ThemeManifestTagsLiteral
+            ):  # type: ignore[misc]
+                raise TypeError(f"{tag} not allowed for theme")
+
     try:
         min_version = Version(manifest_data.blender_version_min)
         v4_2 = Version("4.2.0")
+        v5_0 = Version("5.0.0")
         if min_version < v4_2:
             raise TypeError(
                 "Extensions are not supported in versions of Blender prior to 4.2"
+            )
+        elif min_version < v5_0 and manifest_data.type == "theme":
+            print(
+                "Warning: Themes must have blender_version_min set to 5.0.0 in order to be installable in Blender 5.0"
             )
     except InvalidVersion:
         raise TypeError(
@@ -107,6 +123,10 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
             if min_version == max_version:
                 raise TypeError(
                     "Cannot use the same version for both blender_version_min and blender_version_max"
+                )
+            elif max_version < min_version:
+                raise TypeError(
+                    "Cannot set blender_version_max lower than blender_version_min"
                 )
         except InvalidVersion:
             raise TypeError(
@@ -136,11 +156,16 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
         )
 
     if manifest_data.tags is not None:
+        all_tags = cast(
+            tuple[str],
+            cast(tuple[str], get_args(manifest.AddonManifestTagsLiteral))
+            + cast(tuple[str], get_args(manifest.ThemeManifestTagsLiteral)),
+        )
         for t in manifest_data.tags:
             # Python 3.8 typing woes requires us to ignore these get_args calls
-            if t not in get_args(manifest.ManifestTagsLiteral):  # type: ignore[misc]
+            if t not in all_tags:  # type: ignore[misc]
                 raise TypeError(
-                    f"{t} is not a compatible tag; supported tags: {cast(tuple[str], get_args(manifest.ManifestTagsLiteral))}"
+                    f"{t} is not a compatible tag; supported tags: {all_tags}"  # type: ignore[misc]
                 )
 
     if manifest_data.platforms is not None:
@@ -155,7 +180,9 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
     if manifest_data.copyright is not None:
         for copyright in manifest_data.copyright:
             year, _, name = copyright.partition(" ")
-            if not all(x.isdigit() for x in year.partition("-")[0::2]):
+            if not all(
+                x.isdigit() for x in cast(tuple[str, str], year.partition("-")[0::2])
+            ):
                 raise TypeError(
                     f'{copyright} is not in the proper format; supported format: ("YEAR First Last", "YEAR-YEAR First Last") '
                 )
@@ -200,3 +227,12 @@ def verify_manifest(manifest_data: manifest.ManifestData, manifest_path: Path) -
                 )
             if not Path(manifest_path.parent, wheel).exists():
                 raise TypeError(f"Wheel path {wheel} does not exist!")
+
+    if manifest_data.build:
+        if (
+            "paths" in manifest_data.build
+            and "paths_exclude_pattern" in manifest_data.build
+        ):
+            raise TypeError(
+                "build.paths_exclude_pattern cannot be declared if build.paths is also declared!"
+            )

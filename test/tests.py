@@ -195,14 +195,7 @@ class TestBpyBuild(unittest.TestCase):
         with dev
 
         This test will check for:
-        - Build folder
-        - MCprep_addon.zip
-        - stage-1 folder
-        - stage-1/MCprep_addon/mcprep_dev.txt
-        - Lack of stage-1/MCprep_addon/ignore.blend
-        - "DEV MAIN" in mock_stdout
-        - "MAIN" in mock_stdout
-        - "hi guys c:" in stage-1/MCprep_addon/mcprep_dev.txt
+        - "depends_dev depends on dev, and thus must be ran after dev!"
         """
         with mock.patch(
             "sys.argv",
@@ -211,29 +204,69 @@ class TestBpyBuild(unittest.TestCase):
                 "-c",
                 f"{TEST_FOLDER}/test_addon/bpy-build.yaml",
                 "-b",
-                "dev",
                 "depend_dev",
+                "dev",
+            ],
+        ):
+            try:
+                bab.main()
+            except SystemExit:
+                # Pass through
+                pass
+        self.assertRegex(
+            mock_stdout.getvalue(), r"dev required to run depend_dev"
+        )  # default action
+
+    @mock.patch("sys.stdout", new_callable=StringIO)
+    def test_subactions(self, mock_stdout: StringIO) -> None:
+        """Performs a test build using the
+        project in test_addon.
+
+        This will test subactions, with
+        dev_subaction having dev as a subaction
+
+        This test will check for:
+        - "OLD MAIN" in mock_stdout
+        - mcprep_dev.txt in stage-1/MCprep_addon
+        - "hi guys c:" in mcprep_dev.txt
+        - Lack of stage-1/MCprep_addon/ignore.blend
+        - "DEV MAIN" in mock_stdout
+        """
+        with mock.patch(
+            "sys.argv",
+            [
+                "bab",
+                "-c",
+                f"{TEST_FOLDER}/test_addon/bpy-build.yaml",
+                "-b",
+                "dev_subaction",
             ],
         ):
             bab.main()
+
         build = Path(f"{TEST_FOLDER}/test_addon/build")
 
-        # This could be consolidated into a single call,
-        # but I feel this is more readable as it's calling
-        # for each individual condition, and reduces complexity.
-        self.assertTrue(build.exists() and build.is_dir())
-        self.assertTrue((build / "MCprep_addon.zip").exists())
-        self.assertTrue((build / "stage-1").exists())
-        self.assertTrue((build / "stage-1/MCprep_addon/mcprep_dev.txt").exists())
-        self.assertFalse((build / "stage-1/MCprep_addon/ignore.blend").exists())
-
-        # Check mock_stdout and mcprep_dev.txt for some
-        # expected strings.
+        # Check mock_stdout for expected string.
+        self.assertRegex(mock_stdout.getvalue(), r"OLD MAIN")
         self.assertRegex(mock_stdout.getvalue(), r"DEV MAIN")  # dev action
-        self.assertRegex(mock_stdout.getvalue(), r"MAIN")  # default action
-
-        with open(build / "stage-1/MCprep_addon/mcprep_dev.txt", "r") as f:
-            self.assertEqual(f.read().strip(), "hi guys c:")
+        self.assertTrue(
+            (
+                Path(
+                    f"{TEST_FOLDER}/test_addon/build/stage-1/MCprep_addon/mcprep_dev.txt"
+                )
+            ).exists()
+        )
+        self.assertEqual(
+            (
+                Path(
+                    f"{TEST_FOLDER}/test_addon/build/stage-1/MCprep_addon/mcprep_dev.txt"
+                )
+            )
+            .read_text()
+            .strip(),
+            "hi guys c:",
+        )
+        self.assertFalse((build / "stage-1/MCprep_addon/ignore.blend").exists())
 
     @mock.patch("sys.stdout", new_callable=StringIO)
     def test_depend_on_fail(self, mock_stdout: StringIO) -> None:
